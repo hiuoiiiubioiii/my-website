@@ -13,7 +13,6 @@
             font-family: "Georgia", "Book Antiqua", serif; 
             overflow: hidden; 
             
-            /* Deep, shifting magical colors */
             background: linear-gradient(270deg, #0d1b2a, #1b263b, #2c3e50, #14213d);
             background-size: 400% 400%;
             animation: magical-bg 20s ease infinite;
@@ -34,26 +33,34 @@
             background-position: 0 0, 4px 4px;
         }
 
-        /* 2. Sidebar layout */
+        /* 2. Sidebar Layout (Now Collapsible!) */
         #sidebar { 
             width: 280px; 
             display: flex; 
             flex-direction: column; 
-            border-right: 3px solid #6b4423; /* Dark wood/leather divider */
+            border-right: 3px solid #6b4423; 
             box-shadow: 5px 0 15px rgba(0,0,0,0.4);
             z-index: 10;
+            /* Smooth sliding animation */
+            transition: margin-left 0.4s ease-in-out;
         }
 
-        /* Sketch Image inside Sidebar */
+        /* When this class is added, the sidebar hides to the left */
+        #sidebar.minimized {
+            margin-left: -280px;
+            box-shadow: none;
+            border-right: none;
+        }
+
         .header-sketch {
             max-width: 120px;
             display: block;
             margin: 20px auto 0 auto;
-            mix-blend-mode: multiply; /* Blends the PNG into the parchment */
+            mix-blend-mode: multiply; 
             opacity: 0.85;
         }
 
-        .search-container { padding: 15px; border-bottom: 2px dashed #c2a77d; }
+        .search-container { padding: 15px; border-bottom: 2px dashed #c2a77d; display: flex; align-items: center; justify-content: space-between;}
         
         #search { 
             width: 100%; 
@@ -61,70 +68,66 @@
             box-sizing: border-box; 
             border-radius: 4px; 
             border: 1px solid #8b5a2b; 
-            background: rgba(255,255,255,0.4); /* Slightly transparent search bar */
+            background: rgba(255,255,255,0.4); 
             font-family: inherit;
             font-size: 14px; 
             color: #2b1d0f;
         }
         
-        /* Scrollable button list */
         #btn-list { flex-grow: 1; overflow-y: auto; padding: 10px; }
-        
-        /* Custom Scrollbar for sidebar */
         #btn-list::-webkit-scrollbar { width: 6px; }
         #btn-list::-webkit-scrollbar-thumb { background: #8b5a2b; border-radius: 4px; }
 
         .chap-btn { 
-            width: 100%; 
-            text-align: left; 
-            padding: 12px; 
-            margin-bottom: 4px; 
-            background: none; 
-            border: none; 
-            border-radius: 6px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            color: #2b1d0f; /* Dark ink color */
-            font-family: inherit;
-            transition: 0.2s;
+            width: 100%; text-align: left; padding: 12px; margin-bottom: 4px; 
+            background: none; border: none; border-radius: 6px; cursor: pointer; 
+            font-size: 16px; color: #2b1d0f; font-family: inherit; transition: 0.2s;
         }
 
         .chap-btn:hover { background: rgba(139, 90, 43, 0.15); color: #5c0000; }
-        
-        .chap-btn.active { 
-            background: #5c0000; /* Gryffindor Red */
-            color: #f4ecd8; 
-            font-weight: bold; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
+        .chap-btn.active { background: #5c0000; color: #f4ecd8; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
         
         /* 3. Main viewing area */
         #main-content { 
             flex-grow: 1; 
             display: flex; 
             flex-direction: column; 
-            margin: 20px; /* Margin lets the magical animated background peek through the edges */
+            margin: 20px; 
             border-radius: 8px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 40px rgba(139, 90, 43, 0.2);
             overflow: hidden;
+            position: relative;
         }
 
+        /* Floating Toggle Button */
+        #toggle-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 20;
+            background: #f4ecd8;
+            border: 2px solid #8b5a2b;
+            color: #5c0000;
+            font-size: 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            padding: 8px 12px;
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+            transition: 0.3s;
+        }
+
+        #toggle-btn:hover { background: #e4d5b7; transform: scale(1.05); }
+
         iframe { 
-            flex-grow: 1; 
-            border: none; 
-            width: 100%; 
-            height: 100%;
-            /* This spell makes the white background of your chapters disappear into the parchment */
+            flex-grow: 1; border: none; width: 100%; height: 100%;
             mix-blend-mode: multiply; 
         }
     </style>
 </head>
 <body>
 
-    <aside id="sidebar" class="parchment">
-        
+    <aside id="sidebar" class="parchment minimized">
         <img src="top-sketch.png" class="header-sketch" onerror="this.style.display='none'">
-
         <div class="search-container">
             <input type="text" id="search" placeholder="Search the archives..." onkeyup="filterNav()">
         </div>
@@ -132,6 +135,8 @@
     </aside>
 
     <main id="main-content" class="parchment">
+        <button id="toggle-btn" onclick="toggleSidebar()" title="Toggle Chapters">📜 Chapters</button>
+        
         <iframe id="viewer" src="c1.html"></iframe>
     </main>
 
@@ -140,35 +145,43 @@
         const total = 150;
         const list = document.getElementById('btn-list');
         const viewer = document.getElementById('viewer');
+        const sidebar = document.getElementById('sidebar');
 
-        // 1. Generate the 150 buttons
+        // Toggle Sidebar Function
+        function toggleSidebar() {
+            sidebar.classList.toggle('minimized');
+        }
+
+        // Generate the 150 buttons
         for(let i = 1; i <= total; i++) {
             let btn = document.createElement('button');
             btn.className = 'chap-btn';
             btn.id = 'btn-' + i;
             btn.innerText = 'Chapter ' + i;
-            if(i === 1) btn.classList.add('active'); // Highlight first button
+            if(i === 1) btn.classList.add('active');
             
             btn.onclick = () => loadChap(i);
             list.appendChild(btn);
         }
 
-        // 2. Load a chapter into the iframe
+        // Load a chapter
         function loadChap(num) {
             if(num < 1 || num > total) return; 
             current = num;
             viewer.src = 'c' + current + '.html';
             
-            // Update sidebar highlights
             document.querySelectorAll('.chap-btn').forEach(b => b.classList.remove('active'));
             let activeBtn = document.getElementById('btn-' + current);
             activeBtn.classList.add('active');
-            
-            // Auto-scroll sidebar so active button is visible
             activeBtn.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+
+            // Auto-close the sidebar on mobile or smaller screens after selecting a chapter
+            if(window.innerWidth < 800) {
+                sidebar.classList.add('minimized');
+            }
         }
 
-        // 3. Search bar logic
+        // Search bar logic
         function filterNav() {
             let val = document.getElementById('search').value.toLowerCase();
             document.querySelectorAll('.chap-btn').forEach(b => {
