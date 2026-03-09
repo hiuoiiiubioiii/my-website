@@ -5,126 +5,112 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Continuous Book</title>
     <style>
-        body { margin: 0; display: flex; font-family: Georgia, 'Times New Roman', Times, serif; background: #f4f4f4; color: #333; }
-        
-        /* The Table of Contents Sidebar */
-        #toc {
-            width: 250px;
-            height: 100vh;
-            overflow-y: auto;
-            position: fixed;
-            background: #fff;
-            border-right: 1px solid #ddd;
-            padding: 20px 0;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
-        }
-
-        #toc h3 { text-align: center; margin-top: 0; font-family: sans-serif; }
-        
-        .toc-link {
-            display: block;
-            padding: 8px 20px;
-            color: #555;
-            text-decoration: none;
-            font-family: sans-serif;
-            font-size: 14px;
-        }
-
-        .toc-link:hover { background: #f0f0f0; color: #000; }
-
-        /* The Main Book Area */
-        #book-container {
-            margin-left: 250px; /* Leave space for the fixed sidebar */
-            padding: 40px;
-            width: 100%;
+        /* The overall page background */
+        body {
+            background-color: #f5f5f7;
+            font-family: Georgia, 'Times New Roman', serif;
+            margin: 0;
+            padding: 40px 20px;
             display: flex;
-            justify-content: center; /* Centers the "page" */
-        }
-
-        #pages {
-            max-width: 800px; /* Book page width */
-            width: 100%;
-            background: #fff;
-            padding: 40px 60px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            justify-content: center;
+            color: #333;
             line-height: 1.8;
             font-size: 18px;
         }
 
-        .chapter-section {
-            margin-bottom: 80px; /* Space between chapters */
-            padding-bottom: 40px;
-            border-bottom: 2px dashed #ccc;
+        /* The physical "book" container */
+        #book-container {
+            background-color: #ffffff;
+            max-width: 800px;
+            width: 100%;
+            padding: 60px 80px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border-radius: 8px;
         }
 
-        .loading { text-align: center; font-family: sans-serif; color: #888; padding: 50px; }
+        /* Styling for each chapter section */
+        .chapter {
+            margin-bottom: 80px;
+            padding-bottom: 40px;
+            border-bottom: 2px dashed #eaeaea;
+        }
 
+        /* Removes the dashed line after the very last chapter */
+        .chapter:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .chapter-title {
+            text-align: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #111;
+            margin-bottom: 40px;
+            font-size: 28px;
+        }
+
+        #loading {
+            text-align: center;
+            font-family: sans-serif;
+            color: #888;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
 
-    <nav id="toc">
-        <h3>Table of Contents</h3>
-        <div id="toc-list"></div>
-    </nav>
-
-    <main id="book-container">
-        <div id="pages">
-            <div id="status" class="loading">Binding your book... fetching chapters...</div>
+    <div id="book-container">
+        <div id="loading">Gathering all 150 chapters... Please wait.</div>
         </div>
-    </main>
 
     <script>
+        const bookContainer = document.getElementById('book-container');
+        const loadingText = document.getElementById('loading');
         const totalChapters = 150;
-        const tocList = document.getElementById('toc-list');
-        const pagesContainer = document.getElementById('pages');
-        const statusDiv = document.getElementById('status');
 
-        // Function to build the book
-        async function buildBook() {
+        async function loadLiveBook() {
+            // Loop through numbers 1 to 150
             for (let i = 1; i <= totalChapters; i++) {
-                
-                // 1. Create the Table of Contents Link
-                let link = document.createElement('a');
-                link.href = `#chapter-${i}`;
-                link.className = 'toc-link';
-                link.innerText = `Chapter ${i}`;
-                tocList.appendChild(link);
-
-                // 2. Fetch the actual chapter file
                 try {
-                    // This grabs the file (c1.html, c2.html, etc.)
+                    // Fetch the live HTML file for the current chapter
                     const response = await fetch(`c${i}.html`);
                     
                     if (response.ok) {
                         const htmlText = await response.text();
                         
-                        // We use DOMParser to extract just the <body> of your files
-                        // so we don't accidentally load 150 <head> tags into one page.
+                        // Extract only the <body> text so we don't duplicate <head> tags
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(htmlText, 'text/html');
+                        const chapterContent = doc.body.innerHTML;
+
+                        // Create a new visual section for this chapter
+                        const chapterDiv = document.createElement('div');
+                        chapterDiv.className = 'chapter';
+                        chapterDiv.id = `chapter-${i}`;
                         
-                        // 3. Create a wrapper for the chapter
-                        let chapterDiv = document.createElement('div');
-                        chapterDiv.className = 'chapter-section';
-                        chapterDiv.id = `chapter-${i}`; // This matches the TOC link!
+                        // Add the Chapter Title and the text from your file
+                        chapterDiv.innerHTML = `
+                            <h2 class="chapter-title">Chapter ${i}</h2>
+                            ${chapterContent}
+                        `;
                         
-                        // Insert the content! Add a title if you want.
-                        chapterDiv.innerHTML = `<h1 style="text-align:center; margin-bottom: 40px;">Chapter ${i}</h1>` + doc.body.innerHTML;
-                        
-                        pagesContainer.appendChild(chapterDiv);
+                        // Append it to the bottom of the book
+                        bookContainer.appendChild(chapterDiv);
+                    } else {
+                        console.warn(`Chapter ${i} not found.`);
                     }
                 } catch (error) {
-                    console.error(`Skipping Chapter ${i} - file not found.`);
+                    console.error(`Error loading Chapter ${i}:`, error);
                 }
             }
             
-            // Remove the loading message when done
-            statusDiv.style.display = 'none';
+            // Hide the loading text once all chapters are successfully stacked
+            loadingText.style.display = 'none';
         }
 
-        // Start building when the page loads
-        buildBook();
+        // Start building the book the moment the user opens the page
+        loadLiveBook();
     </script>
+
 </body>
 </html>
