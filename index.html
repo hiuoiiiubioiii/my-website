@@ -7,12 +7,7 @@
     <style>
         /* 1. The Live Magical Background */
         body { 
-            margin: 0; 
-            display: flex; 
-            height: 100vh; 
-            font-family: "Georgia", "Book Antiqua", serif; 
-            overflow: hidden; 
-            
+            margin: 0; display: flex; height: 100vh; font-family: "Georgia", "Book Antiqua", serif; overflow: hidden; 
             background: linear-gradient(270deg, #0d1b2a, #1b263b, #2c3e50, #14213d);
             background-size: 400% 400%;
             animation: magical-bg 20s ease infinite;
@@ -33,46 +28,30 @@
             background-position: 0 0, 4px 4px;
         }
 
-        /* 2. Sidebar Layout (Now Collapsible!) */
+        /* 2. Sidebar Layout */
         #sidebar { 
-            width: 280px; 
-            display: flex; 
-            flex-direction: column; 
-            border-right: 3px solid #6b4423; 
-            box-shadow: 5px 0 15px rgba(0,0,0,0.4);
-            z-index: 10;
-            /* Smooth sliding animation */
+            width: 280px; display: flex; flex-direction: column; 
+            border-right: 3px solid #6b4423; box-shadow: 5px 0 15px rgba(0,0,0,0.4); z-index: 10;
             transition: margin-left 0.4s ease-in-out;
         }
 
-        /* When this class is added, the sidebar hides to the left */
-        #sidebar.minimized {
-            margin-left: -280px;
-            box-shadow: none;
-            border-right: none;
-        }
+        #sidebar.minimized { margin-left: -280px; box-shadow: none; border-right: none; }
 
-        .header-sketch {
-            max-width: 120px;
-            display: block;
-            margin: 20px auto 0 auto;
-            mix-blend-mode: multiply; 
-            opacity: 0.85;
-        }
+        .header-sketch { max-width: 120px; display: block; margin: 20px auto 10px auto; mix-blend-mode: multiply; opacity: 0.85; }
 
-        .search-container { padding: 15px; border-bottom: 2px dashed #c2a77d; display: flex; align-items: center; justify-content: space-between;}
-        
-        #search { 
-            width: 100%; 
-            padding: 10px; 
-            box-sizing: border-box; 
-            border-radius: 4px; 
-            border: 1px solid #8b5a2b; 
-            background: rgba(255,255,255,0.4); 
-            font-family: inherit;
-            font-size: 14px; 
-            color: #2b1d0f;
+        /* The New Read All Button */
+        #read-all-btn {
+            background: #d4af37; /* Hogwarts Gold */
+            color: #5c0000;
+            font-weight: bold; font-family: inherit; font-size: 16px;
+            padding: 12px; margin: 0 15px 15px 15px;
+            border: 2px solid #8b5a2b; border-radius: 6px; cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); transition: 0.3s;
         }
+        #read-all-btn:hover { background: #f1c40f; transform: scale(1.02); }
+
+        .search-container { padding: 10px 15px; border-bottom: 2px dashed #c2a77d; display: flex; }
+        #search { width: 100%; padding: 10px; border-radius: 4px; border: 1px solid #8b5a2b; background: rgba(255,255,255,0.4); font-family: inherit; color: #2b1d0f; }
         
         #btn-list { flex-grow: 1; overflow-y: auto; padding: 10px; }
         #btn-list::-webkit-scrollbar { width: 6px; }
@@ -83,44 +62,46 @@
             background: none; border: none; border-radius: 6px; cursor: pointer; 
             font-size: 16px; color: #2b1d0f; font-family: inherit; transition: 0.2s;
         }
-
         .chap-btn:hover { background: rgba(139, 90, 43, 0.15); color: #5c0000; }
         .chap-btn.active { background: #5c0000; color: #f4ecd8; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
         
         /* 3. Main viewing area */
         #main-content { 
-            flex-grow: 1; 
-            display: flex; 
-            flex-direction: column; 
-            margin: 20px; 
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 40px rgba(139, 90, 43, 0.2);
-            overflow: hidden;
-            position: relative;
+            flex-grow: 1; display: flex; flex-direction: column; margin: 20px; 
+            border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 40px rgba(139, 90, 43, 0.2);
+            overflow: hidden; position: relative;
         }
 
-        /* Floating Toggle Button */
         #toggle-btn {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            z-index: 20;
-            background: #f4ecd8;
-            border: 2px solid #8b5a2b;
-            color: #5c0000;
-            font-size: 20px;
-            cursor: pointer;
-            border-radius: 5px;
-            padding: 8px 12px;
-            box-shadow: 2px 2px 8px rgba(0,0,0,0.4);
-            transition: 0.3s;
+            position: absolute; top: 15px; left: 15px; z-index: 20;
+            background: #f4ecd8; border: 2px solid #8b5a2b; color: #5c0000;
+            font-size: 18px; cursor: pointer; border-radius: 5px; padding: 8px 12px;
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.4); transition: 0.3s;
         }
-
         #toggle-btn:hover { background: #e4d5b7; transform: scale(1.05); }
 
-        iframe { 
-            flex-grow: 1; border: none; width: 100%; height: 100%;
-            mix-blend-mode: multiply; 
+        /* The Iframe for single chapters */
+        iframe { flex-grow: 1; border: none; width: 100%; height: 100%; mix-blend-mode: multiply; }
+
+        /* The new container for ALL chapters stacked together */
+        #continuous-viewer {
+            display: none; /* Hidden by default */
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 60px 80px;
+            mix-blend-mode: multiply;
+            font-size: 18px;
+            line-height: 1.8;
+            color: #2b1d0f;
+        }
+
+        .continuous-chapter {
+            margin-bottom: 80px;
+            padding-bottom: 40px;
+            border-bottom: 2px solid #c2a77d;
+        }
+        .continuous-chapter h2 {
+            text-align: center; color: #5c0000; font-size: 32px; margin-bottom: 30px;
         }
     </style>
 </head>
@@ -128,6 +109,9 @@
 
     <aside id="sidebar" class="parchment minimized">
         <img src="top-sketch.png" class="header-sketch" onerror="this.style.display='none'">
+        
+        <button id="read-all-btn" onclick="loadAllChapters()">📖 Read Entire Book</button>
+
         <div class="search-container">
             <input type="text" id="search" placeholder="Search the archives..." onkeyup="filterNav()">
         </div>
@@ -138,19 +122,20 @@
         <button id="toggle-btn" onclick="toggleSidebar()" title="Toggle Chapters">📜 Chapters</button>
         
         <iframe id="viewer" src="c1.html"></iframe>
+        
+        <div id="continuous-viewer"></div>
     </main>
 
     <script>
-        let current = 1;
         const total = 150;
+        let allLoaded = false; // Remembers if we already fetched the 150 pages so we don't do it twice
+        
         const list = document.getElementById('btn-list');
         const viewer = document.getElementById('viewer');
+        const contViewer = document.getElementById('continuous-viewer');
         const sidebar = document.getElementById('sidebar');
 
-        // Toggle Sidebar Function
-        function toggleSidebar() {
-            sidebar.classList.toggle('minimized');
-        }
+        function toggleSidebar() { sidebar.classList.toggle('minimized'); }
 
         // Generate the 150 buttons
         for(let i = 1; i <= total; i++) {
@@ -159,29 +144,68 @@
             btn.id = 'btn-' + i;
             btn.innerText = 'Chapter ' + i;
             if(i === 1) btn.classList.add('active');
-            
             btn.onclick = () => loadChap(i);
             list.appendChild(btn);
         }
 
-        // Load a chapter
+        // --- SINGLE CHAPTER MODE ---
         function loadChap(num) {
             if(num < 1 || num > total) return; 
-            current = num;
-            viewer.src = 'c' + current + '.html';
             
+            // Show iframe, hide continuous viewer
+            contViewer.style.display = 'none';
+            viewer.style.display = 'block';
+            viewer.src = 'c' + num + '.html';
+            
+            // Highlight active button
             document.querySelectorAll('.chap-btn').forEach(b => b.classList.remove('active'));
-            let activeBtn = document.getElementById('btn-' + current);
-            activeBtn.classList.add('active');
-            activeBtn.scrollIntoView({behavior: 'smooth', block: 'nearest'});
-
-            // Auto-close the sidebar on mobile or smaller screens after selecting a chapter
-            if(window.innerWidth < 800) {
-                sidebar.classList.add('minimized');
+            let activeBtn = document.getElementById('btn-' + num);
+            if(activeBtn) {
+                activeBtn.classList.add('active');
+                activeBtn.scrollIntoView({behavior: 'smooth', block: 'nearest'});
             }
+
+            if(window.innerWidth < 800) sidebar.classList.add('minimized');
         }
 
-        // Search bar logic
+        // --- CONTINUOUS BOOK MODE (ALL CHAPTERS) ---
+        async function loadAllChapters() {
+            // Hide iframe, show continuous viewer
+            viewer.style.display = 'none';
+            contViewer.style.display = 'block';
+            
+            // Remove active highlight from all single chapter buttons
+            document.querySelectorAll('.chap-btn').forEach(b => b.classList.remove('active'));
+
+            if(window.innerWidth < 800) sidebar.classList.add('minimized');
+
+            // If we already fetched them once, just show them!
+            if (allLoaded) return; 
+
+            contViewer.innerHTML = '<h2 style="text-align:center; color:#5c0000; margin-top:50px;">Muttering incantations... summoning all chapters... ⏳</h2>';
+            
+            let fullHTML = '';
+            for(let i = 1; i <= total; i++) {
+                try {
+                    let res = await fetch('c' + i + '.html');
+                    if(res.ok) {
+                        let text = await res.text();
+                        let parser = new DOMParser();
+                        let doc = parser.parseFromString(text, 'text/html');
+                        
+                        fullHTML += `
+                            <div class="continuous-chapter" id="full-chap-${i}">
+                                <h2>Chapter ${i}</h2>
+                                ${doc.body.innerHTML}
+                            </div>`;
+                    }
+                } catch(e) { console.error(`Failed to load Chapter ${i}`); }
+            }
+            
+            contViewer.innerHTML = fullHTML;
+            allLoaded = true; // Mark as loaded so it's instant next time
+        }
+
         function filterNav() {
             let val = document.getElementById('search').value.toLowerCase();
             document.querySelectorAll('.chap-btn').forEach(b => {
