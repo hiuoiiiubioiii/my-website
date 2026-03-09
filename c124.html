@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: r+ Mode Study Notes</title>
+    <style>
+        /* CSS Variables for Consistent Theming */
+        :root {
+            --bg-color: #f3f4f6;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --card-bg: #ffffff;
+            --primary: #3b82f6;
+            --primary-light: #eff6ff;
+            --danger: #ef4444;
+            --danger-light: #fef2f2;
+            --success: #10b981;
+            --code-bg: #1e1e1e;
+            --file-bg: #fffbeb;
+            --file-border: #fcd34d;
+        }
+
+        /* Base Styles & Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem; /* Space between each feed item */
+        }
+
+        /* Feed Item (Card) */
+        .feed-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Typography */
+        h1 { font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem; line-height: 1.2;}
+        h2 { font-size: 1.75rem; margin-bottom: 1rem; border-bottom: 2px solid var(--bg-color); padding-bottom: 0.5rem;}
+        h3 { font-size: 1.25rem; margin-top: 1.5rem; margin-bottom: 0.75rem; color: var(--primary);}
+        p { margin-bottom: 1rem; color: var(--text-muted); }
+        ul { margin-left: 1.5rem; margin-bottom: 1rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; }
+        
+        strong { color: var(--text-main); }
+
+        /* Highlight Boxes */
+        .highlight-box {
+            background-color: var(--primary-light);
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .highlight-box p { margin: 0; color: var(--text-main); font-weight: 500;}
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #e5e7eb;
+            color: var(--danger);
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        .keyword { color: #569cd6; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; font-style: italic; }
+        .function { color: #dcdcaa; }
+
+        /* Visual File Simulations */
+        .visual-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin: 1.5rem 0;
+            background-color: var(--bg-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        @media(min-width: 600px) {
+            .visual-container.row {
+                flex-direction: row;
+                justify-content: space-between;
+            }
+        }
+
+        .file-box {
+            background-color: var(--file-bg);
+            border: 2px solid var(--file-border);
+            border-radius: 4px;
+            padding: 1rem;
+            flex: 1;
+            font-family: 'Courier New', Courier, monospace;
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .file-box::before {
+            content: attr(data-filename);
+            position: absolute;
+            top: -12px;
+            left: 10px;
+            background-color: var(--file-border);
+            color: #78350f;
+            font-size: 0.75rem;
+            font-family: sans-serif;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .pointer {
+            background-color: var(--danger);
+            color: white;
+            animation: blink 1s step-end infinite;
+            padding: 0 2px;
+        }
+        
+        .overwritten {
+            text-decoration: line-through;
+            color: var(--danger);
+        }
+
+        .added {
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        /* Terminal Simulation */
+        .terminal {
+            background-color: #000;
+            color: #0f0;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            margin-top: 1rem;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Tags */
+        .tag {
+            display: inline-block;
+            background: var(--bg-color);
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-right: 0.5rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+
+        <!-- Header Card -->
+        <div class="feed-card" style="text-align: center; border-top: 6px solid var(--primary);">
+            <span class="tag">C Programming</span>
+            <span class="tag">File Handling</span>
+            <h1>Understanding <code>r+</code> Mode</h1>
+            <p>A complete visual breakdown of reading, writing, and the file pointer. Scroll down to begin the lesson.</p>
+        </div>
+
+        <!-- Section 1: The Whiteboard Concept -->
+        <div class="feed-card">
+            <h2>1. Whiteboard Concept: How <code>r+</code> Compares</h2>
+            <p>Before diving into code, the instructor compares <code>r+</code> mode to the basic modes we already know to establish a baseline.</p>
+            
+            <ul>
+                <li><strong><code>r</code> (Read Mode):</strong> Used only to read. If the file doesn't exist, it returns <code>NULL</code> (error).</li>
+                <li><strong><code>w</code> (Write Mode):</strong> Used to write. If the file doesn't exist, it creates a new one. If it does exist, it <strong>deletes the old content entirely</strong>.</li>
+            </ul>
+
+            <div class="highlight-box">
+                <p><strong>The <code>r+</code> Mode (Read + Write):</strong><br>
+                The file is opened for BOTH reading and writing. However, its primary purpose is reading. Therefore, <strong>if the file does NOT exist, it will NOT create a new file.</strong> It will simply return <code>NULL</code>.</p>
+            </div>
+        </div>
+
+        <!-- Section 2: Safe File Opening -->
+        <div class="feed-card">
+            <h2>2. Safely Opening a File</h2>
+            <p>Because <code>r+</code> will not create a missing file, you must <strong>always check for a NULL pointer</strong> to prevent your program from crashing.</p>
+            
+<pre><code><span class="keyword">FILE</span> *fp = <span class="keyword">NULL</span>;
+fp = <span class="function">fopen</span>(<span class="string">"abc.txt"</span>, <span class="string">"r+"</span>);
+
+<span class="keyword">if</span>(fp == <span class="keyword">NULL</span>) {
+    <span class="function">printf</span>(<span class="string">"error"</span>);
+    <span class="function">exit</span>(1);
+}</code></pre>
+            <p>If <code>abc.txt</code> exists, the file pointer <code>fp</code> is successfully created and points to the <strong>very beginning (index 0)</strong> of the file.</p>
+        </div>
+
+        <!-- Section 3: Visualizing the Write Behavior -->
+        <div class="feed-card">
+            <h2>3. Whiteboard Visualization: Writing with <code>r+</code></h2>
+            <p>The true power of <code>r+</code> mode is <strong>modification</strong>. It doesn't append to the end, and it doesn't wipe the file clean. It writes <em>over</em> existing characters one-by-one, exactly where the pointer is sitting.</p>
+
+            <h3>Action 1: Overwriting a single character</h3>
+            <p>Let's use <code>fputc('Z', fp);</code> right after opening the file.</p>
+            
+            <div class="visual-container row">
+                <div class="file-box" data-filename="abc.txt (Before)">
+                    <span class="pointer">H</span>i, this is awesome
+                </div>
+                <div style="display:flex; align-items:center;"> ➡️ </div>
+                <div class="file-box" data-filename="abc.txt (After fputc)">
+                    <span class="added">Z</span><span class="pointer">i</span>, this is awesome
+                </div>
+            </div>
+            <p><em>The pointer started at 'H', overwrote it with 'Z', and automatically moved forward one space to rest on the 'i'.</em></p>
+
+            <h3>Action 2: Overwriting a string</h3>
+            <p>Now, let's execute <code>fputs("jenny", fp);</code>.</p>
+            <div class="visual-container row">
+                <div class="file-box" data-filename="abc.txt (Before)">
+                    <span class="pointer">T</span>his is awesome
+                </div>
+                <div style="display:flex; align-items:center;"> ➡️ </div>
+                <div class="file-box" data-filename="abc.txt (After fputs)">
+                    <span class="added">jenny</span><span class="pointer">i</span>s awesome
+                </div>
+            </div>
+            <p><em>The word "jenny" has 5 characters. It overwrote the first 5 characters (<code>T</code>, <code>h</code>, <code>i</code>, <code>s</code>, <code>[space]</code>). The rest of the file remains completely untouched!</em></p>
+        </div>
+
+        <!-- Section 4: VS Code Practical Tests -->
+        <div class="feed-card">
+            <h2>4. VS Code Practical Demonstrations</h2>
+            <p>The instructor switches to the computer to prove these concepts in real-time.</p>
+
+            <h3>Test 1: Proving r+ doesn't create files</h3>
+            <p>She attempts to open <code>"ab.txt"</code>, a file that does not exist in her folder.</p>
+            <div class="terminal">
+                PS C:\Programs> gcc r_mode.c<br>
+                PS C:\Programs> ./a.exe<br>
+                <span style="color: #ff5555;">error</span>
+            </div>
+
+            <h3>Test 2 & 3: Combining Strings and Characters</h3>
+            <p>She opens <code>abc.txt</code> (which contains "This is awesome"). She runs the following code:</p>
+<pre><code><span class="function">fputs</span>(<span class="string">"jenny"</span>, fp);
+<span class="function">fputc</span>(<span class="string">'Z'</span>, fp);
+<span class="function">fclose</span>(fp);</code></pre>
+            
+            <div class="visual-container">
+                <p><strong>Step-by-step memory simulation:</strong></p>
+                <div class="file-box" data-filename="1. Initial State">
+                    <span class="pointer">T</span>his is awesome
+                </div>
+                <div class="file-box" data-filename="2. After fputs(&quot;jenny&quot;)">
+                    <span class="added">jenny</span><span class="pointer">i</span>s awesome
+                </div>
+                <div class="file-box" data-filename="3. After fputc('Z')">
+                    <span class="added">jennyZ</span><span class="pointer">s</span> awesome
+                </div>
+            </div>
+            <p>Because <code>fputs</code> moved the pointer 5 spaces forward, the <code>fputc</code> command executes at index 5, overwriting the 'i' with a 'Z'.</p>
+        </div>
+
+        <!-- Section 5: Summary & Assignment -->
+        <div class="feed-card" style="border-bottom: 6px solid var(--success);">
+            <h2>5. The Golden Rules & Assignment</h2>
+            <p>If you get an exam or interview question about <code>r+</code> mode, remember this checklist:</p>
+            
+            <ul style="list-style-type: none; margin-left: 0;">
+                <li>✅ <strong>Dual Functionality:</strong> Opens an existing file for BOTH reading and writing.</li>
+                <li>✅ <strong>No File Creation:</strong> If the file is missing, it returns <code>NULL</code>. It will <em>never</em> create a blank file for you.</li>
+                <li>✅ <strong>Cursor at the Start:</strong> It does not erase the file upon opening. The cursor starts at the very beginning.</li>
+                <li>✅ <strong>1-for-1 Overwrite:</strong> Any writing overwrites existing characters one-for-one. It leaves the remainder of the file intact.</li>
+            </ul>
+
+            <div class="highlight-box" style="background-color: var(--file-bg); border-color: var(--file-border);">
+                <p><strong>👨‍💻 Your Assignment:</strong><br>
+                Try writing a C program that uses <code>r+</code> to read a string from a file using <code>fgets()</code>, and then immediately write a new string into the same file using <code>fputs()</code>. Track exactly where the pointer ends up!</p>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Function Pointers in C - Study Notes</title>
+    <style>
+        /* CSS Variables for Theme */
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-purple: #c084fc;
+            --accent-green: #4ade80;
+            --accent-red: #f87171;
+            --accent-yellow: #facc15;
+            --code-bg: #0b1120;
+        }
+
+        /* Base Reset & Typography */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            padding-bottom: 60px;
+        }
+
+        /* Header Styling */
+        header {
+            text-align: center;
+            padding: 40px 0 20px 0;
+            border-bottom: 2px solid var(--bg-card);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Card/Section Styling */
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--accent-blue);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 10px;
+        }
+
+        .card p, .card ul {
+            margin-bottom: 15px;
+            color: #cbd5e1;
+        }
+
+        .card ul {
+            padding-left: 20px;
+        }
+
+        .card li {
+            margin-bottom: 8px;
+        }
+
+        /* Code Block Styling */
+        pre {
+            background-color: var(--code-bg);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        code {
+            font-family: 'Fira Code', Consolas, Monaco, monospace;
+            font-size: 0.95rem;
+        }
+
+        /* Basic Syntax Highlighting Classes */
+        .kw { color: var(--accent-purple); } /* Keywords */
+        .type { color: var(--accent-blue); } /* Types */
+        .func { color: var(--accent-yellow); } /* Functions */
+        .str { color: var(--accent-green); } /* Strings */
+        .cmt { color: var(--text-muted); font-style: italic; } /* Comments */
+
+        /* Visualizations: Memory Array Diagram */
+        .visual-box {
+            background-color: var(--code-bg);
+            padding: 30px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+            border: 1px dashed var(--accent-purple);
+        }
+
+        .array-container {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .array-slot {
+            width: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .slot-index {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .slot-box {
+            width: 100%;
+            height: 60px;
+            background-color: var(--bg-card);
+            border: 2px solid var(--accent-blue);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+            font-weight: bold;
+            color: var(--text-main);
+            position: relative;
+        }
+
+        .slot-empty {
+            border-color: var(--text-muted);
+            color: var(--text-muted);
+        }
+
+        .pointer-arrow {
+            font-size: 1.5rem;
+            color: var(--accent-purple);
+            margin: 5px 0;
+        }
+
+        .func-box {
+            background-color: rgba(192, 132, 252, 0.2);
+            color: var(--accent-purple);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-family: monospace;
+            border: 1px solid var(--accent-purple);
+        }
+
+        /* Callout Boxes */
+        .callout {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        .callout-icon {
+            font-size: 1.5rem;
+        }
+
+        .callout-warning {
+            background-color: rgba(248, 113, 113, 0.1);
+            border-left: 4px solid var(--accent-red);
+        }
+
+        .callout-tip {
+            background-color: rgba(74, 222, 128, 0.1);
+            border-left: 4px solid var(--accent-green);
+        }
+
+        .highlight {
+            background-color: rgba(56, 189, 248, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--accent-blue);
+            font-family: monospace;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Function Pointers in C</h1>
+        <p>Mastering Arrays of Function Pointers to build Menu-Driven Programs</p>
+    </header>
+
+    <main class="feed-container">
+
+        <!-- Section 1: Introduction & The Problem -->
+        <section class="card">
+            <h2>🚨 The Problem: Bulky Switch Cases</h2>
+            <p>In the previous lecture, we learned about Callbacks. Now, we are exploring the second major application of function pointers: <strong>Replacing Switch Statements.</strong></p>
+            <p>When building menu-driven programs (like a calculator), students traditionally rely on long, repetitive <code>switch-case</code> blocks. Every time a new feature is added, the code grows longer and harder to read.</p>
+            
+            <pre><code><span class="cmt">// The Old Way: Bulky and hard to scale</span>
+<span class="kw">switch</span>(ch) {
+    <span class="kw">case</span> <span class="str">0</span>: <span class="func">add</span>(a, b); <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="str">1</span>: <span class="func">sub</span>(a, b); <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="str">2</span>: <span class="func">mult</span>(a, b); <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="str">3</span>: <span class="func">div</span>(a, b); <span class="kw">break</span>;
+}</code></pre>
+            
+            <div class="callout callout-tip">
+                <div class="callout-icon">💡</div>
+                <div><strong>The Solution:</strong> We can replace that entire switch block with <strong>one single line of code</strong> using an Array of Function Pointers!</div>
+            </div>
+        </section>
+
+        <!-- Section 2: Whiteboard Setup -->
+        <section class="card">
+            <h2>🛠️ Step 1: Defining the Functions</h2>
+            <p>To use an array of function pointers, <strong>all functions must have the exact same signature</strong> (same return type and same parameters). Let's define our four calculator operations.</p>
+            
+            <pre><code><span class="type">void</span> <span class="func">add</span>(<span class="type">int</span> a, <span class="type">int</span> b) { 
+    <span class="func">printf</span>(<span class="str">"%d"</span>, a + b); 
+}
+
+<span class="type">void</span> <span class="func">sub</span>(<span class="type">int</span> a, <span class="type">int</span> b) { 
+    <span class="func">printf</span>(<span class="str">"%d"</span>, a - b); 
+}
+
+<span class="type">void</span> <span class="func">mult</span>(<span class="type">int</span> a, <span class="type">int</span> b) { 
+    <span class="func">printf</span>(<span class="str">"%d"</span>, a * b); 
+}
+
+<span class="type">void</span> <span class="func">div</span>(<span class="type">int</span> a, <span class="type">int</span> b) { 
+    <span class="func">printf</span>(<span class="str">"%d"</span>, a / b); 
+}</code></pre>
+
+            <p>We also need our <code>main()</code> function setup to prompt the user for their choice and inputs.</p>
+
+            <pre><code><span class="type">void</span> <span class="func">main</span>() {
+    <span class="type">int</span> ch, a, b;
+    
+    <span class="func">printf</span>(<span class="str">"Enter choice (0:Add, 1:Sub, 2:Mult, 3:Div): "</span>);
+    <span class="func">scanf</span>(<span class="str">"%d"</span>, &ch);
+    
+    <span class="func">printf</span>(<span class="str">"Enter values of a and b: "</span>);
+    <span class="func">scanf</span>(<span class="str">"%d %d"</span>, &a, &b);</code></pre>
+        </section>
+
+        <!-- Section 3: The Core Concept -->
+        <section class="card">
+            <h2>🧠 Step 2: The Array of Function Pointers</h2>
+            <p>Just like you can have an array of integers, you can declare an array that holds <strong>memory addresses of functions</strong>. Here is the golden line of code that replaces the switch case:</p>
+
+            <pre><code><span class="cmt">    // Declaring and initializing the array of function pointers</span>
+    <span class="type">void</span> (*fptr[<span class="str">10</span>])(<span class="type">int</span>, <span class="type">int</span>) = {add, sub, mult, div};</code></pre>
+
+            <h3>Syntax Breakdown:</h3>
+            <ul>
+                <li><span class="highlight">void</span>: The return type of the functions this array will point to.</li>
+                <li><span class="highlight">(*fptr[10])</span>: Declares `fptr` as an array of size 10 that holds pointers.</li>
+                <li><span class="highlight">(int, int)</span>: The parameter types the functions accept.</li>
+                <li><span class="highlight">= {add, sub...}</span>: Initialization. Remember, just writing the name of a function without parentheses acts as its memory address!</li>
+            </ul>
+        </section>
+
+        <!-- Section 4: Memory Visualization -->
+        <section class="card">
+            <h2>👁️ Visualizing Memory</h2>
+            <p>Let's look at exactly how this array looks in the computer's memory, mimicking the diagram drawn on the whiteboard.</p>
+            
+            <div class="visual-box">
+                <p style="margin-bottom: 15px; color: var(--accent-blue); font-weight: bold;">fptr Array Memory Layout</p>
+                <div class="array-container">
+                    <!-- Index 0 -->
+                    <div class="array-slot">
+                        <div class="slot-index">Index 0</div>
+                        <div class="slot-box">100</div>
+                        <div class="pointer-arrow">↓</div>
+                        <div class="func-box">add()</div>
+                    </div>
+                    <!-- Index 1 -->
+                    <div class="array-slot">
+                        <div class="slot-index">Index 1</div>
+                        <div class="slot-box">146</div>
+                        <div class="pointer-arrow">↓</div>
+                        <div class="func-box">sub()</div>
+                    </div>
+                    <!-- Index 2 -->
+                    <div class="array-slot">
+                        <div class="slot-index">Index 2</div>
+                        <div class="slot-box">200</div>
+                        <div class="pointer-arrow">↓</div>
+                        <div class="func-box">mult()</div>
+                    </div>
+                    <!-- Index 3 -->
+                    <div class="array-slot">
+                        <div class="slot-index">Index 3</div>
+                        <div class="slot-box">300</div>
+                        <div class="pointer-arrow">↓</div>
+                        <div class="func-box">div()</div>
+                    </div>
+                    <!-- Index 4+ -->
+                    <div class="array-slot">
+                        <div class="slot-index">Index 4-9</div>
+                        <div class="slot-box slot-empty">...</div>
+                        <div class="pointer-arrow" style="color: transparent;">↓</div>
+                        <div class="func-box" style="opacity: 0;">none</div>
+                    </div>
+                </div>
+                <p style="font-size: 0.9rem; color: var(--text-muted);">* Numbers inside the boxes represent hypothetical memory addresses of the functions.</p>
+            </div>
+        </section>
+
+        <!-- Section 5: Executing the Function -->
+        <section class="card">
+            <h2>⚡ Step 3: Executing the Function Call</h2>
+            <p>Now, instead of writing multiple case statements, we write <strong>one single line</strong> to call the correct function dynamically based on the user's input <code>ch</code>.</p>
+
+            <pre><code><span class="cmt">    // Call the function dynamically based on user choice</span>
+    (*fptr[ch])(a, b);
+} <span class="cmt">// End of main()</span></code></pre>
+
+            <h3>How the computer reads this execution trace:</h3>
+            <ol style="padding-left: 20px; color: #cbd5e1;">
+                <li style="margin-bottom: 10px;"><strong>User Input:</strong> User enters <code>0</code> for <code>ch</code>, and <code>2</code> and <code>3</code> for <code>a</code> and <code>b</code>.</li>
+                <li style="margin-bottom: 10px;"><strong>Array Lookup:</strong> The program evaluates <code>fptr[ch]</code>, which becomes <code>fptr[0]</code>.</li>
+                <li style="margin-bottom: 10px;"><strong>Dereference:</strong> It looks inside <code>fptr[0]</code>, finds memory address <code>100</code> (the <code>add</code> function), and dereferences it using the <code>*</code>.</li>
+                <li style="margin-bottom: 10px;"><strong>Execution:</strong> It passes <code>(2, 3)</code> to that memory address. The <code>add</code> function runs and prints <code>5</code>.</li>
+            </ol>
+        </section>
+
+        <!-- Section 6: IDE Debugging -->
+        <section class="card">
+            <h2>💻 Live IDE Demo & Debugging</h2>
+            <p>During the VS Code demonstration, the instructor compiles the code and encounters a specific warning message. This is a very common student mistake!</p>
+
+            <div class="callout callout-warning">
+                <div class="callout-icon">⚠️</div>
+                <div>
+                    <strong>Warning:</strong> <em>"initialization from incompatible pointer type"</em><br>
+                    <strong>Why?</strong> The instructor accidentally typed <code>int (*fptr[10])(int, int)</code> instead of <code>void</code>. Because the actual functions (`add`, `sub`) return <code>void</code>, the pointer array must also be declared with <code>void</code>.
+                </div>
+            </div>
+
+            <p><strong>Testing the fixed code:</strong></p>
+            <ul>
+                <li>User enters choice <code>1</code> (Subtraction), and inputs <code>5</code> and <code>1</code>. The program correctly jumps to <code>fptr[1]</code> and outputs <code>4</code>.</li>
+                <li>User enters choice <code>3</code> (Division), and inputs <code>4</code> and <code>2</code>. The program jumps to <code>fptr[3]</code> and outputs <code>2</code>.</li>
+            </ul>
+        </section>
+
+        <!-- Section 7: Final Takeaways -->
+        <section class="card">
+            <h2>🎯 Key Takeaways</h2>
+            <ul>
+                <li><strong>Function Signatures Must Match:</strong> To group functions inside an array of function pointers, they must all have the exact same return type and the exact same parameter list.</li>
+                <li><strong>Function Names are Addresses:</strong> You do not need the <code>&</code> symbol when assigning a function to a pointer. <code>fptr[0] = add;</code> works perfectly because the compiler treats the function name itself as a base memory address.</li>
+                <li><strong>Incredible Scalability:</strong> If you wanted to add a "Modulo" function later, using a switch case means writing another whole <code>case 4: ... break;</code> block. With function pointers, you just add the word <code>mod</code> to the array initialization list: <code>{add, sub, mult, div, mod}</code>. The execution code <code>(*fptr[ch])(a,b)</code> <strong>never has to change!</strong></li>
+            </ul>
+        </section>
+
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: Storage Classes Study Notes</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --accent-blue: #0056b3;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --board-bg: #eef2f5;
+            --border-color: #e1e4e8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Continuous Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px; /* Space between topics */
+        }
+
+        /* Card Styling */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border-top: 5px solid var(--accent-blue);
+        }
+
+        h1, h2, h3 {
+            color: var(--accent-blue);
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1rem;
+        }
+
+        /* Whiteboard Visualization */
+        .whiteboard {
+            background-color: var(--board-bg);
+            border: 2px dashed #b0c4de;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Comic Sans MS', cursive, sans-serif; /* Simulating handwriting vibe */
+        }
+
+        .whiteboard-title {
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 5px;
+        }
+
+        .highlight-box {
+            display: inline-block;
+            background: #ffeeba;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #856404;
+        }
+
+        /* Timeline / Trace Layout */
+        .timeline {
+            border-left: 3px solid var(--accent-blue);
+            padding-left: 20px;
+            margin-left: 10px;
+        }
+
+        .step {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .step::before {
+            content: '';
+            position: absolute;
+            left: -29px;
+            top: 5px;
+            width: 15px;
+            height: 15px;
+            background-color: var(--card-bg);
+            border: 3px solid var(--accent-blue);
+            border-radius: 50%;
+        }
+
+        .step h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .memory-box {
+            display: inline-flex;
+            align-items: center;
+            background-color: #fff;
+            border: 2px solid #333;
+            padding: 5px 15px;
+            font-size: 1.1rem;
+            margin-top: 10px;
+            box-shadow: 2px 2px 0px #ccc;
+        }
+
+        .crossed {
+            text-decoration: line-through;
+            color: #d9534f;
+            margin-right: 10px;
+        }
+
+        .new-val {
+            color: #5cb85c;
+            font-weight: bold;
+        }
+
+        .output-box {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 1.2rem;
+            text-align: center;
+            letter-spacing: 2px;
+            margin-top: 10px;
+        }
+
+        .rule {
+            border-left: 4px solid #f39c12;
+            background: #fdfae6;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>C Programming Study Notes</h1>
+        <p class="subtitle">Practice Questions on Storage Classes (Vertical Feed)</p>
+    </header>
+
+    <main class="feed-container">
+
+        <!-- INTRO CARD -->
+        <section class="card">
+            <h2>📚 Topic Overview</h2>
+            <p>This feed covers practice questions testing your knowledge of <strong>Storage Classes in C</strong>. We will break down exactly how the compiler handles <code>extern</code>, <code>auto</code>, and <code>static</code> keywords through real code snippets and whiteboard visual traces.</p>
+        </section>
+
+        <!-- QUESTION 1 -->
+        <section class="card">
+            <h2>📝 Question 1: Global Variables & Defaults</h2>
+            <p><strong>Code Snippet:</strong></p>
+<pre><code>#include &lt;stdio.h&gt;
+int a;
+int main()
+{
+    printf("a = %d", a);
+    return 0;
+}</code></pre>
+            
+            <div class="whiteboard">
+                <div class="whiteboard-title">Instructor's Whiteboard Notes</div>
+                <p>👉 <code>int a;</code> is declared outside of <code>main()</code>. It is a <strong>Global Variable</strong>.</p>
+                <p>❌ <s><code>auto int a;</code></s> <br><em>You cannot use the `auto` keyword with global variables. It is strictly for local variables.</em></p>
+                <p>👉 Default Storage Class: <span class="highlight-box">extern</span></p>
+                <p>👉 Default Initial Value: <span class="highlight-box">= 0</span></p>
+            </div>
+
+            <div class="rule">
+                <strong>💡 Core Rule:</strong> Global/extern variables are automatically initialized to <code>0</code> by the compiler if you do not assign a value to them.
+            </div>
+
+            <h3>Final Output for Q1:</h3>
+            <div class="output-box">a = 0</div>
+        </section>
+
+        <!-- QUESTION 2 INTRODUCTION -->
+        <section class="card">
+            <h2>📝 Question 2: The `static` Keyword & `for` Loop Execution</h2>
+            <p>This is the most complex part of the lesson. Pay close attention to how the <code>static</code> keyword alters the standard flow of a function.</p>
+            
+<pre><code>#include &lt;stdio.h&gt;
+int fun()
+{
+    static int num = 16;
+    return num--;
+}
+
+int main()
+{
+    for(fun(); fun(); fun())
+        printf("%d ", fun());
+    return 0;
+}</code></pre>
+
+            <div class="rule">
+                <strong>💡 Concept 1: The <code>static</code> Keyword</strong><br>
+                A static variable is initialized <strong>only once</strong>. When <code>fun()</code> is called multiple times, the line <code>static int num = 16;</code> is ignored after the first run. The variable retains its previous value across function calls.
+            </div>
+            <div class="rule">
+                <strong>💡 Concept 2: Post-Decrement (<code>num--</code>)</strong><br>
+                The statement <code>return num--;</code> means: Return the current value of `num` <strong>first</strong>, and <strong>then</strong> decrease `num` by 1.
+            </div>
+        </section>
+
+        <!-- QUESTION 2 TRACE (THE WHITEBOARD VISUALIZATION) -->
+        <section class="card">
+            <h2>🧠 Step-by-Step Visual Dry-Run</h2>
+            <p>Here is exactly how the instructor traces the <code>for</code> loop on the whiteboard, continuously crossing out the old value of <code>num</code> to write the new one.</p>
+
+            <div class="timeline">
+                
+                <div class="step">
+                    <h4>Step 1: Loop Initialization</h4>
+                    <p>Code: <code>for(<strong>fun()</strong>; ...; ...)</code></p>
+                    <p>Inside `fun()`: `num` initializes to 16. It returns 16, then decrements.</p>
+                    <div class="memory-box">num = <span class="crossed">16</span> <span class="new-val">15</span></div>
+                    <p><em>(Returned value 16 is ignored by the loop setup)</em></p>
+                </div>
+
+                <div class="step">
+                    <h4>Step 2: Loop Condition (Check 1)</h4>
+                    <p>Code: <code>for(...; <strong>fun()</strong>; ...)</code></p>
+                    <p>Inside `fun()`: <em>Static initialization line is ignored!</em> Returns 15, then decrements.</p>
+                    <div class="memory-box">num = <span class="crossed">15</span> <span class="new-val">14</span></div>
+                    <p><em>Condition check: 15 is not 0 (True). Enter loop.</em></p>
+                </div>
+
+                <div class="step">
+                    <h4>Step 3: Inside Loop (Print 1)</h4>
+                    <p>Code: <code>printf("%d ", <strong>fun()</strong>);</code></p>
+                    <p>Inside `fun()`: Returns 14, then decrements.</p>
+                    <div class="memory-box">num = <span class="crossed">14</span> <span class="new-val">13</span></div>
+                    <div class="output-box" style="text-align: left;">Screen: 14 </div>
+                </div>
+
+                <div class="step">
+                    <h4>Step 4: Loop Update</h4>
+                    <p>Code: <code>for(...; ...; <strong>fun()</strong>)</code></p>
+                    <p>Inside `fun()`: Returns 13, then decrements.</p>
+                    <div class="memory-box">num = <span class="crossed">13</span> <span class="new-val">12</span></div>
+                </div>
+
+                <div class="step">
+                    <h4>Step 5: Loop Condition (Check 2)</h4>
+                    <p>Code: <code>for(...; <strong>fun()</strong>; ...)</code></p>
+                    <p>Inside `fun()`: Returns 12, then decrements.</p>
+                    <div class="memory-box">num = <span class="crossed">12</span> <span class="new-val">11</span></div>
+                    <p><em>Condition check: 12 is True. Enter loop.</em></p>
+                </div>
+
+                <div class="step">
+                    <h4>Step 6: Inside Loop (Print 2)</h4>
+                    <p>Code: <code>printf("%d ", <strong>fun()</strong>);</code></p>
+                    <p>Inside `fun()`: Returns 11, then decrements.</p>
+                    <div class="memory-box">num = <span class="crossed">11</span> <span class="new-val">10</span></div>
+                    <div class="output-box" style="text-align: left;">Screen: 14 11 </div>
+                </div>
+
+                <div class="step">
+                    <h4>Steps 7 to 15: The Pattern Continues</h4>
+                    <p>The loop cycles through Update ➡️ Condition ➡️ Print.</p>
+                    <p>Updates drop the memory to 9, 6, 3.<br>
+                       Conditions drop the memory to 8, 5, 2.<br>
+                       <strong>Prints drop the memory to 7, 4, 1, and output the returned values: 8, 5, 2.</strong></p>
+                    <div class="output-box" style="text-align: left;">Screen: 14 11 8 5 2 </div>
+                </div>
+
+                <div class="step">
+                    <h4>Step 16: Final Loop Update</h4>
+                    <p>Code: <code>for(...; ...; <strong>fun()</strong>)</code></p>
+                    <p>Inside `fun()`: Returns 1, then decrements.</p>
+                    <div class="memory-box">num = <span class="crossed">1</span> <span class="new-val">0</span></div>
+                </div>
+
+                <div class="step">
+                    <h4>Step 17: Loop Condition (Final Check)</h4>
+                    <p>Code: <code>for(...; <strong>fun()</strong>; ...)</code></p>
+                    <p>Inside `fun()`: Returns 0, then decrements.</p>
+                    <div class="memory-box">num = <span class="crossed">0</span> <span class="new-val">-1</span></div>
+                    <p><em>Condition check: The returned value is 0. In C, 0 means <strong>FALSE</strong>. The loop terminates immediately!</em></p>
+                </div>
+
+            </div>
+            
+            <h3>Final Output for Q2:</h3>
+            <div class="output-box">14 11 8 5 2</div>
+        </section>
+
+        <!-- OUTRO -->
+        <section class="card">
+            <h2>🎓 Video Wrap-Up</h2>
+            <p>This concludes the syllabus for the C programming series! A final question on storage classes will be handled in a short follow-up video.</p>
+            <p><strong>Call to Action:</strong> If you have any complicated code snippets, specific errors, or topic requests that weren't covered, leave a comment on the YouTube video or send a screenshot to the instructor's Instagram handle.</p>
+        </section>
+
+    </main>
+
+</body>
+</html>

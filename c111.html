@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Structure Initialization & Accessing | Study Notes</title>
+    <style>
+        /* Global Styles */
+        :root {
+            --bg-color: #f4f7f9;
+            --text-main: #333333;
+            --text-muted: #555555;
+            --card-bg: #ffffff;
+            --primary: #4a90e2;
+            --secondary: #e2e8f0;
+            --code-bg: #282c34;
+            --code-text: #abb2bf;
+            --alert-red: #ffe5e5;
+            --alert-red-text: #d63031;
+            --alert-blue: #e3f2fd;
+            --alert-blue-text: #0984e3;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px; /* Space between topics in the vertical feed */
+        }
+
+        /* Header */
+        .header-card {
+            background: linear-gradient(135deg, #4a90e2, #7b61ff);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header-card h1 {
+            margin: 0;
+            font-size: 2.2rem;
+        }
+
+        .header-card p {
+            margin: 10px 0 0 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Content Cards */
+        .topic-card {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease;
+        }
+
+        .topic-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .topic-card h2 {
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 10px;
+            margin-top: 0;
+            color: var(--primary);
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 1rem;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .code-highlight {
+            color: #e5c07b; /* Yellow for strings */
+        }
+        .code-keyword {
+            color: #c678dd; /* Purple for keywords */
+        }
+        .code-type {
+            color: #56b6c2; /* Cyan for types */
+        }
+        .code-comment {
+            color: #5c6370;
+            font-style: italic;
+        }
+
+        /* Alerts & Callouts */
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 5px solid;
+        }
+        .alert-warning {
+            background-color: var(--alert-red);
+            color: var(--alert-red-text);
+            border-color: var(--alert-red-text);
+        }
+        .alert-info {
+            background-color: var(--alert-blue);
+            color: var(--alert-blue-text);
+            border-color: var(--alert-blue-text);
+        }
+
+        /* --- VISUALIZATIONS (CSS RAM Diagrams) --- */
+        .viz-container {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .ram-box {
+            background-color: #fafafa;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            width: 200px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .ram-box-header {
+            background-color: var(--primary);
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            padding: 8px;
+            border-bottom: 2px solid #cbd5e1;
+        }
+
+        .mem-slot {
+            display: flex;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .mem-slot:last-child {
+            border-bottom: none;
+        }
+
+        .mem-label {
+            background-color: #f1f5f9;
+            padding: 10px;
+            width: 40%;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #64748b;
+            border-right: 1px solid #e2e8f0;
+        }
+
+        .mem-value {
+            padding: 10px;
+            width: 60%;
+            font-family: monospace;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            color: #0f172a;
+        }
+
+        .null-value {
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        /* Action Arrow for Copying */
+        .copy-arrow {
+            display: flex;
+            align-items: center;
+            font-size: 2rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .wrong-code {
+            text-decoration: line-through;
+            color: #d63031;
+        }
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+
+    <!-- Header -->
+    <div class="header-card">
+        <h1>Initialization & Accessing of Structures</h1>
+        <p>Instructor: Jayanti Khatri Lamba • Subject: C Programming</p>
+    </div>
+
+    <!-- Topic 1 -->
+    <div class="topic-card">
+        <h2>1. Recap: The Structure Template</h2>
+        <p>Before initializing, we must define the structure template. Think of this as a blueprint.</p>
+<pre><code><span class="code-keyword">struct</span> <span class="code-type">Student</span>
+{
+    <span class="code-type">int</span> rollno;
+    <span class="code-type">char</span> name[<span class="code-highlight">20</span>];
+    <span class="code-type">float</span> marks;
+};</code></pre>
+        <div class="alert alert-warning">
+            <strong>🚨 Critical Rule:</strong> You <b>cannot</b> initialize variables inside this definition (e.g., writing <code>int rollno = 1;</code> here is an error). Memory is not allocated until you create an actual variable/object of this structure type.
+        </div>
+    </div>
+
+    <!-- Topic 2 -->
+    <div class="topic-card">
+        <h2>2. Compile-Time Initialization</h2>
+        <p>This means assigning values to the structure inside your code, before the program runs.</p>
+        
+        <h3>Method A: Full Initialization</h3>
+        <p>You can initialize all members using curly braces <code>{}</code>.</p>
+<pre><code><span class="code-type">void</span> <span class="code-keyword">main</span>() 
+{
+    <span class="code-comment">// Memory is allocated here</span>
+    <span class="code-keyword">struct</span> <span class="code-type">Student</span> S1 = {<span class="code-highlight">1</span>, <span class="code-highlight">"Jenny"</span>, <span class="code-highlight">90.91</span>};
+}</code></pre>
+        <div class="alert alert-info">
+            <strong>🧠 The "Order" Rule:</strong> The values inside the curly braces <em>must</em> match the exact order of the data types declared in the structure definition (<code>int</code>, then <code>string</code>, then <code>float</code>).
+        </div>
+
+        <h3>Method B: Partial Initialization</h3>
+        <p>What happens if you only provide one value?</p>
+<pre><code><span class="code-keyword">struct</span> <span class="code-type">Student</span> S2 = {<span class="code-highlight">2</span>};</code></pre>
+        <p>The compiler assigns <code>2</code> to the first member (<code>rollno</code>). Because you left the rest blank, the compiler automatically initializes the remaining members to <b>null</b> or <b>zero</b>.</p>
+        
+        <!-- VISUALIZATION -->
+        <div class="viz-container">
+            <div class="ram-box">
+                <div class="ram-box-header">S2 Memory Block</div>
+                <div class="mem-slot">
+                    <div class="mem-label">rollno</div>
+                    <div class="mem-value">2</div>
+                </div>
+                <div class="mem-slot">
+                    <div class="mem-label">name</div>
+                    <div class="mem-value null-value">null (\0)</div>
+                </div>
+                <div class="mem-slot">
+                    <div class="mem-label">marks</div>
+                    <div class="mem-value null-value">0.000000</div>
+                </div>
+            </div>
+        </div>
+
+        <h3>Method C: Global Initialization</h3>
+        <p>You can initialize an object right where the structure closes.</p>
+<pre><code><span class="code-keyword">struct</span> <span class="code-type">Student</span>
+{
+    <span class="code-type">int</span> rollno;
+    <span class="code-type">char</span> name[<span class="code-highlight">20</span>];
+    <span class="code-type">float</span> marks;
+} S = {<span class="code-highlight">1</span>, <span class="code-highlight">"Jenny"</span>, <span class="code-highlight">90.91</span>};</code></pre>
+    </div>
+
+    <!-- Topic 3 -->
+    <div class="topic-card">
+        <h2>3. Accessing Structure Members (The Dot Operator)</h2>
+        <p>You cannot simply write <code>printf("%d", rollno);</code>. The compiler will be confused because it doesn't know <em>whose</em> roll number you want.</p>
+        <p><strong>The Solution: The Dot Operator (<code>.</code>)</strong><br>
+        Also known as the Member Access Operator, it links the specific object to its member.</p>
+<pre><code><span class="code-keyword">printf</span>(<span class="code-highlight">"%d"</span>, S1.rollno);</code></pre>
+
+        <h3>🧠 Whiteboard Visual: RAM Representation</h3>
+        <p>Here is how the computer visualizes <code>S1</code> and <code>S2</code> in memory. Notice how the dot operator points to specific compartments.</p>
+        
+        <!-- VISUALIZATION -->
+        <div class="viz-container">
+            <div class="ram-box">
+                <div class="ram-box-header">S1 (Object)</div>
+                <div class="mem-slot">
+                    <div class="mem-label">rollno</div>
+                    <div class="mem-value">1</div>
+                </div>
+                <div class="mem-slot">
+                    <div class="mem-label">name</div>
+                    <div class="mem-value">"Jenny"</div>
+                </div>
+                <div class="mem-slot">
+                    <div class="mem-label">marks</div>
+                    <div class="mem-value">90.91</div>
+                </div>
+            </div>
+            
+            <div class="ram-box">
+                <div class="ram-box-header">S2 (Object)</div>
+                <div class="mem-slot">
+                    <div class="mem-label">rollno</div>
+                    <div class="mem-value">2</div>
+                </div>
+                <div class="mem-slot">
+                    <div class="mem-label">name</div>
+                    <div class="mem-value">"Jiya"</div>
+                </div>
+                <div class="mem-slot">
+                    <div class="mem-label">marks</div>
+                    <div class="mem-value">85.00</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Topic 4 -->
+    <div class="topic-card">
+        <h2>4. Copying Structures</h2>
+        <p>Can you copy all data from one student to another quickly? <b>Yes!</b></p>
+<pre><code>S1 = S2;</code></pre>
+        <p>This takes all the values sitting in the <code>S2</code> memory block and overwrites the values in the <code>S1</code> memory block.</p>
+        
+        <!-- VISUALIZATION -->
+        <div class="viz-container">
+            <div class="ram-box" style="opacity: 0.5;">
+                <div class="ram-box-header">S1 (Before)</div>
+                <div class="mem-slot"><div class="mem-label">rollno</div><div class="mem-value">1</div></div>
+            </div>
+            
+            <div class="copy-arrow">⟵ COPY ⟵</div>
+            
+            <div class="ram-box">
+                <div class="ram-box-header">S2 (Source)</div>
+                <div class="mem-slot"><div class="mem-label">rollno</div><div class="mem-value">2</div></div>
+            </div>
+        </div>
+        
+        <div class="alert alert-info">
+            <strong>Rule:</strong> This only works if <code>S1</code> and <code>S2</code> are of the <b>exact same structure type</b> (both are <code>struct Student</code>).
+        </div>
+    </div>
+
+    <!-- Topic 5 -->
+    <div class="topic-card">
+        <h2>5. Comparing Structures</h2>
+        <p>You <b>cannot</b> compare whole structure objects using relational operators directly.</p>
+        
+        <div class="alert alert-warning">
+            <strong>❌ WRONG:</strong><br>
+            <span class="wrong-code">if (S1 > S2)</span> <br>
+            <span class="wrong-code">if (S1 == S2)</span>
+        </div>
+
+        <p><strong>✅ CORRECT WAY:</strong> You must compare their <em>individual members</em> using the dot operator.</p>
+<pre><code><span class="code-keyword">if</span> (S1.rollno < S2.rollno)
+{
+    <span class="code-keyword">printf</span>(<span class="code-highlight">"S1 comes first!"</span>);
+}</code></pre>
+    </div>
+
+    <!-- Topic 6 -->
+    <div class="topic-card">
+        <h2>6. Run-Time Initialization (Taking User Input)</h2>
+        <p>How to initialize a structure by asking the user to type values while the program is running.</p>
+<pre><code><span class="code-keyword">printf</span>(<span class="code-highlight">"Enter info for S1:"</span>);
+
+<span class="code-comment">// Taking integer input (Requires the & symbol!)</span>
+<span class="code-keyword">scanf</span>(<span class="code-highlight">"%d"</span>, &S1.rollno); 
+
+<span class="code-comment">// Taking string input (Does NOT require & because arrays are pointers)</span>
+<span class="code-keyword">scanf</span>(<span class="code-highlight">"%s"</span>, S1.name);
+
+<span class="code-comment">// Taking float input (Requires the & symbol!)</span>
+<span class="code-keyword">scanf</span>(<span class="code-highlight">"%f"</span>, &S1.marks);</code></pre>
+        <p>You can also combine this into one line:</p>
+<pre><code><span class="code-keyword">scanf</span>(<span class="code-highlight">"%d %s %f"</span>, &S1.rollno, S1.name, &S1.marks);</code></pre>
+    </div>
+
+    <!-- Topic 7 -->
+    <div class="topic-card">
+        <h2>💻 7. IDE Practical Demonstration Code</h2>
+        <p>Here is the full code written in the VS Code IDE at the end of the video. Run this to see initialization and accessing in action!</p>
+<pre><code><span class="code-keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="code-keyword">struct</span> <span class="code-type">student</span> {
+    <span class="code-type">int</span> rollno;
+    <span class="code-type">char</span> name[<span class="code-highlight">20</span>];
+    <span class="code-type">float</span> marks;
+};
+
+<span class="code-type">void</span> <span class="code-keyword">main</span>() {
+    <span class="code-comment">// 1. Full Compile-time initialization</span>
+    <span class="code-keyword">struct</span> <span class="code-type">student</span> s1 = {<span class="code-highlight">1</span>, <span class="code-highlight">"jenny"</span>, <span class="code-highlight">90</span>};
+    
+    <span class="code-comment">// 2. Individual Run-time initialization (Taking Input)</span>
+    <span class="code-keyword">struct</span> <span class="code-type">student</span> s2;
+    <span class="code-keyword">printf</span>(<span class="code-highlight">"Enter info for s2 (Rollno Name Marks):\n"</span>);
+    <span class="code-keyword">scanf</span>(<span class="code-highlight">"%d %s %f"</span>, &s2.rollno, s2.name, &s2.marks);
+    
+    <span class="code-comment">// 3. Partial Initialization test</span>
+    <span class="code-keyword">struct</span> <span class="code-type">student</span> s3 = {<span class="code-highlight">3</span>}; <span class="code-comment">// Rollno gets 3, rest become null/0</span>
+
+    <span class="code-comment">// Printing s1</span>
+    <span class="code-keyword">printf</span>(<span class="code-highlight">"\nInfo for s1:\n"</span>);
+    <span class="code-keyword">printf</span>(<span class="code-highlight">"%d %s %f\n"</span>, s1.rollno, s1.name, s1.marks);
+
+    <span class="code-comment">// Printing s2</span>
+    <span class="code-keyword">printf</span>(<span class="code-highlight">"\nInfo for s2:\n"</span>);
+    <span class="code-keyword">printf</span>(<span class="code-highlight">"%d %s %f\n"</span>, s2.rollno, s2.name, s2.marks);
+    
+    <span class="code-comment">// Printing s3 (Notice name is blank, marks are 0.000000)</span>
+    <span class="code-keyword">printf</span>(<span class="code-highlight">"\nInfo for s3:\n"</span>);
+    <span class="code-keyword">printf</span>(<span class="code-highlight">"%d %s %f\n"</span>, s3.rollno, s3.name, s3.marks);
+}</code></pre>
+    </div>
+
+</div>
+
+</body>
+</html>

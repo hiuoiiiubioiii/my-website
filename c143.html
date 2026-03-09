@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Static Storage Class in C - Study Feed</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+        :root {
+            --bg-color: #f3f4f6;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --card-bg: #ffffff;
+            --primary: #3b82f6;
+            --primary-light: #eff6ff;
+            --accent: #10b981;
+            --accent-light: #ecfdf5;
+            --warning: #ef4444;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* The Vertical Feed Container */
+        .feed-container {
+            width: 100%;
+            max-width: 768px;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Header styling */
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--text-main);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Feed Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-top: 4px solid var(--primary);
+        }
+
+        .card.accent { border-top-color: var(--accent); }
+        .card.warning { border-top-color: var(--warning); }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card p {
+            margin-bottom: 15px;
+        }
+
+        /* Highlight Boxes */
+        .highlight-box {
+            background-color: var(--primary-light);
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 15px 0;
+            font-weight: 600;
+            color: #1e3a8a;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            overflow-x: auto;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+        }
+
+        .code-comment { color: #6a9955; }
+        .code-keyword { color: #569cd6; }
+        .code-string { color: #ce9178; }
+        .code-number { color: #b5cea8; }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+        }
+
+        /* Visualizations */
+        .viz-container {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Memory Variable Visualization */
+        .memory-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .memory-box-label {
+            font-weight: 600;
+            font-family: monospace;
+            font-size: 1.2rem;
+        }
+        .memory-box-value {
+            width: 80px;
+            height: 80px;
+            border: 3px solid var(--primary);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+
+        /* Memory Stack Visualization */
+        .memory-stack {
+            width: 100%;
+            max-width: 300px;
+            border: 2px solid #94a3b8;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .mem-segment {
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            border-bottom: 1px solid #94a3b8;
+        }
+        .mem-segment:last-child { border-bottom: none; }
+        .mem-heap { background: #e2e8f0; }
+        .mem-static { background: var(--accent-light); color: var(--accent); border: 2px solid var(--accent); position: relative; z-index: 10;}
+        .mem-code { background: #e2e8f0; }
+
+        /* Interactive Details (Homework) */
+        details {
+            background: var(--bg-color);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+        }
+        summary {
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            color: var(--primary);
+        }
+        details p {
+            margin-top: 15px;
+            margin-bottom: 0;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header -->
+        <header class="header">
+            <h1>Static Storage Class in C</h1>
+            <p>Complete Whiteboard & IDE Breakdown</p>
+        </header>
+
+        <!-- Card 1: Intro -->
+        <article class="card warning">
+            <h2>⚠️ 1. Introduction & Exam Importance</h2>
+            <p>Out of the 4 storage classes in C (<code>auto</code>, <code>register</code>, <code>static</code>, <code>extern</code>), the instructor notes that <strong>static is the most important</strong>.</p>
+            <p>You will see it in <strong>95% of competitive programming exams</strong> (GATE, NET, etc.). Students frequently fail these questions because they completely misunderstand the difference between the variable's <em>Scope</em> and its <em>Lifetime</em>.</p>
+        </article>
+
+        <!-- Card 2: Syntax -->
+        <article class="card">
+            <h2>✍️ 2. Syntax & Declaration</h2>
+            <p>To declare a static variable, use the <code>static</code> keyword followed by the data type and variable name. It works with <strong>all data types</strong>.</p>
+<pre>
+<span class="code-keyword">static int</span> y;
+<span class="code-keyword">static char</span> ch;
+<span class="code-keyword">static char</span> str[20];
+<span class="code-keyword">static float</span> x;
+</pre>
+        </article>
+
+        <!-- Card 3: The 4 Properties -->
+        <article class="card accent">
+            <h2>⚙️ 3. The 4 Properties of Static Variables</h2>
+            <p>Every storage class defines 4 specific rules for a variable. Here is how the compiler treats <code>static</code>:</p>
+            
+            <table>
+                <tr>
+                    <th>Property</th>
+                    <th>Behavior</th>
+                </tr>
+                <tr>
+                    <td><strong>1. Default Value</strong></td>
+                    <td><code>0</code> (int), <code>0.000000</code> (float), <code>null</code> (char). Unlike <code>auto</code>, there is NO garbage value.</td>
+                </tr>
+                <tr>
+                    <td><strong>2. Location</strong></td>
+                    <td>Stored in Main Memory (<strong>RAM</strong>), not in CPU registers.</td>
+                </tr>
+                <tr>
+                    <td><strong>3. Scope</strong></td>
+                    <td><strong>Within Block:</strong> It can only be accessed inside the specific <code>{}</code> where it was created.</td>
+                </tr>
+                <tr>
+                    <td><strong>4. Lifetime</strong></td>
+                    <td><strong>Till end of program:</strong> It does NOT die when the function finishes running!</td>
+                </tr>
+            </table>
+
+            <div class="highlight-box">
+                "Scope = Where can I see it? Lifetime = How long is it alive?"<br>
+                A static local variable stays alive in memory, but you can only see/access it when you are inside its specific function.
+            </div>
+        </article>
+
+        <!-- Card 4: Whiteboard Dry Run -->
+        <article class="card">
+            <h2>🧠 4. The Whiteboard Dry-Run (Tracing Code)</h2>
+            <p>The instructor writes this program to prove how "Lifetime" works. Let's trace it exactly as she does on the whiteboard.</p>
+
+<pre>
+<span class="code-keyword">void</span> display(); <span class="code-comment">// function prototype</span>
+
+<span class="code-keyword">void</span> main() {
+    display();  <span class="code-comment">// First call</span>
+    display();  <span class="code-comment">// Second call</span>
+}
+
+<span class="code-keyword">void</span> display() {
+    <span class="code-keyword">static int</span> x;    <span class="code-comment">// Defaults to 0</span>
+    x += <span class="code-number">10</span>;         
+    printf(<span class="code-string">"\n x = %d"</span>, x);
+}
+</pre>
+
+            <h3>Execution Visualization:</h3>
+            <div class="viz-container">
+                <p><strong>Step 1: First Call to <code>display()</code></strong></p>
+                <div class="memory-box">
+                    <span class="memory-box-label">x</span>
+                    <div class="memory-box-value">10</div>
+                </div>
+                <p><em>The compiler creates 'x', defaults it to 0, adds 10. Output: <code>x = 10</code></em></p>
+            </div>
+
+            <div class="viz-container">
+                <p><strong>Step 2: Second Call to <code>display()</code></strong></p>
+                <div class="memory-box">
+                    <span class="memory-box-label">x</span>
+                    <div class="memory-box-value" style="border-color: var(--accent); color: var(--accent);">20</div>
+                </div>
+                <p><em>The line <code>static int x;</code> is <strong>SKIPPED</strong>. 'x' retains its old value of 10. We add 10 more. Output: <code>x = 20</code></em></p>
+            </div>
+
+            <div class="highlight-box">
+                Instructor Quote: "It's like the birth of 'x'. Birth happens only once. Since it is still alive from the first call, it won't take birth again. The initialization line is skipped."
+            </div>
+        </article>
+
+        <!-- Card 5: Memory Layout -->
+        <article class="card">
+            <h2>🗺️ 5. Memory Layout Explanation</h2>
+            <p>Why does <code>static</code> remember its value, but <code>auto</code> suffers from amnesia? Because of where it lives in your RAM.</p>
+            
+            <div class="viz-container">
+                <div class="memory-stack">
+                    <div class="mem-segment mem-heap">Heap segment</div>
+                    <div class="mem-segment mem-static">
+                        Global / Static Segment<br>
+                        <span style="font-size: 0.8rem; font-weight: normal;">(Where our 'x' lives permanently)</span>
+                    </div>
+                    <div class="mem-segment mem-heap">Stack Segment<br>
+                    <span style="font-size: 0.8rem; font-weight: normal;">(Where normal auto variables live and die)</span></div>
+                    <div class="mem-segment mem-code">Code / Instructions</div>
+                </div>
+            </div>
+
+            <p>Normal variables are created on the Stack. When a function ends, that part of the stack is wiped out (the variable dies). Static variables are stored in the <strong>Global/Static segment</strong>, which remains untouched until the program entirely finishes running.</p>
+            <p><em>Warning:</em> Because static variables hold memory for the whole program, overuse can waste RAM.</p>
+        </article>
+
+        <!-- Card 6: IDE Demonstration -->
+        <article class="card">
+            <h2>💻 6. Practical IDE Demonstration Takeaways</h2>
+            <p>The instructor jumps into VS Code and proves three crucial concepts:</p>
+
+            <ul style="margin-left: 20px; display: flex; flex-direction: column; gap: 10px;">
+                <li><strong>The Split Test:</strong> She creates <code>static int x = 10;</code> and <code>int y = 10;</code> in the same function. Over two calls, <code>x</code> grows (20, 30) because it's static, while <code>y</code> constantly resets to its base calculation because it is an <code>auto</code> variable suffering from amnesia.</li>
+                <li><strong>Proving Local Scope:</strong> She tries to write <code>printf("%d", x);</code> inside <code>main()</code>. The compiler throws an <strong>Error: 'x' undeclared</strong>. Even though 'x' is alive in the global memory segment, the <code>main</code> block is strictly forbidden from "seeing" it.</li>
+                <li><strong>Default Nulls:</strong> She declares <code>static char ch;</code> globally. When printed, nothing shows up on the screen, proving the default value is a null character, not a random garbage symbol.</li>
+            </ul>
+        </article>
+
+        <!-- Card 7: Homework -->
+        <article class="card accent">
+            <h2>📝 7. Final Homework Assignment</h2>
+            <p>The instructor writes this on the board for you to trace. What will be printed to the screen?</p>
+
+<pre>
+<span class="code-keyword">void</span> display();
+
+<span class="code-keyword">void</span> main() {
+    <span class="code-keyword">int</span> i;
+    <span class="code-keyword">for</span> (i = <span class="code-number">0</span>; i < <span class="code-number">3</span>; i++) {
+        display();
+    }
+}
+
+<span class="code-keyword">void</span> display() {
+    <span class="code-keyword">static int</span> x = <span class="code-number">5</span>;
+    <span class="code-keyword">int</span> y = <span class="code-number">5</span>;
+    
+    x++;
+    y++;
+    
+    printf(<span class="code-string">"\n x = %d"</span>, x);
+    printf(<span class="code-string">"\n y = %d"</span>, y);
+}
+</pre>
+
+            <details>
+                <summary>Click here to reveal the Dry-Run Answer</summary>
+                <p><strong>Loop Iteration 1:</strong><br>
+                <code>x</code> is initialized to 5. <code>y</code> is initialized to 5.<br>
+                Both increment.<br>
+                <strong>Output:</strong> <code>x = 6</code>, <code>y = 6</code></p>
+                
+                <p><strong>Loop Iteration 2:</strong><br>
+                <code>x</code> is static. Initialization is skipped. It remembers it is 6.<br>
+                <code>y</code> is normal (auto). It dies and is reborn as 5.<br>
+                Both increment.<br>
+                <strong>Output:</strong> <code>x = 7</code>, <code>y = 6</code></p>
+                
+                <p><strong>Loop Iteration 3:</strong><br>
+                <code>x</code> remembers it is 7.<br>
+                <code>y</code> is reborn again as 5.<br>
+                Both increment.<br>
+                <strong>Output:</strong> <code>x = 8</code>, <code>y = 6</code></p>
+            </details>
+        </article>
+
+    </div>
+
+</body>
+</html>

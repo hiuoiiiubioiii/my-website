@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes: Array of Structures in C</title>
+    <style>
+        /* CSS Variables for consistent theming */
+        :root {
+            --bg-color: #f4f7f9;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --accent-blue: #0056b3;
+            --accent-light: #e6f0fa;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --highlight: #ffd700;
+            --danger: #dc3545;
+        }
+
+        /* Global Styles & Reset */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px; /* Space between topics */
+        }
+
+        /* Header Styling */
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--accent-blue);
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Card (Topic Section) Styling */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 35px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border-top: 5px solid var(--accent-blue);
+        }
+
+        .card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--bg-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card p {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .card ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .card li {
+            margin-bottom: 8px;
+        }
+
+        /* Code Block Styling */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.05rem;
+            margin: 20px 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .code-comment { color: #6a9955; }
+        .code-keyword { color: #569cd6; }
+        .code-type { color: #4ec9b0; }
+        .code-string { color: #ce9178; }
+
+        /* Highlight Boxes */
+        .alert {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffecb5;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            color: #856404;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            border-left: 5px solid var(--danger);
+            color: #721c24;
+        }
+
+        /* --- VISUALIZATION CSS --- */
+        .visualization-box {
+            background-color: var(--accent-light);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+            text-align: center;
+        }
+
+        .vis-title {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--accent-blue);
+        }
+
+        /* Array Pointer Box */
+        .array-s {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin-bottom: 10px;
+        }
+
+        .array-cell {
+            background: white;
+            border: 2px solid var(--accent-blue);
+            padding: 10px 20px;
+            text-align: center;
+            width: 120px;
+        }
+        .array-cell span.index { font-size: 0.9rem; color: var(--text-muted); display: block; }
+        .array-cell span.val { font-weight: bold; font-size: 1.2rem; display: block; margin-top: 5px;}
+
+        /* Connecting Arrows */
+        .arrows {
+            display: flex;
+            justify-content: center;
+            gap: 120px; /* Align with array cells */
+            font-size: 2rem;
+            color: var(--accent-blue);
+            margin-bottom: 10px;
+        }
+
+        /* Memory Data Blocks */
+        .memory-row {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .data-block-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .base-address {
+            background: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .data-block {
+            display: flex;
+            background: white;
+            border: 2px solid #333;
+        }
+
+        .data-field {
+            padding: 10px;
+            border-right: 1px solid #ccc;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .data-field:last-child { border-right: none; }
+        
+        .field-name { font-weight: bold; font-size: 0.95rem; }
+        .field-addr { font-size: 0.8rem; color: var(--text-muted); font-family: monospace;}
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            border-top: 1px solid #ddd;
+            width: 100%;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header -->
+        <header>
+            <h1>📚 Array of Structures in C</h1>
+            <p>Instructor: Jayanti Khatri Lamba | Comprehensive Study Feed</p>
+        </header>
+
+        <!-- Topic 1 -->
+        <section class="card">
+            <h2>1. Recap: Structures & Structure Variables</h2>
+            <p>Before diving into arrays, let's establish the foundation. A <strong>structure</strong> is a user-defined data type that groups different data types together.</p>
+            
+<pre>
+<span class="code-keyword">struct</span> <span class="code-type">Student</span> {
+    <span class="code-keyword">int</span> rollno;
+    <span class="code-keyword">char</span> name[20];
+    <span class="code-keyword">float</span> marks;
+};
+</pre>
+            <div class="alert">
+                <strong>💡 Instructor Note:</strong> The items inside the curly braces (<code>rollno</code>, <code>name</code>, <code>marks</code>) are called <strong>Structure Members</strong>. They are <em>not</em> variables, and they do not occupy any memory yet.
+            </div>
+            <p>To actually allocate memory and hold data, you must declare a <strong>Structure Variable</strong> (also known as an object):</p>
+<pre>
+<span class="code-keyword">struct</span> <span class="code-type">Student</span> s1, s2; <span class="code-comment">// Variables for 2 students</span>
+</pre>
+        </section>
+
+        <!-- Topic 2 -->
+        <section class="card">
+            <h2>2. The Problem: Why an Array of Structures?</h2>
+            <p>Declaring <code>s1, s2</code> is fine for two students. But what if you need to store data for <strong>60 students</strong> (or 1000 employees)?</p>
+            <ul>
+                <li>❌ <strong>The Bad Way:</strong> Declaring <code>s1, s2, s3... s60</code>. This creates a massive, unreadable program and makes it impossible to remember variable names.</li>
+                <li>✅ <strong>The Solution:</strong> Use an <strong>Array of Structures</strong>. This allows you to store a large collection of objects under one single name, using an index to access each one.</li>
+            </ul>
+        </section>
+
+        <!-- Topic 3 -->
+        <section class="card">
+            <h2>3. Declaring the Array</h2>
+            <p>To solve the 60-student problem, we declare an array of type <code>struct Student</code>.</p>
+<pre>
+<span class="code-keyword">void</span> main() {
+    <span class="code-comment">// Creating an array of 60 student objects</span>
+    <span class="code-keyword">struct</span> <span class="code-type">Student</span> S[60]; 
+}
+</pre>
+            <p><strong>What happens here?</strong> <code>S</code> is an array containing 60 elements. Each element is a complete <code>struct Student</code> object, meaning each element gets its own individual <code>rollno</code>, <code>name</code>, and <code>marks</code>.</p>
+        </section>
+
+        <!-- Topic 4 -->
+        <section class="card">
+            <h2>4. Memory Representation (Visualized)</h2>
+            <p>To make the concept easy to visualize, let's shrink the array size from 60 down to 3: <code>struct Student S[3];</code>. Here is exactly how memory is allocated internally.</p>
+
+            <div class="visualization-box">
+                <div class="vis-title">Array `S` pointing to Memory Blocks</div>
+                
+                <!-- Array Pointers -->
+                <div class="array-s">
+                    <div class="array-cell">
+                        <span class="index">S[0]</span>
+                        <span class="val">1000</span>
+                    </div>
+                    <div class="array-cell">
+                        <span class="index">S[1]</span>
+                        <span class="val">2000</span>
+                    </div>
+                    <div class="array-cell">
+                        <span class="index">S[2]</span>
+                        <span class="val">3000</span>
+                    </div>
+                </div>
+
+                <div class="arrows">
+                    <span>&#8595;</span>
+                    <span>&#8595;</span>
+                    <span>&#8595;</span>
+                </div>
+
+                <!-- Memory Blocks -->
+                <div class="memory-row">
+                    <!-- Block 1 -->
+                    <div class="data-block-container">
+                        <div class="base-address">1000</div>
+                        <div class="data-block">
+                            <div class="data-field" style="width: 100px;">
+                                <span class="field-name">rollno</span>
+                                <span class="field-addr">1000 - 1003<br>(4 Bytes)</span>
+                            </div>
+                            <div class="data-field" style="width: 150px;">
+                                <span class="field-name">name</span>
+                                <span class="field-addr">1004 - 1023<br>(20 Bytes)</span>
+                            </div>
+                            <div class="data-field" style="width: 100px;">
+                                <span class="field-name">marks</span>
+                                <span class="field-addr">1024 - 1027<br>(4 Bytes)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Block 2 -->
+                    <div class="data-block-container">
+                        <div class="base-address">2000</div>
+                        <div class="data-block" style="opacity: 0.8;">
+                            <div class="data-field" style="width: 100px;">
+                                <span class="field-name">rollno</span>
+                                <span class="field-addr">2000...</span>
+                            </div>
+                            <div class="data-field" style="width: 150px;">
+                                <span class="field-name">name</span>
+                                <span class="field-addr">2004...</span>
+                            </div>
+                            <div class="data-field" style="width: 100px;">
+                                <span class="field-name">marks</span>
+                                <span class="field-addr">2024...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Block 3 -->
+                    <div class="data-block-container">
+                        <div class="base-address">3000</div>
+                        <div class="data-block" style="opacity: 0.8;">
+                            <div class="data-field" style="width: 100px;">
+                                <span class="field-name">rollno</span>
+                                <span class="field-addr">3000...</span>
+                            </div>
+                            <div class="data-field" style="width: 150px;">
+                                <span class="field-name">name</span>
+                                <span class="field-addr">3004...</span>
+                            </div>
+                            <div class="data-field" style="width: 100px;">
+                                <span class="field-name">marks</span>
+                                <span class="field-addr">3024...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p><strong>Deep Dive into Memory Math:</strong> Look at <code>S[0]</code>. The base address is assumed to be <code>1000</code>.</p>
+            <ul>
+                <li><code>rollno</code> is an integer (4 bytes). It occupies addresses <code>1000 to 1003</code>.</li>
+                <li><code>name</code> is a char array of size 20 (20 bytes). It starts directly after at <code>1004</code> and goes to <code>1023</code>.</li>
+                <li><code>marks</code> is a float (4 bytes). It starts at <code>1024</code>.</li>
+            </ul>
+        </section>
+
+        <!-- Topic 5 -->
+        <section class="card">
+            <h2>5. Accessing Array Members</h2>
+            <p>To insert or read data from these specific memory blocks, you combine the <strong>Array Index</strong> with the <strong>Dot (<code>.</code>) Operator</strong>.</p>
+            <p>If you want to access the data for the <strong>first student</strong> (Index 0), you write:</p>
+            <ul>
+                <li><code>S[0].rollno</code></li>
+                <li><code>S[0].name</code></li>
+                <li><code>S[0].marks</code></li>
+            </ul>
+            <p>For the <strong>second student</strong> (Index 1):</p>
+            <ul>
+                <li><code>S[1].rollno</code>, <code>S[1].name</code>, <code>S[1].marks</code></li>
+            </ul>
+        </section>
+
+        <!-- Topic 6 -->
+        <section class="card">
+            <h2>6. Writing the Code: User Input</h2>
+            <p>Because this is an array, we must use loops to input the data. We do not write 60 individual <code>scanf</code> statements. We loop through the indices 0, 1, and 2.</p>
+<pre>
+<span class="code-keyword">int</span> i;
+
+<span class="code-keyword">for</span>(i = 0; i < 3; i++) {
+    <span class="code-comment">// Taking input for student 'i'</span>
+    scanf(<span class="code-string">"%d %s %f"</span>, &amp;S[i].rollno, S[i].name, &amp;S[i].marks);
+}
+</pre>
+            <div class="alert-danger alert">
+                <strong>⚠️ CRITICAL RULE for `scanf`: Watch your `&amp;` operators!</strong><br><br>
+                You <strong>must</strong> use the `&amp;` (address of) operator for integers and floats: <code>&amp;S[i].rollno</code> and <code>&amp;S[i].marks</code>.<br><br>
+                You <strong>must NOT</strong> use the `&amp;` operator for the string: <code>S[i].name</code>. Why? Because <code>name</code> is a character array, and the name of an array inherently acts as its base address!
+            </div>
+        </section>
+
+        <!-- Topic 7 -->
+        <section class="card">
+            <h2>7. Writing the Code: Printing Output</h2>
+            <p>To print the data back to the screen, we use a nearly identical loop, replacing <code>scanf</code> with <code>printf</code>.</p>
+<pre>
+<span class="code-keyword">for</span>(i = 0; i < 3; i++) {
+    <span class="code-comment">// Printing output for student 'i'</span>
+    printf(<span class="code-string">"%d %s %f\n"</span>, S[i].rollno, S[i].name, S[i].marks);
+}
+</pre>
+            <p><strong>Note:</strong> <code>printf</code> only needs the <em>values</em>, not the memory addresses. Therefore, the <code>&amp;</code> operator is never used here for any data type.</p>
+        </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>Built for students. Scroll-friendly study feed format.</p>
+    </footer>
+
+</body>
+</html>

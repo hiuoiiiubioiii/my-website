@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming Notes: Structure Variables</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+        :root {
+            --bg-color: #f4f7f6;
+            --text-main: #2d3436;
+            --text-light: #636e72;
+            --primary: #0984e3;
+            --secondary: #00cec9;
+            --danger: #d63031;
+            --warning: #fdcb6e;
+            --success: #00b894;
+            --card-bg: #ffffff;
+            --code-bg: #2d3436;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Header Styling */
+        header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        header h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        header p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Topic Cards */
+        .topic-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--primary);
+        }
+
+        .topic-card h2 {
+            margin-top: 0;
+            color: var(--primary);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Code Block Styling */
+        pre {
+            background: var(--code-bg);
+            color: #f8f8f2;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .code-comment { color: #6272a4; }
+        .code-keyword { color: #ff79c6; }
+        .code-type { color: #8be9fd; }
+        .code-error { color: #ff5555; text-decoration: line-through; }
+
+        /* Alert Boxes */
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .alert-danger { background: #ffeaa7; color: #d63031; border-left: 5px solid var(--danger); }
+        .alert-info { background: #e0f7fa; color: #00796b; border-left: 5px solid var(--secondary); }
+        .alert-pro-tip { background: #e8f5e9; color: #2e7d32; border-left: 5px solid var(--success); }
+
+        /* Memory Visualization CSS */
+        .memory-wrapper {
+            background: #fdfdfd;
+            border: 2px dashed #b2bec3;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        .memory-title {
+            text-align: center;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-light);
+        }
+        .memory-flex {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        .memory-object {
+            border: 3px solid var(--primary);
+            border-radius: 8px;
+            background: #fff;
+            width: 250px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(9, 132, 227, 0.2);
+        }
+        .object-header {
+            background: var(--primary);
+            color: #fff;
+            text-align: center;
+            padding: 0.5rem;
+            font-weight: 700;
+            font-family: 'Fira Code', monospace;
+        }
+        .memory-slot {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid #eee;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        .memory-slot:last-child { border-bottom: none; }
+        .slot-name { color: var(--text-main); font-weight: 600; }
+        .slot-size { color: var(--secondary); font-weight: 700; }
+        .object-footer {
+            background: #f1f2f6;
+            text-align: center;
+            padding: 0.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            border-top: 2px solid #ddd;
+        }
+
+        .highlight {
+            background: #ffeaa7;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* Next Video Section */
+        .next-video {
+            text-align: center;
+            padding: 2rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 12px;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <header>
+            <h1>📚 C Programming Notes</h1>
+            <p>Declaring Variables / Objects of Structure</p>
+            <p style="font-size: 0.9rem; margin-top: -10px;">Instructor: Jayanti Khatri Lamba</p>
+        </header>
+
+        <!-- Section 1 -->
+        <article class="topic-card">
+            <h2>1. Built-in vs. User-Defined Data Types</h2>
+            <p>Before jumping into structures, let's look at how we normally declare variables.</p>
+            <ul>
+                <li><strong>Built-in Data Types:</strong> To create an integer variable, you simply write the data type followed by the variable name.</li>
+                <li><strong>User-Defined Data Types:</strong> A <span class="highlight">structure</span> is a custom data type you create. Just like <code>int</code>, you must declare variables of this new data type to actually use it in your program. These variables are also called <strong>Objects of the Structure</strong>.</li>
+            </ul>
+            <pre>
+<span class="code-comment">// Built-in variable</span>
+<span class="code-keyword">int</span> a; 
+
+<span class="code-comment">// User-defined variable (Structure Object)</span>
+<span class="code-keyword">struct</span> <span class="code-type">student</span> s;</pre>
+        </article>
+
+        <!-- Section 2 -->
+        <article class="topic-card">
+            <h2>2. The Core Example: Defining a Structure</h2>
+            <p>Throughout this lecture, we use the following structure template as our main example:</p>
+            <pre>
+<span class="code-keyword">struct</span> <span class="code-type">student</span> {
+    <span class="code-keyword">int</span> rollno;
+    <span class="code-keyword">float</span> marks;
+    <span class="code-keyword">char</span> name[20];
+};</pre>
+            <div class="alert alert-danger">
+                🚨 IMPORTANT: At this stage, NO MEMORY IS ALLOCATED! 
+                This code simply creates a "template". Memory is only allocated when you create a variable (object) of this type later.
+            </div>
+        </article>
+
+        <!-- Section 3 -->
+        <article class="topic-card">
+            <h2>3. Method 1: Declaring Variables Inside main()</h2>
+            <p>This is the standard and recommended way to declare a structure variable.</p>
+            <p><strong>Common Student Mistake:</strong> Many try to declare the variable by just writing <code>struct s;</code>. This is wrong because <code>struct</code> is just a keyword; the compiler doesn't know <em>which</em> structure you mean. The complete data type name is <code>struct student</code>.</p>
+            
+            <pre>
+<span class="code-keyword">void</span> main() {
+    <span class="code-comment">// WRONG: struct s;</span>
+    
+    <span class="code-comment">// CORRECT:</span>
+    <span class="code-keyword">struct</span> <span class="code-type">student</span> s;  <span class="code-comment">// Memory is allocated right here!</span>
+}</pre>
+
+            <div class="alert alert-info">
+                🧠 How Memory is Calculated:<br>
+                The memory allocated is the sum of its members.
+            </div>
+
+            <!-- Visualization of Memory -->
+            <div class="memory-wrapper">
+                <div class="memory-title">Memory Allocation for 's'</div>
+                <div class="memory-flex">
+                    <div class="memory-object">
+                        <div class="object-header">Object: s</div>
+                        <div class="memory-slot">
+                            <span class="slot-name">int rollno</span>
+                            <span class="slot-size">4 bytes</span>
+                        </div>
+                        <div class="memory-slot">
+                            <span class="slot-name">float marks</span>
+                            <span class="slot-size">4 bytes</span>
+                        </div>
+                        <div class="memory-slot">
+                            <span class="slot-name">char name[20]</span>
+                            <span class="slot-size">20 bytes</span>
+                        </div>
+                        <div class="object-footer">Total: 28 Bytes</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-pro-tip">
+                💡 Pro-Tip: You can verify this in your IDE by using the sizeof operator: <br>
+                <code>printf("%d", sizeof(struct student));</code> or <code>sizeof(s);</code>
+            </div>
+        </article>
+
+        <!-- Section 4 -->
+        <article class="topic-card">
+            <h2>4. Method 2: Declaring at the End of Definition</h2>
+            <p>You don't have to declare variables inside <code>main()</code>. You can declare them immediately after the closing bracket <code>}</code> of the structure definition, but before the semicolon <code>;</code>.</p>
+            <pre>
+<span class="code-keyword">struct</span> <span class="code-type">student</span> {
+    <span class="code-keyword">int</span> rollno;
+    <span class="code-keyword">float</span> marks;
+    <span class="code-keyword">char</span> name[20];
+} s1, s2, s3;  <span class="code-comment">// Declaring 3 objects immediately</span></pre>
+            <p><em>Note: While valid, Method 1 is considered better practice. If you need 60 students, writing <code>s1, s2... s60</code> is terrible code. Instead, you'll use an <strong>Array of Structures</strong> (covered in a future lecture).</em></p>
+        </article>
+
+        <!-- Section 5 -->
+        <article class="topic-card" style="border-top-color: var(--danger);">
+            <h2>5. Anonymous Structures (Missing Tags)</h2>
+            <p>The word <code>student</code> in <code>struct student</code> is called the <strong>Structure Tag</strong>. Technically, it is optional.</p>
+            <p><strong>The Drawback:</strong> If you omit the tag, you create an "Anonymous Structure." Because it has no name, it is <strong>impossible</strong> to declare more variables later inside your <code>main()</code> function!</p>
+            <pre>
+<span class="code-comment">// Anonymous Structure</span>
+<span class="code-keyword">struct</span> {
+    <span class="code-keyword">int</span> rollno;
+    <span class="code-keyword">float</span> marks;
+    <span class="code-keyword">char</span> name[20];
+} s1;
+
+<span class="code-keyword">void</span> main() {
+    <span class="code-comment">// Error! You have no structure name to use here.</span>
+    <span class="code-keyword">struct</span> <span class="code-error">[ BLANK ]</span> s2; 
+}</pre>
+        </article>
+
+        <!-- Section 6 -->
+        <article class="topic-card">
+            <h2>6. Visualizing Multiple Objects</h2>
+            <p>What happens in memory when we declare two objects: <code>s1</code> and <code>s2</code>? Every time you declare a new object, it gets its own fresh, separate block of memory based on the template.</p>
+            
+            <div class="memory-wrapper">
+                <div class="memory-title">Memory Allocation for s1 and s2</div>
+                <div class="memory-flex">
+                    <!-- Object S1 -->
+                    <div class="memory-object">
+                        <div class="object-header">Object: s1</div>
+                        <div class="memory-slot">
+                            <span class="slot-name">int rollno</span>
+                            <span class="slot-size">4 bytes</span>
+                        </div>
+                        <div class="memory-slot">
+                            <span class="slot-name">float marks</span>
+                            <span class="slot-size">4 bytes</span>
+                        </div>
+                        <div class="memory-slot">
+                            <span class="slot-name">char name[20]</span>
+                            <span class="slot-size">20 bytes</span>
+                        </div>
+                        <div class="object-footer">Total: 28 Bytes</div>
+                    </div>
+
+                    <!-- Object S2 -->
+                    <div class="memory-object">
+                        <div class="object-header" style="background: var(--secondary);">Object: s2</div>
+                        <div class="memory-slot">
+                            <span class="slot-name">int rollno</span>
+                            <span class="slot-size">4 bytes</span>
+                        </div>
+                        <div class="memory-slot">
+                            <span class="slot-name">float marks</span>
+                            <span class="slot-size">4 bytes</span>
+                        </div>
+                        <div class="memory-slot">
+                            <span class="slot-name">char name[20]</span>
+                            <span class="slot-size">20 bytes</span>
+                        </div>
+                        <div class="object-footer">Total: 28 Bytes</div>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Section 7 -->
+        <article class="topic-card" style="border-top-color: var(--danger);">
+            <h2>7. Common Mistake: Initialization in Template</h2>
+            <p>You <strong>cannot</strong> store a value inside the structure definition block.</p>
+            <pre>
+<span class="code-keyword">struct</span> <span class="code-type">student</span> {
+    <span class="code-error">int rollno = 1;</span>  <span class="code-comment">// ❌ FATAL ERROR</span>
+    <span class="code-keyword">float</span> marks;
+    <span class="code-keyword">char</span> name[20];
+};</pre>
+            <div class="alert alert-danger">
+                Why? Because the definition is just a template—<strong>no memory exists yet!</strong> You cannot store data where memory has not been allocated. You must initialize values using the objects (like <code>s1</code>) after they are declared in main.
+            </div>
+        </article>
+
+        <!-- Footer / Next Up -->
+        <div class="next-video">
+            <h2 style="margin: 0; font-size: 1.5rem;">⏭️ Next Lecture Teaser</h2>
+            <p style="margin-top: 10px; opacity: 0.9;">
+                Now that memory is allocated, how do we put data into it? In the next video, we will learn exactly how to <strong>Initialize Variables</strong> and <strong>Access Structure Members</strong> properly!
+            </p>
+        </div>
+
+    </div>
+
+</body>
+</html>

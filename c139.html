@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes: enum in C</title>
+    <style>
+        /* --- CSS VARIABLES & RESET --- */
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-red: #ef4444;
+            --accent-green: #10b981;
+            --code-bg: #1e1e2f;
+            --board-border: #e5e7eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* --- VERTICAL FEED LAYOUT --- */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* --- CARD STYLES --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-top: 4px solid var(--accent-blue);
+        }
+
+        .card.purple-top { border-top-color: var(--accent-purple); }
+        .card.red-top { border-top-color: var(--accent-red); }
+        .card.green-top { border-top-color: var(--accent-green); }
+
+        h1 { font-size: 2rem; color: #111827; margin-bottom: 0.5rem; }
+        h2 { font-size: 1.5rem; color: #1f2937; margin-bottom: 1rem; margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+        h3 { font-size: 1.25rem; color: #374151; margin-bottom: 1rem; margin-top: 1.5rem; }
+        
+        p { margin-bottom: 1rem; color: var(--text-muted); font-size: 1.05rem; }
+        strong { color: var(--text-main); }
+
+        /* --- VISUALIZATIONS & CODE BLOCKS --- */
+        .whiteboard {
+            background: #fdfbf7;
+            border: 2px solid var(--board-border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.02);
+        }
+        .whiteboard::before {
+            content: "👩‍🏫 Instructor's Whiteboard";
+            position: absolute;
+            top: -12px;
+            left: 15px;
+            background: var(--card-bg);
+            padding: 0 10px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: bold;
+        }
+
+        pre {
+            background: var(--code-bg);
+            color: #f8f8f2;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            margin-bottom: 1rem;
+        }
+
+        .code-comment { color: #6272a4; }
+        .code-keyword { color: #ff79c6; }
+        .code-type { color: #8be9fd; }
+        .code-string { color: #f1fa8c; }
+
+        /* --- CUSTOM MEMORY VISUALIZATION --- */
+        .memory-block-container {
+            display: flex;
+            gap: 1rem;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+        }
+        .memory-box {
+            background: #eff6ff;
+            border: 2px solid var(--accent-blue);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+        }
+        .memory-box .constant { font-weight: bold; color: var(--accent-blue); display: block; margin-bottom: 0.5rem;}
+        .memory-box .value { font-family: monospace; font-size: 1.5rem; color: #1e3a8a; }
+
+        /* --- CALLOUTS --- */
+        .callout {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            border-left: 4px solid;
+        }
+        .callout.audio { background: #eff6ff; border-color: var(--accent-blue); }
+        .callout.warning { background: #fef2f2; border-color: var(--accent-red); }
+        .callout.assignment { background: #f5f3ff; border-color: var(--accent-purple); }
+
+        .callout-title { font-weight: bold; margin-bottom: 0.5rem; display: block; }
+
+        /* Cheat Sheet List */
+        .cheat-sheet {
+            list-style: none;
+            padding-left: 0;
+        }
+        .cheat-sheet li {
+            position: relative;
+            padding-left: 2rem;
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+        }
+        .cheat-sheet li::before {
+            content: "👉";
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+    </style>
+</head>
+<body>
+
+    <main class="feed-container">
+
+        <!-- HEADER/INTRO -->
+        <article class="card">
+            <h1>📚 Study Notes: Interview Questions on <code>enum</code> in C</h1>
+            <p><strong>Context:</strong> This is an in-depth breakdown of technical interview questions covering the properties of the <code>enum</code> data type in C.</p>
+            <p>Scroll down to review the exact code written on the whiteboard, visual memory explanations, and the instructor's homework assignments.</p>
+        </article>
+
+        <!-- QUESTION 1 -->
+        <article class="card">
+            <h2>📝 Question 1: Memory Allocation</h2>
+            <p>The instructor writes the following code on the right side of the whiteboard. The goal is to determine the output of the <code>sizeof()</code> function.</p>
+
+            <div class="whiteboard">
+<pre>
+<span class="code-keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="code-keyword">enum</span> <span class="code-type">Xenum</span> { C, CPP, Java };
+
+<span class="code-keyword">main</span>() {
+    <span class="code-keyword">enum</span> <span class="code-type">Xenum</span> var;
+    <span class="code-keyword">printf</span>(<span class="code-string">"%d"</span>, <span class="code-keyword">sizeof</span>(var)); 
+    <span class="code-keyword">return</span> 0;
+}
+</pre>
+            </div>
+
+            <div class="callout audio">
+                <span class="callout-title">🎙️ Instructor's Explanation</span>
+                <p>An <code>enum</code> variable can only hold <strong>one</strong> value at a time from its list of constants. By default, the C compiler treats these enum constants as integers, assigning them sequential values starting from 0.</p>
+            </div>
+
+            <h3>🧠 Visualization: Under the Hood</h3>
+            <p>Here is how the compiler visually maps the constants to integers in memory:</p>
+            <div class="memory-block-container">
+                <div class="memory-box">
+                    <span class="constant">C</span>
+                    <span class="value">0</span>
+                </div>
+                <div class="memory-box">
+                    <span class="constant">CPP</span>
+                    <span class="value">1</span>
+                </div>
+                <div class="memory-box">
+                    <span class="constant">Java</span>
+                    <span class="value">2</span>
+                </div>
+            </div>
+
+            <p>Because enums are represented as integers under the hood, the size of an <code>enum</code> variable is equal to the size of an standard integer (<code>int</code>) on that specific computer architecture.</p>
+            <p><strong>The Final Output:</strong> The instructor notes we are on a <strong>64-bit machine</strong>. On a standard 64-bit architecture, the size of an <code>int</code> is 4 bytes. Therefore, the output printed to the screen is <strong><code>4</code></strong>.</p>
+        </article>
+
+        <!-- MODIFIED Q1: SCOPE TRAP -->
+        <article class="card red-top">
+            <h2>⚠️ The Scope Trap (Modified Question 1)</h2>
+            <p>The instructor modifies the code to test your knowledge of <strong>Scope</strong>. She adds a second enum directly below the first one.</p>
+
+            <div class="whiteboard">
+<pre>
+<span class="code-keyword">enum</span> <span class="code-type">Xenum</span> { C, CPP, Java };
+<span class="code-comment">// Added to the board:</span>
+<span class="code-keyword">enum</span> <span class="code-type">Yenum</span> { C, CPP, Java, Xenum }; 
+</pre>
+            </div>
+
+            <div class="callout warning">
+                <span class="callout-title">🚨 Compiler Error!</span>
+                <p>If you write this, the program will crash. <strong>Why?</strong> In C, <code>enum</code> constants (the elements inside the curly braces) share the <em>exact same scope</em> as the <code>enum</code> declaration itself.</p>
+                <p>Because <code>C</code>, <code>CPP</code>, and <code>Java</code> were already defined in <code>Xenum</code>, defining them again in <code>Yenum</code> creates duplicate variables in the same scope, which is illegal in C.</p>
+            </div>
+
+            <p><strong>Important Nuance:</strong> Notice that she included <code>Xenum</code> inside the brackets of <code>Yenum</code>. This is <strong>allowed</strong>. <code>Xenum</code> is the <em>tag name</em> of the first enum, not a constant. You are allowed to use a previous enum's tag name as a constant in a new enum.</p>
+
+            <div class="callout assignment">
+                <span class="callout-title">📝 Homework Assignment 1</span>
+                <p>Remove <code>Yenum</code> entirely. What happens if you modify the original enum to look like this: <br><br><code>enum Xenum { C, CPP, Java, Xenum };</code><br><br> Write this in your IDE and find out the output of <code>sizeof(var)</code>.</p>
+            </div>
+        </article>
+
+        <!-- QUESTION 2 -->
+        <article class="card purple-top">
+            <h2>📝 Question 2: Using <code>typedef</code> with Enums</h2>
+            <p>The instructor now moves to the left side of the whiteboard, writing a new block of code utilizing the <code>typedef</code> keyword.</p>
+
+            <div class="whiteboard">
+<pre>
+<span class="code-keyword">typedef enum</span> {
+    Male,
+    Female
+} <span class="code-type">gender</span>;
+
+<span class="code-keyword">int main</span>() {
+    <span class="code-type">gender</span> var = Female;
+    <span class="code-keyword">printf</span>(<span class="code-string">"%d"</span>, var);
+    <span class="code-keyword">return</span> 0;
+}
+</pre>
+            </div>
+
+            <h3>🧠 Visualization: Variable Assignment</h3>
+            <p>Just like in the previous example, the compiler assigns default integer values starting at 0.</p>
+            <div class="memory-block-container">
+                <div class="memory-box">
+                    <span class="constant">Male</span>
+                    <span class="value">0</span>
+                </div>
+                <div class="memory-box" style="border-color: var(--accent-purple); background: #f5f3ff;">
+                    <span class="constant">Female (Assigned to var)</span>
+                    <span class="value">1</span>
+                </div>
+            </div>
+
+            <p>Because <code>var</code> was assigned the constant <code>Female</code>, the <code>printf</code> statement will output <strong><code>1</code></strong>.</p>
+
+            <div class="callout assignment">
+                <span class="callout-title">📝 Homework Assignment 2</span>
+                <p>Look closely at the declaration in <code>main()</code>: <br><code>gender var = Female;</code></p>
+                <p>Normally in C, you have to use the <code>enum</code> keyword to declare a variable (e.g., <code>enum gender var = Female;</code>). However, in this code, she omitted the word <code>enum</code> and it doesn't throw an error. <strong>Why?</strong></p>
+                <p><em>Hint for your notes:</em> The answer is because of the <code>typedef</code> keyword at the top. It creates a new type alias, allowing you to treat <code>gender</code> as a standard data type, bypassing the need to write <code>enum</code> every time!</p>
+            </div>
+        </article>
+
+        <!-- SUMMARY -->
+        <article class="card green-top">
+            <h2>💡 Key Takeaways & Cheat Sheet</h2>
+            <p>Review these golden rules before your technical interview:</p>
+            
+            <ul class="cheat-sheet">
+                <li>
+                    <strong>Size of an Enum:</strong> It is equal to the size of a standard integer (<code>int</code>) on your machine system (usually 4 bytes on modern 64-bit systems), regardless of how many constants are inside the brackets.
+                </li>
+                <li>
+                    <strong>Default Integer Mapping:</strong> Unless you manually specify otherwise, the first constant in an enum is assigned <code>0</code>, the next is <code>1</code>, the next is <code>2</code>, and so on.
+                </li>
+                <li>
+                    <strong>Scope Clashing Rules:</strong> You cannot have two identical enum constants in the same scope. (e.g., You cannot have <code>enum A { RED }</code> and <code>enum B { RED }</code> in the same file block).
+                </li>
+                <li>
+                    <strong>The Typedef Advantage:</strong> Using <code>typedef enum { ... } name;</code> allows you to declare variables simply using <code>name var_name;</code>. This keeps your code clean and removes the requirement to write the word <code>enum</code> repeatedly.
+                </li>
+            </ul>
+        </article>
+
+    </main>
+
+</body>
+</html>

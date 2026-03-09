@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>w+ Mode in C - Study Notes</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;600&display=swap');
+
+        :root {
+            --bg-color: #f8fafc;
+            --text-color: #0f172a;
+            --card-bg: #ffffff;
+            --primary: #0ea5e9;
+            --danger: #ef4444;
+            --success: #22c55e;
+            --code-bg: #1e293b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            padding: 0 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            padding: 40px;
+            border-radius: 12px;
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            color: #334155;
+        }
+
+        p {
+            margin-bottom: 20px;
+        }
+
+        .highlight {
+            background-color: #fef08a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        /* Callout Boxes */
+        .callout {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 5px solid;
+        }
+        .callout.info { background: #e0f2fe; border-color: var(--primary); }
+        .callout.danger { background: #fee2e2; border-color: var(--danger); }
+        .callout.success { background: #dcfce3; border-color: var(--success); }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border: 1px solid var(--border);
+        }
+        th { background-color: #f1f5f9; font-weight: 600; }
+        
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+        code {
+            font-family: 'Fira Code', monospace;
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #b91c1c;
+        }
+        pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+        }
+        .token-comment { color: #64748b; font-style: italic; }
+        .token-keyword { color: #c678dd; }
+        .token-function { color: #61afef; }
+        .token-string { color: #98c379; }
+
+        /* Visualizations */
+        .vis-container {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 30px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .vis-step {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .vis-desc {
+            flex: 1;
+            font-weight: 600;
+            color: #475569;
+        }
+        .file-mockup {
+            width: 300px;
+            background: #fff;
+            border: 2px solid #94a3b8;
+            border-radius: 6px;
+            box-shadow: 4px 4px 0px #cbd5e1;
+            font-family: 'Fira Code', monospace;
+            position: relative;
+        }
+        .file-header {
+            background: #e2e8f0;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            border-bottom: 2px solid #94a3b8;
+            color: #475569;
+        }
+        .file-body {
+            padding: 15px;
+            min-height: 60px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            letter-spacing: 2px;
+        }
+        .cursor {
+            display: inline-block;
+            width: 10px;
+            height: 20px;
+            background-color: var(--primary);
+            animation: blink 1s step-end infinite;
+            margin-bottom: -4px;
+        }
+        .erased-text {
+            color: #cbd5e1;
+            text-decoration: line-through;
+            margin-right: 5px;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 20px; margin-top: 0; border-radius: 0; }
+            .vis-step { flex-direction: column; align-items: flex-start; }
+            .file-mockup { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>C File Handling: `w+` Mode</h1>
+            <p><strong>Instructor:</strong> Jayanti Khatri Lamba (Jenny's Lectures)<br>
+            <strong>Topic:</strong> Reading and Writing files using `w+` mode, Cursor management, and `rewind()`</p>
+        </header>
+
+        <section id="intro">
+            <h2>1. What is `w+` Mode?</h2>
+            <p>The <code>w+</code> mode is a file handling mode in C that opens a file for <strong>both reading and writing</strong>. While it shares similarities with the <code>r+</code> mode, its fundamental behavior regarding file creation and existing data is entirely different.</p>
+            
+            <div class="callout info">
+                <strong>Rule 1 (File Doesn't Exist):</strong> The compiler will automatically create a brand new, empty file. <br>
+                <strong>Rule 2 (File Exists):</strong> If the file already exists, it will instantly <strong>truncate the file length to zero</strong>. This means all previous content is completely erased the moment the file is opened.
+            </div>
+        </section>
+
+        <section id="comparison">
+            <h2>2. The Big Difference: `r+` vs `w+`</h2>
+            <p>Because both modes allow reading and writing, students often get confused. The instructor emphasizes this crucial comparison:</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th><code>r+</code> (Read/Write)</th>
+                        <th><code>w+</code> (Write/Read)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Primary Purpose</strong></td>
+                        <td>Updating existing files.</td>
+                        <td>Creating new files / Overwriting entirely.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>If file doesn't exist</strong></td>
+                        <td>Returns <code>NULL</code> (Fails).</td>
+                        <td>Creates a new empty file.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>If file DOES exist</strong></td>
+                        <td style="color: var(--success); font-weight: 600;">Keeps previous content safe.</td>
+                        <td style="color: var(--danger); font-weight: 600;">Erases everything instantly.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cursor start position</strong></td>
+                        <td>Beginning of existing text.</td>
+                        <td>Beginning of the empty file.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="visualization">
+            <h2>3. Visualizing the RAM & Cursor</h2>
+            <p>When you run <code>fopen("abc.txt", "w+")</code>, the file is loaded into the RAM. Let's see exactly what happens to the file content and the internal cursor pointer during a program's execution.</p>
+
+            <div class="vis-container">
+                <div class="vis-step">
+                    <div class="vis-desc">1. Before execution, file has data.</div>
+                    <div class="file-mockup">
+                        <div class="file-header">abc.txt (On Hard Drive)</div>
+                        <div class="file-body">Jenny</div>
+                    </div>
+                </div>
+
+                <div class="vis-step">
+                    <div class="vis-desc">2. <code>fopen("abc.txt", "w+");</code> executes. Content is erased! Cursor is at index 0.</div>
+                    <div class="file-mockup">
+                        <div class="file-header">abc.txt (Loaded in RAM)</div>
+                        <div class="file-body"><span class="cursor"></span></div>
+                    </div>
+                </div>
+
+                <div class="vis-step">
+                    <div class="vis-desc">3. <code>fputs("Khatri", fp);</code> executes. Word is written. Cursor moves to the END.</div>
+                    <div class="file-mockup">
+                        <div class="file-header">abc.txt (In RAM)</div>
+                        <div class="file-body">Khatri<span class="cursor"></span></div>
+                    </div>
+                </div>
+
+                <div class="vis-step">
+                    <div class="vis-desc">4. <code>rewind(fp);</code> executes. Cursor is teleported back to the start!</div>
+                    <div class="file-mockup">
+                        <div class="file-header">abc.txt (In RAM)</div>
+                        <div class="file-body"><span class="cursor"></span>Khatri</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="code">
+            <h2>4. The Code & The "Gotcha"</h2>
+            <p>The instructor writes the following code to demonstrate a common trap students fall into when trying to write, and then immediately read a file.</p>
+
+<pre><code><span class="token-keyword">#include</span> <span class="token-string">&lt;stdio.h&gt;</span>
+<span class="token-keyword">#include</span> <span class="token-string">&lt;stdlib.h&gt;</span>
+
+<span class="token-keyword">void</span> <span class="token-function">main</span>() {
+    <span class="token-keyword">FILE</span> *fp = <span class="token-keyword">NULL</span>;
+    <span class="token-keyword">char</span> ch;
+
+    <span class="token-comment">// 1. Open file. "Jenny" is erased here.</span>
+    fp = <span class="token-function">fopen</span>(<span class="token-string">"abc.txt"</span>, <span class="token-string">"w+"</span>);
+
+    <span class="token-keyword">if</span> (fp == <span class="token-keyword">NULL</span>) {
+        <span class="token-function">printf</span>(<span class="token-string">"Cannot open file"</span>);
+        <span class="token-function">exit</span>(1);
+    }
+
+    <span class="token-comment">// 2. Write new content. Cursor moves to the end.</span>
+    <span class="token-function">fputs</span>(<span class="token-string">"Khatri"</span>, fp);
+
+    <span class="token-comment">// 3. Attempt to read the file to the console</span>
+    <span class="token-keyword">while</span> (!<span class="token-function">feof</span>(fp)) {
+        ch = <span class="token-function">fgetc</span>(fp);
+        <span class="token-function">printf</span>(<span class="token-string">"%c"</span>, ch);
+    }
+
+    <span class="token-function">fclose</span>(fp);
+}</code></pre>
+
+            <div class="callout danger">
+                <h3>🛑 Why doesn't this print "Khatri"?</h3>
+                <p>If you run this code, the screen will be completely blank! Why?</p>
+                <p>After <code>fputs</code> finishes writing "Khatri", the file pointer (cursor) is sitting at the very end of the file. When the <code>while</code> loop starts, it checks <code>feof(fp)</code> (End of File). </p>
+                <ul>
+                    <li>Because the cursor is already at the end, <code>feof(fp)</code> returns <strong>1 (True)</strong>.</li>
+                    <li>The condition is <code>!feof(fp)</code>. The NOT operator (<code>!</code>) turns that 1 into a <strong>0 (False)</strong>.</li>
+                    <li>Because the while condition is False, the loop breaks immediately. <code>fgetc</code> is never executed.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="solution">
+            <h2>5. The Solution: `rewind()`</h2>
+            <p>To fix this issue, you must move the file pointer from the end of the text back to the very beginning before you start reading.</p>
+            <p>C provides a special function for this: <span class="highlight">rewind()</span></p>
+
+<pre><code><span class="token-function">fputs</span>(<span class="token-string">"Khatri"</span>, fp);  <span class="token-comment">// Writes text, cursor is at end</span>
+
+<span class="token-function">rewind</span>(fp);           <span class="token-comment">// Moves cursor to index 0</span>
+
+<span class="token-keyword">while</span> (!<span class="token-function">feof</span>(fp)) {    <span class="token-comment">// Now this loop works perfectly!</span>
+    ch = <span class="token-function">fgetc</span>(fp);
+    <span class="token-function">printf</span>(<span class="token-string">"%c"</span>, ch);
+}</code></pre>
+        </section>
+
+        <section id="ide-demo">
+            <h2>6. IDE Practical Demonstration</h2>
+            <p>In VS Code, the instructor proved this concept with a practical run:</p>
+            <ol>
+                <li>She created an <code>abc.txt</code> file containing: <code>"This is awesome"</code>.</li>
+                <li>She ran the program using <code>w+</code> mode and wrote <code>"Jenny"</code>.</li>
+                <li><strong>Result without rewind:</strong> Blank output screen. <code>abc.txt</code> changed to just "Jenny".</li>
+                <li><strong>Result with rewind:</strong> The output screen successfully printed <code>"Jenny"</code>.</li>
+            </ol>
+        </section>
+
+        <section id="assignment">
+            <h2>7. Student Assignment</h2>
+            <p>At the end of the lecture, the instructor provided a dry-run homework assignment. Test your knowledge below!</p>
+            
+            <div class="callout info">
+                <h3>📝 The Setup:</h3>
+                <p>You have an existing file <code>abc.txt</code> containing the exact text: <br>
+                <code>Jenny Khatri is awesome faculty</code></p>
+                
+                <p>You run the following code logic. Notice we are using <strong><code>r+</code></strong> mode!</p>
+
+<pre style="margin-top: 10px; margin-bottom: 10px;"><code>fp = <span class="token-function">fopen</span>(<span class="token-string">"abc.txt"</span>, <span class="token-string">"r+"</span>);
+
+<span class="token-keyword">while</span> (!<span class="token-function">feof</span>(fp)) {
+    ch = <span class="token-function">fgetc</span>(fp);
+    <span class="token-function">printf</span>(<span class="token-string">"%c"</span>, ch);
+}
+
+<span class="token-function">fputs</span>(<span class="token-string">"Jenny"</span>, fp);
+<span class="token-function">fclose</span>(fp);</code></pre>
+                
+                <p><strong>Questions to answer in your head:</strong></p>
+                <ol>
+                    <li>What will be printed to the output console?</li>
+                    <li>What will be the final text inside <code>abc.txt</code> when you open it later?</li>
+                </ol>
+            </div>
+            
+            <details style="background: #f1f5f9; padding: 15px; border-radius: 8px; cursor: pointer;">
+                <summary><strong>💡 Click here to see the logical hint & answer</strong></summary>
+                <p style="margin-top: 15px;"><strong>Console Output:</strong> It will print "Jenny Khatri is awesome faculty". Because <code>r+</code> doesn't erase the file, the while loop successfully reads the whole file from start to finish.</p>
+                <p><strong>Final File Content:</strong> "Jenny Khatri is awesome facultyJenny". Because the while loop read to the very end, the cursor is sitting at the end of the file. When <code>fputs("Jenny", fp)</code> runs, it appends "Jenny" to the very end of the existing text.</p>
+            </details>
+        </section>
+
+    </div>
+
+</body>
+</html>

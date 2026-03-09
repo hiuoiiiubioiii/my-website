@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Storage Classes | Study Feed</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --primary-light: #E0E7FF;
+            --text-main: #1F2937;
+            --text-muted: #4B5563;
+            --bg-main: #F3F4F6;
+            --bg-card: #FFFFFF;
+            --code-bg: #1E1E1E;
+            --code-text: #D4D4D4;
+            --accent: #10B981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Vertical Feed Layout Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Feed Cards */
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            border-top: 5px solid var(--primary);
+        }
+
+        .header-card {
+            text-align: center;
+            border-top: none;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+        }
+
+        .header-card h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-card p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        /* Visualization: Variable Anatomy */
+        .anatomy-viz {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            background: var(--primary-light);
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .var-part {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            min-width: 100px;
+        }
+
+        .var-code {
+            font-family: 'Fira Code', monospace;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .var-label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .var-hidden {
+            background: #FEF3C7;
+            border: 2px dashed #F59E0B;
+        }
+
+        /* Visualization: 4 Properties Grid */
+        .properties-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .prop-item {
+            background: #F9FAFB;
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .prop-item h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        /* Visualization: Scope Hierarchy */
+        .scope-viz {
+            background: #DBEAFE;
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .scope-global {
+            background: rgba(255,255,255,0.6);
+            border: 2px solid #3B82F6;
+            padding: 2rem;
+            border-radius: 12px;
+        }
+
+        .scope-function {
+            background: rgba(255,255,255,0.8);
+            border: 2px solid #10B981;
+            padding: 2rem;
+            margin-top: 1rem;
+            border-radius: 12px;
+        }
+
+        .scope-block {
+            background: white;
+            border: 2px solid #F59E0B;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            border-radius: 12px;
+        }
+
+        /* Code Blocks */
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            font-family: 'Fira Code', monospace;
+            padding: 1.5rem;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .keyword { color: #569CD6; }
+        .type { color: #4EC9B0; }
+        .string { color: #CE9178; }
+        .comment { color: #6A9955; font-style: italic; }
+        .number { color: #B5CEA8; }
+        .function { color: #DCDCAA; }
+
+        /* Terminal Window */
+        .terminal {
+            background: #000;
+            color: #00FF00;
+            font-family: 'Fira Code', monospace;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        .terminal-header {
+            color: #fff;
+            border-bottom: 1px solid #333;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.8rem;
+        }
+
+        /* Core Takeaway */
+        .takeaway {
+            background: #FEF2F2;
+            border-left: 5px solid #EF4444;
+            padding: 1.5rem;
+            border-radius: 0 12px 12px 0;
+            margin: 2rem 0;
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .card { padding: 1.5rem; }
+            .header-card h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+
+    <!-- Header -->
+    <section class="card header-card">
+        <h1>Storage Classes in C</h1>
+        <p>Continuous Study Feed • Scroll to Learn</p>
+    </section>
+
+    <!-- Part 1 -->
+    <section class="card">
+        <h2>🔍 1. The Anatomy of a Variable</h2>
+        <p>When you declare a variable in C, you are telling the compiler about its name, value, and data type. But there is a <strong>hidden property</strong> associated with every variable: The Storage Class.</p>
+        
+        <div class="anatomy-viz">
+            <div class="var-part">
+                <span class="var-code">int</span>
+                <span class="var-label">1. Type</span>
+            </div>
+            <div class="var-part">
+                <span class="var-code">a</span>
+                <span class="var-label">2. Name</span>
+            </div>
+            <div class="var-part">
+                <span class="var-code">= 10;</span>
+                <span class="var-label">3. Value</span>
+            </div>
+            <div class="var-part var-hidden">
+                <span class="var-code">auto</span>
+                <span class="var-label">4. Storage Class (Hidden)</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Part 2 -->
+    <section class="card">
+        <h2>🛠️ 2. The 4 Properties Defined</h2>
+        <p>If you don't assign a value to a variable, how does the compiler handle it? The Storage Class answers four crucial questions about your variable:</p>
+        
+        <div class="properties-grid">
+            <div class="prop-item">
+                <h3>1. Default Value ❓</h3>
+                <p>If uninitialized, what value does it hold? (e.g., 0 or a random "garbage" value).</p>
+            </div>
+            <div class="prop-item">
+                <h3>2. Location 💾</h3>
+                <p>Where is it stored in the hardware? (RAM/Main Memory or CPU Registers).</p>
+            </div>
+            <div class="prop-item">
+                <h3>3. Scope 🌍</h3>
+                <p><strong>Where</strong> can you access this variable? (Inside a block, a function, or everywhere).</p>
+            </div>
+            <div class="prop-item">
+                <h3>4. Lifetime ⏳</h3>
+                <p><strong>Till when</strong> is this variable alive before the memory is destroyed?</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Part 3 -->
+    <section class="card">
+        <h2>🗂️ 3. Types of Storage Classes</h2>
+        <p>There are four storage class keywords in C. They are placed right before the data type.</p>
+        
+<pre><code><span class="keyword">auto</span> <span class="type">int</span> a;
+<span class="keyword">register</span> <span class="type">int</span> b;
+<span class="keyword">extern</span> <span class="type">int</span> c;
+<span class="keyword">static</span> <span class="type">int</span> d;</code></pre>
+
+        <div class="takeaway">
+            <strong>Instructor Note:</strong> If you write <code>int a;</code> without a keyword, the compiler automatically assigns the <code>auto</code> storage class by default. Writing <code>int a;</code> is exactly the same as writing <code>auto int a;</code>.
+        </div>
+    </section>
+
+    <!-- Part 4 -->
+    <section class="card">
+        <h2>🎯 4. Deep Dive into "Scope"</h2>
+        <p>Scope defines the physical boundaries in your code where a variable is allowed to be accessed. The compiler resolves variables by looking from the <strong>inside out</strong>.</p>
+
+        <div class="scope-viz">
+            <div class="scope-global">
+                Program Scope (Global Variable)
+                <p style="font-size: 0.9rem; font-weight: normal; margin-top: 5px;">Accessible anywhere in the file.</p>
+                
+                <div class="scope-function">
+                    Function Scope
+                    <p style="font-size: 0.9rem; font-weight: normal; margin-top: 5px;">Accessible only inside this specific function.</p>
+                    
+                    <div class="scope-block">
+                        Block Scope { }
+                        <p style="font-size: 0.9rem; font-weight: normal; margin-top: 5px;">Variable dies when the closing brace } is reached.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Part 5 -->
+    <section class="card">
+        <h2>🖊️ 5. Whiteboard Code Dry Run</h2>
+        <p>What happens when multiple variables have the same name but exist in different scopes? The compiler always looks for the <strong>closest, most local</strong> variable first.</p>
+
+<pre><code><span class="comment">#include &lt;stdio.h&gt;</span>
+
+<span class="type">int</span> a = <span class="number">50</span>;             <span class="comment">// GLOBAL SCOPE</span>
+
+<span class="type">void</span> <span class="function">fun</span>() {
+    <span class="type">int</span> a = <span class="number">30</span>;         <span class="comment">// FUNCTION SCOPE (fun)</span>
+    <span class="function">printf</span>(<span class="string">"%d\n"</span>, a);
+}
+
+<span class="type">int</span> <span class="function">main</span>() {
+    <span class="type">int</span> a = <span class="number">10</span>;         <span class="comment">// FUNCTION SCOPE (main)</span>
+    <span class="function">fun</span>();              <span class="comment">// Output: 30</span>
+
+    {                   <span class="comment">// BLOCK 1 START</span>
+        <span class="type">int</span> a = <span class="number">20</span>;     <span class="comment">// BLOCK SCOPE</span>
+        <span class="function">printf</span>(<span class="string">"Inside Block %d\n"</span>, a); <span class="comment">// Output: 20</span>
+    }                   <span class="comment">// BLOCK 1 END (a=20 dies)</span>
+
+    {                   <span class="comment">// BLOCK 2 START</span>
+        <span class="function">printf</span>(<span class="string">"%d\n"</span>, a++); <span class="comment">// Looks outside! Output: 10</span>
+    }                   <span class="comment">// BLOCK 2 END</span>
+
+    <span class="function">printf</span>(<span class="string">"%d\n"</span>, a);  <span class="comment">// Output: 11 (main's 'a' was incremented)</span>
+
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</code></pre>
+    </section>
+
+    <!-- Part 6 -->
+    <section class="card">
+        <h2>💻 6. VS Code Practical Demo & Errors</h2>
+        <p>In the IDE, the instructor proved the whiteboard theory. She also demonstrated what happens when you violate Scope boundaries.</p>
+
+        <p>If you declare <code>int b = 89;</code> inside <code>fun1()</code>, and try to print <code>b</code> down inside <code>main()</code>, the compiler will fail.</p>
+
+        <div class="terminal">
+            <div class="terminal-header">Terminal / Compiler Output</div>
+            error: ‘b’ undeclared (first use in this function)<br>
+            25 |     printf("%d", b);<br>
+               |                  ^
+        </div>
+
+        <div class="takeaway">
+            <strong>Conclusion:</strong> A variable's lifetime and scope are strictly bound to the braces <code>{ }</code> it was created in. Once the function <code>fun1()</code> ends, <code>b</code> is destroyed. <code>main()</code> has no idea it ever existed.
+        </div>
+    </section>
+
+</div>
+
+</body>
+</html>

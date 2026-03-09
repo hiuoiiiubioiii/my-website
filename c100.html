@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming Notes: Pointers & Call By Reference</title>
+    <style>
+        /* Base Feed & Typography Styles */
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --primary: #2563eb;
+            --danger: #ef4444;
+            --success: #10b981;
+            --code-bg: #1e1e1e;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* The Vertical Feed Container */
+        .feed-container {
+            max-width: 750px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Individual Feed Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            opacity: 0; /* For scroll animation */
+            transform: translateY(20px); /* For scroll animation */
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--bg-color);
+        }
+
+        .step-badge {
+            background-color: var(--primary);
+            color: white;
+            font-weight: bold;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-right: 15px;
+        }
+
+        h2 { margin: 0; font-size: 1.5em; color: var(--text-main); }
+        h3 { color: var(--primary); margin-top: 0; }
+        p { font-size: 1.05em; color: var(--text-muted); }
+
+        /* Code Block Styling */
+        pre {
+            background-color: var(--code-bg);
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 0.95em;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .keyword { color: #569cd6; }
+        .type { color: #4ec9b0; }
+        .function { color: #dcdcaa; }
+        .number { color: #b5cea8; }
+        .string { color: #ce9178; }
+
+        /* Important Callouts */
+        .alert {
+            background-color: #fef2f2;
+            border-left: 4px solid var(--danger);
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .alert strong { color: var(--danger); }
+        
+        .takeaway {
+            background-color: #ecfdf5;
+            border-left: 4px solid var(--success);
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-style: italic;
+        }
+
+        /* --- Whiteboard Visualizations Styling --- */
+        .whiteboard {
+            background-color: #ffffff;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        
+        .wb-title {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            font-family: cursive;
+            color: #94a3b8;
+            font-size: 0.9em;
+        }
+
+        .memory-row {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .var-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100px;
+        }
+
+        .var-name {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .var-memory {
+            border: 3px solid #334155;
+            height: 60px;
+            width: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            font-family: monospace;
+            border-radius: 6px;
+            background: #f8fafc;
+            position: relative;
+        }
+
+        .var-address {
+            margin-top: 8px;
+            font-size: 0.85em;
+            color: var(--text-muted);
+            font-family: monospace;
+            background: #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        /* Visualization dynamic states */
+        .strike {
+            text-decoration: line-through;
+            color: var(--danger);
+            margin-right: 5px;
+        }
+        .new-val {
+            color: var(--success);
+            font-weight: bold;
+        }
+        .stack-label {
+            font-weight: bold;
+            margin: 10px 0;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.8em;
+        }
+
+        /* SVG Arrows */
+        .arrow-container {
+            width: 100%;
+            height: 60px;
+            position: relative;
+        }
+        svg {
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+        }
+        .arrow-line {
+            stroke: var(--primary);
+            stroke-width: 3;
+            fill: none;
+            marker-end: url(#arrowhead);
+        }
+        .arrow-line.changed {
+            stroke: var(--danger);
+            stroke-dasharray: 5,5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- INTRO CARD -->
+        <div class="card">
+            <h2>Context: GATE 2010 Call by Reference</h2>
+            <p>In this session, the instructor breaks down a notoriously tricky question from the GATE 2010 exam. This problem tests your understanding of <strong>global variables</strong>, <strong>pointers</strong>, and exactly how <strong>call-by-reference</strong> modifies memory.</p>
+            <p>At the start of the video, she notes that in a community poll, <strong>48% of students answered this incorrectly</strong> because they tried to solve it in their heads instead of drawing a memory map.</p>
+        </div>
+
+        <!-- THE CODE CARD -->
+        <div class="card">
+            <div class="card-header">
+                <span class="step-badge">The Problem</span>
+                <h2>Examine the Code</h2>
+            </div>
+            <p>Here is the exact code written on the whiteboard. What do you think the output will be?</p>
+            <pre><code><span class="keyword">#include</span> <span class="string">&lt;stdio.h&gt;</span>
+
+<span class="type">void</span> <span class="function">f</span>(<span class="type">int</span> *p, <span class="type">int</span> *q) {
+    p = q;
+    *p = <span class="number">2</span>;
+}
+
+<span class="type">int</span> i = <span class="number">0</span>, j = <span class="number">1</span>;
+
+<span class="type">int</span> <span class="function">main</span>() {
+    <span class="function">f</span>(&amp;i, &amp;j);
+    <span class="function">printf</span>(<span class="string">"%d %d\n"</span>, i, j);
+    <span class="function">getchar</span>();
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</code></pre>
+            <div class="alert">
+                <strong>The Trap:</strong> Almost half of the students guessed the output would be <code>2 1</code>. Let's draw the memory map to see why they were wrong.
+            </div>
+        </div>
+
+        <!-- STEP 1: GLOBALS -->
+        <div class="card">
+            <div class="card-header">
+                <span class="step-badge">Step 1</span>
+                <h2>Identifying Global Variables</h2>
+            </div>
+            <p><strong>Audio Breakdown:</strong> The instructor points to the line <code>int i = 0, j = 1;</code>. She asks, <em>"Are they within f? No. Within main? No. They are outside. It means these are global variables."</em></p>
+            <p>Global variables have memory allocated that lasts throughout the entire program and can be accessed by any function.</p>
+            
+            <div class="whiteboard">
+                <div class="wb-title">Memory Map: Globals</div>
+                <div class="stack-label">Global Scope Memory</div>
+                <div class="memory-row">
+                    <div class="var-box">
+                        <div class="var-name">i</div>
+                        <div class="var-memory">0</div>
+                        <div class="var-address">Address: 100</div>
+                    </div>
+                    <div class="var-box">
+                        <div class="var-name">j</div>
+                        <div class="var-memory">1</div>
+                        <div class="var-address">Address: 200</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2 & 3: FUNCTION CALL -->
+        <div class="card">
+            <div class="card-header">
+                <span class="step-badge">Step 2 & 3</span>
+                <h2>The Function Call: f(&amp;i, &amp;j)</h2>
+            </div>
+            <p>Execution begins in the <code>main()</code> stack frame. The very first line calls function <code>f()</code>, passing the <strong>addresses</strong> of <code>i</code> and <code>j</code> (100 and 200 respectively).</p>
+            <p>Inside the stack frame for function <code>f</code>, two pointer variables <code>p</code> and <code>q</code> are created to catch these addresses.</p>
+
+            <div class="whiteboard">
+                <div class="wb-title">Memory Map: Entering f()</div>
+                <svg style="width:0; height:0; position:absolute;">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="var(--primary)" />
+                        </marker>
+                    </defs>
+                </svg>
+                
+                <div class="stack-label">Function 'f' Stack Frame (Pointers)</div>
+                <div class="memory-row">
+                    <div class="var-box">
+                        <div class="var-name">p</div>
+                        <div class="var-memory" style="font-size:1.1em">100</div>
+                    </div>
+                    <div class="var-box">
+                        <div class="var-name">q</div>
+                        <div class="var-memory" style="font-size:1.1em">200</div>
+                    </div>
+                </div>
+
+                <div class="arrow-container">
+                    <svg preserveAspectRatio="none">
+                        <!-- p to i arrow -->
+                        <line x1="25%" y1="0" x2="25%" y2="55" class="arrow-line" />
+                        <!-- q to j arrow -->
+                        <line x1="75%" y1="0" x2="75%" y2="55" class="arrow-line" />
+                    </svg>
+                </div>
+
+                <div class="stack-label">Global Scope Memory</div>
+                <div class="memory-row">
+                    <div class="var-box">
+                        <div class="var-name">i</div>
+                        <div class="var-memory">0</div>
+                        <div class="var-address">100</div>
+                    </div>
+                    <div class="var-box">
+                        <div class="var-name">j</div>
+                        <div class="var-memory">1</div>
+                        <div class="var-address">200</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 4: THE TRICK -->
+        <div class="card">
+            <div class="card-header">
+                <span class="step-badge">Step 4</span>
+                <h2>The Tricky Part: p = q;</h2>
+            </div>
+            <p>We are inside function <code>f</code>. The code says <code>p = q;</code>. The instructor explains: <em>"Whatever is the value in q, that would be assigned to p."</em></p>
+            <p>The value inside <code>q</code> is the address <strong>200</strong>. This overwrites the 100 inside <code>p</code>. <strong>Now, both pointers are pointing to <code>j</code>!</strong> The arrow pointing to <code>i</code> is erased.</p>
+
+            <div class="whiteboard">
+                <div class="wb-title">Memory Map: After p = q;</div>
+                <div class="stack-label">Function 'f' Stack Frame (Pointers)</div>
+                <div class="memory-row">
+                    <div class="var-box">
+                        <div class="var-name">p</div>
+                        <div class="var-memory" style="font-size:1em"><span class="strike">100</span><span class="new-val">200</span></div>
+                    </div>
+                    <div class="var-box">
+                        <div class="var-name">q</div>
+                        <div class="var-memory" style="font-size:1.1em">200</div>
+                    </div>
+                </div>
+
+                <div class="arrow-container">
+                    <svg preserveAspectRatio="none">
+                        <!-- p to j arrow (diagonal, changed) -->
+                        <line x1="25%" y1="0" x2="70%" y2="55" class="arrow-line changed" />
+                        <!-- q to j arrow -->
+                        <line x1="75%" y1="0" x2="75%" y2="55" class="arrow-line" />
+                    </svg>
+                </div>
+
+                <div class="stack-label">Global Scope Memory</div>
+                <div class="memory-row">
+                    <div class="var-box">
+                        <div class="var-name">i</div>
+                        <div class="var-memory">0</div>
+                        <div class="var-address">100</div>
+                    </div>
+                    <div class="var-box">
+                        <div class="var-name">j</div>
+                        <div class="var-memory">1</div>
+                        <div class="var-address">200</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 5: DEREFERENCING -->
+        <div class="card">
+            <div class="card-header">
+                <span class="step-badge">Step 5</span>
+                <h2>Dereferencing: *p = 2;</h2>
+            </div>
+            <p>The next line is <code>*p = 2;</code>. The <code>*</code> is the indirection (dereference) operator. It means: <em>"Go to the address currently stored in p, and change its value to 2."</em></p>
+            <p>Because <code>p</code> was just reassigned to address 200, we follow the new path. It points to the global variable <code>j</code>. We cross out the <code>1</code> and write <code>2</code>.</p>
+            
+            <div class="takeaway">
+                <strong>Student Takeaway:</strong> Because `p` was reassigned in the previous step, this line modifies global `j`, NOT global `i`. This is why the 48% of students who guessed "2 1" were wrong—they missed the pointer reassignment!
+            </div>
+
+            <div class="whiteboard">
+                <div class="wb-title">Memory Map: After *p = 2;</div>
+                <div class="stack-label">Global Scope Memory Only</div>
+                <div class="memory-row">
+                    <div class="var-box" style="opacity: 0.5;">
+                        <div class="var-name">i</div>
+                        <div class="var-memory">0</div>
+                        <div class="var-address">100</div>
+                    </div>
+                    <div class="var-box">
+                        <div class="var-name">j</div>
+                        <div class="var-memory"><span class="strike">1</span><span class="new-val">2</span></div>
+                        <div class="var-address">200</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 6: OUTPUT & CONCLUSION -->
+        <div class="card">
+            <div class="card-header">
+                <span class="step-badge">Step 6</span>
+                <h2>Returning to main() & Output</h2>
+            </div>
+            <p>Function <code>f</code> finishes execution and gets popped off the stack. Control returns to <code>main()</code> to execute the print statement: <code>printf("%d %d\n", i, j);</code></p>
+            <p>Looking at our final global memory state, the value of <code>i</code> was completely untouched (it remains <strong>0</strong>). The value of <code>j</code> was modified to <strong>2</strong>.</p>
+            
+            <pre><code>Output: 0 2</code></pre>
+
+            <h3>The Instructor's Core Advice</h3>
+            <p>"Don't just see the question and try to find the answer in your brain... draw a visual representation."</p>
+            <p>Exam questions like this in GATE are designed to be tricky, not necessarily mathematically hard. You must trace every single line of code meticulously using a pen and paper memory map to avoid falling into simple traps.</p>
+        </div>
+
+    </div>
+
+    <!-- JavaScript for Scroll Animation -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const cards = document.querySelectorAll('.card');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.15 // Triggers when 15% of the card is visible
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target); // Stop observing once it's visible
+                    }
+                });
+            }, observerOptions);
+
+            cards.forEach(card => {
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>

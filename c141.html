@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storage Classes in C - Auto</title>
+    <style>
+        /* Modern, Student-Friendly Feed Theme */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;600&display=swap');
+
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --highlight-yellow: #fef08a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* The Continuous Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px; /* Space between each post/card */
+        }
+
+        /* Individual Feed Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 30px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+
+        .card h3 {
+            font-size: 1.25rem;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+
+        /* Grids for Properties */
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .property-box {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .property-box strong {
+            display: block;
+            color: var(--accent-blue);
+            margin-bottom: 5px;
+        }
+
+        /* Code and Terminal Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            font-family: 'Fira Code', monospace;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.95rem;
+            margin: 15px 0;
+        }
+
+        .code-comment { color: #6a9955; }
+        .code-keyword { color: #569cd6; }
+        .code-string { color: #ce9178; }
+        .code-var { color: #9cdcfe; }
+
+        .terminal {
+            background-color: #000;
+            color: #00ff00;
+            font-family: 'Fira Code', monospace;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            border-left: 4px solid var(--accent-green);
+        }
+
+        /* Visualizations */
+        .memory-layout {
+            display: flex;
+            flex-direction: column-reverse; /* Stack grows down, bottom is code */
+            width: 250px;
+            margin: 20px auto;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            background: white;
+        }
+
+        .memory-segment {
+            padding: 15px;
+            text-align: center;
+            font-weight: 600;
+            border-bottom: 1px solid #cbd5e1;
+        }
+        .memory-segment:first-child { border-bottom: none; }
+        
+        .mem-code { background-color: #f1f5f9; color: #475569; }
+        .mem-static { background-color: #ffedd5; color: #c2410c; }
+        .mem-heap { background-color: #dcfce7; color: #15803d; }
+        .mem-stack { 
+            background-color: #dbeafe; 
+            color: #1d4ed8; 
+            border: 3px solid var(--accent-blue);
+            transform: scale(1.05);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Scope Visualization */
+        .scope-container {
+            margin: 20px 0;
+            padding: 20px;
+            border: 3px dashed var(--accent-blue);
+            border-radius: 12px;
+            background-color: #eff6ff;
+            position: relative;
+        }
+        
+        .scope-label {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: var(--accent-blue);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .scope-inner {
+            margin: 20px 0 0 20px;
+            padding: 20px;
+            border: 3px dashed var(--accent-red);
+            border-radius: 12px;
+            background-color: #fef2f2;
+            position: relative;
+        }
+
+        .scope-label-inner {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: var(--accent-red);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .highlight {
+            background-color: var(--highlight-yellow);
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: black;
+            font-weight: 600;
+        }
+
+        /* Checklist */
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            background: #f8fafc;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            border-left: 4px solid var(--accent-green);
+        }
+        .checklist li::before {
+            content: '✅';
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+
+    <!-- Title Header -->
+    <div style="text-align: center; margin-bottom: 20px;">
+        <h1 style="font-size: 2.5rem; color: var(--text-main); margin-bottom: 5px;">Storage Classes in C</h1>
+        <p style="color: var(--text-muted); font-size: 1.2rem;">Complete Visual Notes: The <code style="background: #e5e7eb; padding: 2px 6px; border-radius: 4px; color: var(--accent-blue);">auto</code> Class</p>
+    </div>
+
+    <!-- FEED POST 1: Foundation -->
+    <div class="card">
+        <div class="card-header">1. What is a Storage Class?</div>
+        <p>When you declare a variable (e.g., <code class="highlight">int x = 10;</code>), the data type (<code>int</code>) tells the compiler what type of value it holds. But there is <strong>hidden information</strong> associated with every variable, dictated by its Storage Class.</p>
+        
+        <h3>The 4 Hidden Properties:</h3>
+        <div class="grid-4">
+            <div class="property-box"><strong>Default Value</strong>If uninitialized, what value does it hold?</div>
+            <div class="property-box"><strong>Scope</strong>Where in the code can it be accessed?</div>
+            <div class="property-box"><strong>Location</strong>Where is it physically saved in memory?</div>
+            <div class="property-box"><strong>Lifetime</strong>How long does it stay alive before deletion?</div>
+        </div>
+
+        <h3>The 4 Types of Storage Classes in C:</h3>
+        <ol>
+            <li><strong>Automatic</strong> (Focus of this lesson)</li>
+            <li>Register</li>
+            <li>Static</li>
+            <li>External</li>
+        </ol>
+    </div>
+
+    <!-- FEED POST 2: Deep Dive into Auto -->
+    <div class="card">
+        <div class="card-header">2. The <code>auto</code> Storage Class</div>
+        <p><strong>Crucial Rule:</strong> If you write an integer inside a function like <code>int x = 10;</code>, the compiler automatically assumes you mean <code class="highlight">auto int x = 10;</code>. It is the default for local variables!</p>
+
+        <h3>The 4 Rules of `auto`:</h3>
+        <div class="grid-4">
+            <div class="property-box" style="border-bottom: 4px solid var(--accent-red);"><strong>Default Value</strong><br>Garbage Value</div>
+            <div class="property-box" style="border-bottom: 4px solid var(--accent-blue);"><strong>Scope</strong><br>Block / Function (Local)</div>
+            <div class="property-box" style="border-bottom: 4px solid var(--accent-green);"><strong>Lifetime</strong><br>Within the Block</div>
+            <div class="property-box" style="border-bottom: 4px solid var(--highlight-yellow);"><strong>Location</strong><br>Stack Memory</div>
+        </div>
+
+        <h3>Visualizing the Memory Location:</h3>
+        <p>When an application runs, memory is divided into segments. The instructor drew this on the whiteboard to show where <code>auto</code> lives:</p>
+        <div class="memory-layout">
+            <div class="memory-segment mem-code">Code / Instructions</div>
+            <div class="memory-segment mem-static">Static / Global Variables</div>
+            <div class="memory-segment mem-heap">Heap (Dynamic Memory)</div>
+            <div class="memory-segment mem-stack">Stack Memory<br><small>(auto variables live here!)</small></div>
+        </div>
+    </div>
+
+    <!-- FEED POST 3: Scope Visualized -->
+    <div class="card">
+        <div class="card-header">3. Scope & Lifetime Visualized (Whiteboard)</div>
+        <p>To prove how Scope and Lifetime work, the instructor drew nested blocks. A variable created inside a block dies when that block ends.</p>
+
+        <div class="scope-container">
+            <div class="scope-label">Main Function Scope (Outer Block)</div>
+            <code class="code-keyword">auto int</code> <code class="code-var">x</code> = 10; <span class="code-comment">// This 'x' belongs to the main function</span>
+            
+            <div class="scope-inner">
+                <div class="scope-label-inner">Inner Block Scope</div>
+                <code class="code-keyword">auto int</code> <code class="code-var">x</code>; <span class="code-comment">// A completely new 'x'. Since it has no value, it gets a GARBAGE value!</span><br><br>
+                printf(<code class="code-string">"%d"</code>, <code class="code-var">x</code>); <span class="code-comment">// Prints GARBAGE VALUE.</span><br>
+                <br>
+                <span style="color: var(--accent-red); font-weight: bold;">// 🪦 The inner 'x' is DESTROYED here. Its lifetime is over.</span>
+            </div>
+            
+            <br>
+            printf(<code class="code-string">"%d"</code>, <code class="code-var">x</code>); <span class="code-comment">// Prints 10, accessing the outer 'x' which is still alive!</span>
+        </div>
+    </div>
+
+    <!-- FEED POST 4: Live Laptop Tests -->
+    <div class="card">
+        <div class="card-header">4. Live Laptop Demonstrations</div>
+        <p>The instructor switched to VS Code to prove the theories. Here is exactly what she tested:</p>
+
+        <h3>Test 1: Scope & Block Shadowing</h3>
+<pre>
+<span class="code-keyword">int</span> main() {
+    <span class="code-keyword">auto int</span> x = 10;
+    {
+        <span class="code-keyword">auto int</span> x = 20;
+        printf(<span class="code-string">"x=%d\n"</span>, x); <span class="code-comment">// Prints inner block variable</span>
+    }
+    printf(<span class="code-string">"%d"</span>, x);       <span class="code-comment">// Prints outer block variable</span>
+    <span class="code-keyword">return</span> 0;
+}
+</pre>
+        <div class="terminal">Output:<br>x=20<br>10</div>
+
+        <h3>Test 2: Default "Garbage" Value</h3>
+        <p>She removed the `= 20` to see what happens when an auto variable is uninitialized.</p>
+<pre>
+<span class="code-keyword">int</span> main() {
+    <span class="code-keyword">auto int</span> x = 10;
+    {
+        <span class="code-keyword">auto int</span> x; <span class="code-comment">// No value assigned!</span>
+        printf(<span class="code-string">"x=%d\n"</span>, x);
+    }
+    printf(<span class="code-string">"%d"</span>, x);
+    <span class="code-keyword">return</span> 0;
+}
+</pre>
+        <div class="terminal">Output:<br>x=43   <- (Random memory garbage value)<br>10</div>
+
+        <h3>Test 3: The Global Scope Error</h3>
+        <p>She moved an `auto` variable outside of the `main()` function to the top of the script.</p>
+<pre>
+<span class="code-keyword">auto int</span> x = 89; <span class="code-comment">// Trying to make it global...</span>
+
+<span class="code-keyword">int</span> main() { 
+    ... 
+}
+</pre>
+        <div class="terminal" style="color: #ff4444; border-left-color: #ff4444;">Compiler Error:<br>file-scope declaration of 'x' specifies 'auto'</div>
+        <p><em>Takeaway: `auto` variables are strictly local. They CANNOT be global!</em></p>
+    </div>
+
+    <!-- FEED POST 5: Summary Checklist -->
+    <div class="card">
+        <div class="card-header">5. Exam Cheat Sheet: `auto` Class</div>
+        <ul class="checklist">
+            <li><strong>Keyword:</strong> <code>auto</code></li>
+            <li><strong>Default Nature:</strong> It is the default storage class for all local variables. (e.g., <code>int x;</code> is exactly the same as <code>auto int x;</code>).</li>
+            <li><strong>Initial / Default Value:</strong> Garbage value (unpredictable numbers).</li>
+            <li><strong>Scope:</strong> Local (Limited to the specific Block or Function where it was created).</li>
+            <li><strong>Lifetime:</strong> Ends instantly when the block or function ends.</li>
+            <li><strong>Memory Location:</strong> Stored in the RAM's Stack segment.</li>
+            <li><strong>Global usage?</strong> Absolutely forbidden. Will trigger a compiler error.</li>
+        </ul>
+    </div>
+
+</div>
+
+</body>
+</html>

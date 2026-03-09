@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tail & Non-Tail Recursion - Study Notes</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --text-main: #333;
+            --text-light: #555;
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent-green: #27ae60;
+            --accent-red: #e74c3c;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .feed-container {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: var(--primary);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.5rem;
+        }
+
+        header p {
+            margin: 0;
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .note-card {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--secondary);
+        }
+
+        .note-card.tail-card { border-top-color: var(--accent-green); }
+        .note-card.nontail-card { border-top-color: var(--accent-red); }
+
+        h2 {
+            color: var(--primary);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        h3 {
+            color: var(--secondary);
+            margin-top: 25px;
+        }
+
+        p, li {
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+
+        .highlight {
+            background-color: #ffeaa7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #d35400;
+            font-weight: bold;
+        }
+
+        /* Code Block Styling */
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 1.05rem;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .code-comment { color: #6a9955; }
+        .code-keyword { color: #569cd6; }
+        .code-function { color: #dcdcaa; }
+
+        /* Visualization Styling */
+        .visualization-box {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 2px dashed var(--secondary);
+        }
+
+        .stack-container {
+            width: 250px;
+            border: 4px solid var(--primary);
+            border-top: none;
+            background: white;
+            display: flex;
+            flex-direction: column-reverse; /* Builds from bottom to top */
+            padding: 10px;
+            gap: 10px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: inset 0 -10px 20px rgba(0,0,0,0.05);
+        }
+
+        .stack-frame {
+            background: var(--secondary);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border-radius: 6px;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            animation: slideUp 0.5s ease-out forwards;
+        }
+
+        .stack-frame.tail { background: var(--accent-green); }
+        .stack-frame.nontail { background: var(--accent-red); }
+        .stack-frame.main { background: #7f8c8d; }
+
+        .stack-status {
+            font-size: 0.85rem;
+            display: block;
+            margin-top: 5px;
+            font-weight: normal;
+            background: rgba(0,0,0,0.2);
+            padding: 3px;
+            border-radius: 4px;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .output-box {
+            background: #2d3436;
+            color: #00b894;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .alert-box {
+            background-color: #ffe6e6;
+            border-left: 5px solid var(--accent-red);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .optimization-box {
+            background-color: #e6ffe6;
+            border-left: 5px solid var(--accent-green);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header -->
+        <header>
+            <h1>Tail & Non-Tail Recursion in C</h1>
+            <p>Complete In-Depth Study Notes & Visualizations</p>
+        </header>
+
+        <!-- Concept -->
+        <div class="note-card">
+            <h2>1. The Core Concept</h2>
+            <p>What does the word <strong>"Tail"</strong> actually mean? Think of an animal's tail or the tail of an aircraft—it is the <em>absolute end part</em> of something.</p>
+            <p>In programming:</p>
+            <ul>
+                <li><span class="highlight">Tail Recursion:</span> The recursive function call is the <strong>very last thing</strong> that happens in the function. There is zero task left to execute after the recursion returns.</li>
+                <li><span class="highlight">Non-Tail Recursion:</span> There are pending operations (like printing, addition, etc.) left to perform <em>after</em> the recursive call finishes and returns.</li>
+            </ul>
+        </div>
+
+        <!-- Example 1 -->
+        <div class="note-card tail-card">
+            <h2>2. Example 1: Tail Recursion</h2>
+            <p>Let's look at a standard Tail Recursion example. Notice how the recursive call to <code>print(a/2)</code> is the absolute last line executed.</p>
+            
+<pre>
+<span class="code-keyword">void</span> <span class="code-function">print</span>(<span class="code-keyword">int</span> a) {
+    <span class="code-keyword">if</span> (a &lt; 1) 
+        <span class="code-keyword">return</span>;
+    <span class="code-keyword">else</span> {
+        <span class="code-function">printf</span>(<span class="code-text">"%d "</span>, a);
+        <span class="code-function">print</span>(a/2);       <span class="code-comment">// &lt;--- Recursive Call (Last Statement)</span>
+    }
+}
+
+<span class="code-keyword">void</span> <span class="code-function">main</span>() {
+    <span class="code-function">print</span>(10);
+}
+</pre>
+
+            <h3>Visualization: The Call Stack</h3>
+            <p>As the function runs, it prints the value immediately, then pushes a new call onto the stack. When <code>print(0)</code> is reached, it hits the base case and returns.</p>
+            
+            <div class="visualization-box">
+                <h4>Stack Memory (Building Up)</h4>
+                <div class="stack-container">
+                    <div class="stack-frame main">main()</div>
+                    <div class="stack-frame tail">print(10)<span class="stack-status">Prints 10, calls print(5)</span></div>
+                    <div class="stack-frame tail" style="animation-delay: 0.2s">print(5)<span class="stack-status">Prints 5, calls print(2)</span></div>
+                    <div class="stack-frame tail" style="animation-delay: 0.4s">print(2)<span class="stack-status">Prints 2, calls print(1)</span></div>
+                    <div class="stack-frame tail" style="animation-delay: 0.6s">print(1)<span class="stack-status">Prints 1, calls print(0)</span></div>
+                    <div class="stack-frame tail" style="animation-delay: 0.8s; background: #34495e;">print(0)<span class="stack-status">Hits Return (Base Case)</span></div>
+                </div>
+            </div>
+
+            <h3>The "Returning" Phase</h3>
+            <p>Once <code>print(0)</code> returns to <code>print(1)</code>, the computer checks: <em>Is there any code left to execute in print(1)?</em> <strong>NO.</strong> It immediately returns. This cascade continues down the stack until it reaches main. Nothing happens on the way back down.</p>
+            
+            <h4>Final Output:</h4>
+            <div class="output-box">10 5 2 1</div>
+
+            <div class="optimization-box">
+                <strong>🧠 Compiler Optimization (Crucial Concept):</strong>
+                <p>Because there is no code left to run on the way back, maintaining these stacked memory frames is a waste of memory (O(n) Space Complexity). Modern compilers recognize Tail Recursion and automatically optimize it to run like a <code>while</code> loop, bringing space complexity down to <strong>O(1)</strong>!</p>
+            </div>
+        </div>
+
+        <!-- Example 2 -->
+        <div class="note-card nontail-card">
+            <h2>3. Example 2: Non-Tail Recursion (Variation 1)</h2>
+            <p>We modify the previous code by adding <strong>one single line</strong> after the recursive call. This changes everything.</p>
+
+<pre>
+<span class="code-keyword">void</span> <span class="code-function">print</span>(<span class="code-keyword">int</span> a) {
+    <span class="code-keyword">if</span> (a &lt; 1) 
+        <span class="code-keyword">return</span>;
+    <span class="code-keyword">else</span> {
+        <span class="code-function">printf</span>(<span class="code-text">"%d "</span>, a);
+        <span class="code-function">print</span>(a/2);       
+        <span class="code-function">printf</span>(<span class="code-text">"%d "</span>, a); <span class="code-comment">// &lt;--- PENDING TASK AFTER RECURSION</span>
+    }
+}
+</pre>
+
+            <h3>Visualization: Pending Tasks</h3>
+            <p>Going up the stack, it behaves the same. But look what happens when the stack unwinds. The computer <strong>must</strong> remember the value of `a` because there is a pending `printf` waiting to execute!</p>
+            
+            <div class="visualization-box">
+                <h4>Stack Memory (Unwinding Phase)</h4>
+                <div class="stack-container">
+                    <div class="stack-frame main">main()</div>
+                    <div class="stack-frame nontail">print(10)<span class="stack-status">Waiting to print(10)</span></div>
+                    <div class="stack-frame nontail">print(5)<span class="stack-status">Waiting to print(5)</span></div>
+                    <div class="stack-frame nontail">print(2)<span class="stack-status">Waiting to print(2)</span></div>
+                    <div class="stack-frame nontail">print(1)<span class="stack-status">Returns, then prints 1</span></div>
+                </div>
+            </div>
+
+            <p>Because tasks are waiting, the memory <em>cannot</em> be optimized to O(1). The stack must be maintained.</p>
+
+            <h4>Final Output:</h4>
+            <div class="output-box">10 5 2 1 1 2 5 10</div>
+        </div>
+
+        <!-- Example 3 -->
+        <div class="note-card nontail-card">
+            <h2>4. Example 3: Non-Tail Recursion (Variation 2)</h2>
+            <p>Sometimes, Non-Tail recursion tries to trick you. Look at the code below. Is it Tail or Non-Tail?</p>
+
+            <div class="alert-box">
+                <strong>Note:</strong> In the video lecture, the function was written as <code>void print</code>, but since it returns a value, the correct C signature must be <code>int print(int a)</code>.
+            </div>
+
+<pre>
+<span class="code-keyword">int</span> <span class="code-function">print</span>(<span class="code-keyword">int</span> a) {
+    <span class="code-keyword">if</span> (a &lt; 1) 
+        <span class="code-keyword">return</span> 0; 
+    <span class="code-keyword">else</span>
+        <span class="code-keyword">return</span> 1 + <span class="code-function">print</span>(a/2);  <span class="code-comment">// &lt;--- TRICK QUESTION!</span>
+}
+
+<span class="code-keyword">void</span> <span class="code-function">main</span>() {
+    <span class="code-keyword">int</span> x = <span class="code-function">print</span>(10);
+    <span class="code-function">printf</span>(<span class="code-text">"%d"</span>, x);
+}
+</pre>
+
+            <h3>Why is this Non-Tail?</h3>
+            <p>At first glance, <code>print(a/2)</code> looks like it's at the end. However, the last operation to occur is actually the <strong>Addition (+)</strong>. The function cannot add 1 until <code>print(a/2)</code> finishes and brings back a value. Therefore, it is Non-Tail!</p>
+
+            <h3>Visualization: Doing Math on the Way Back</h3>
+            <div class="visualization-box">
+                <h4>Stack Memory (The Math Phase)</h4>
+                <div class="stack-container">
+                    <div class="stack-frame main">main() <span class="stack-status">Receives 4, assigns to x</span></div>
+                    <div class="stack-frame nontail">print(10)<span class="stack-status">Receives 3. Returns 1 + 3 = 4</span></div>
+                    <div class="stack-frame nontail">print(5)<span class="stack-status">Receives 2. Returns 1 + 2 = 3</span></div>
+                    <div class="stack-frame nontail">print(2)<span class="stack-status">Receives 1. Returns 1 + 1 = 2</span></div>
+                    <div class="stack-frame nontail">print(1)<span class="stack-status">Receives 0. Returns 1 + 0 = 1</span></div>
+                </div>
+            </div>
+
+            <h4>Final Output:</h4>
+            <div class="output-box">4</div>
+        </div>
+
+        <!-- Summary -->
+        <div class="note-card">
+            <h2>5. Lecture Summary & Cheat Sheet</h2>
+            <p>Here is the ultimate cheat sheet based on the instructor's final notes:</p>
+            <table style="width: 100%; text-align: left; border-collapse: collapse; margin-top: 15px;">
+                <tr style="background-color: var(--primary); color: white;">
+                    <th style="padding: 10px; border: 1px solid #ddd;">Feature</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Tail Recursion</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Non-Tail Recursion</th>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">Last Statement</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Recursive Call</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Pending Operation (Math, Print, etc.)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">"Return" Phase</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Nothing left to do. Passes control back.</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Executes remaining code using saved memory.</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">Memory Space</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">O(1) (Optimized by Compiler)</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">O(n) (Maintains Stack Memory)</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd; font-weight: bold;">Best Practice</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Highly efficient, encouraged.</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Can cause Stack Overflow if n is too large.</td>
+                </tr>
+            </table>
+        </div>
+
+    </div>
+
+</body>
+</html>

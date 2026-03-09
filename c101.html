@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Function Pointers in C - Study Notes</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --text-main: #333;
+            --text-muted: #555;
+            --accent-blue: #2563eb;
+            --card-bg: #ffffff;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --alert-bg: #fef2f2;
+            --alert-border: #ef4444;
+            --tip-bg: #eff6ff;
+            --tip-border: #3b82f6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--accent-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Note Cards (Vertical Feed) */
+        .note-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e5e7eb;
+        }
+
+        .note-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #f3f4f6;
+            color: #111;
+        }
+
+        .note-card p {
+            margin-bottom: 1rem;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            margin: 1.5rem 0;
+        }
+
+        .keyword { color: #569cd6; }
+        .type { color: #4ec9b0; }
+        .func { color: #dcdcaa; }
+        .comment { color: #6a9955; font-style: italic; }
+        .number { color: #b5cea8; }
+
+        /* Syntax Visualization */
+        .syntax-visual {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px dashed #cbd5e1;
+            margin: 1.5rem 0;
+            justify-content: center;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .syntax-part {
+            text-align: center;
+            padding: 0.5rem;
+        }
+
+        .syntax-part span {
+            display: block;
+            font-size: 0.8rem;
+            font-family: sans-serif;
+            color: var(--accent-blue);
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        /* Alerts & Tips */
+        .alert, .tip {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            border-left: 4px solid;
+        }
+
+        .alert {
+            background-color: var(--alert-bg);
+            border-color: var(--alert-border);
+        }
+
+        .alert h3 { color: var(--alert-border); margin-bottom: 0.5rem; font-size: 1.1rem;}
+
+        .tip {
+            background-color: var(--tip-bg);
+            border-color: var(--tip-border);
+        }
+
+        /* Memory Visualization CSS */
+        .memory-visual {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .ram-container {
+            width: 300px;
+            border: 2px solid #333;
+            border-radius: 4px;
+            background: #fff;
+            position: relative;
+        }
+
+        .ram-header {
+            background: #333;
+            color: #fff;
+            text-align: center;
+            padding: 0.5rem;
+            font-weight: bold;
+        }
+
+        .memory-block {
+            border-bottom: 1px solid #ccc;
+            padding: 1rem;
+            position: relative;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .memory-block.code { background-color: #f0fdf4; }
+        .memory-block.stack { background-color: #fffbeb; }
+
+        .address {
+            position: absolute;
+            left: -60px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: monospace;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .var-box {
+            background: #fff;
+            border: 1px solid #aaa;
+            padding: 5px;
+            margin-top: 5px;
+            font-family: monospace;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        /* Precedence comparison grid */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .comp-card {
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .comp-card code {
+            display: block;
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--accent-blue);
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <header>
+            <h1>Function Pointers in C</h1>
+            <p>Comprehensive Lecture Notes & Visualizations</p>
+        </header>
+
+        <!-- Section 1: Introduction -->
+        <article class="note-card">
+            <h2>1. The Basic Concept</h2>
+            <p>You are likely familiar with standard pointers. An integer pointer holds the memory address of an integer variable. A float pointer holds the address of a float.</p>
+            <pre><span class="type">int</span> *ptr;   <span class="comment">// Pointer to an integer</span>
+<span class="type">float</span> *fptr; <span class="comment">// Pointer to a float</span></pre>
+            <p>Similarly, a <strong>Function Pointer</strong> is a special variable that holds the <strong>memory address of a function</strong>. Just like data is stored in memory, executable code is also stored in memory, and we can point to it!</p>
+        </article>
+
+        <!-- Section 2: Syntax -->
+        <article class="note-card">
+            <h2>2. Syntax & Declaration</h2>
+            <p>To declare a function pointer, you must exactly match the "signature" (prototype) of the function you want it to point to. You need to know two things:</p>
+            <ol style="margin-left: 20px; margin-bottom: 15px;">
+                <li>The function's return type.</li>
+                <li>The data types of the arguments it accepts.</li>
+            </ol>
+
+            <div class="syntax-visual">
+                <div class="syntax-part">
+                    return_type
+                    <span>Match function return</span>
+                </div>
+                <div class="syntax-part">
+                    (*pointer_name)
+                    <span>Must be in parentheses!</span>
+                </div>
+                <div class="syntax-part">
+                    (arg_types)
+                    <span>Match function params</span>
+                </div>
+            </div>
+
+            <h3>Example:</h3>
+            <p>If we have a function that adds two numbers:</p>
+            <pre><span class="type">int</span> <span class="func">sum</span>(<span class="type">int</span> a, <span class="type">int</span> b) {
+    <span class="keyword">return</span> a + b;
+}</pre>
+            <p>The pointer for this specific function is declared as:</p>
+            <pre><span class="type">int</span> (*ptr)(<span class="type">int</span>, <span class="type">int</span>);</pre>
+        </article>
+
+        <!-- Section 3: Operator Precedence -->
+        <article class="note-card">
+            <h2>3. ⚠️ CRUCIAL: Operator Precedence</h2>
+            <p>A very common exam and interview question is: <em>Why do we need the parentheses around <code>(*ptr)</code>?</em> Let's look at what happens if we forget them.</p>
+
+            <div class="comparison-grid">
+                <div class="comp-card">
+                    <code>int (*ptr)(int, int);</code>
+                    <p><strong>Correct!</strong></p>
+                    <p>Parentheses force <code>(*ptr)</code> to evaluate first. The compiler sees: "A <strong>pointer</strong> named ptr that points to a function taking two ints and returning a normal int."</p>
+                </div>
+                <div class="comp-card" style="border-color: var(--alert-border);">
+                    <code>int *ptr(int, int);</code>
+                    <p><strong>Wrong!</strong></p>
+                    <p>Function call <code>()</code> has higher priority than <code>*</code>. The compiler reads <code>ptr()</code> first and thinks ptr is a <strong>normal function</strong> that returns an Integer Pointer <code>(int *)</code>.</p>
+                </div>
+            </div>
+
+            <div class="alert">
+                <h3>Interview Tip</h3>
+                <p>Always remember: The asterisk and pointer name MUST be wrapped in parentheses to overcome the higher precedence of the function parameter parentheses.</p>
+            </div>
+        </article>
+
+        <!-- Section 4: Under the Hood -->
+        <article class="note-card">
+            <h2>4. Memory Visualization: Under the Hood</h2>
+            <p>How does this actually work in RAM? When your C program runs, the code for your functions is loaded into a specific segment of memory.</p>
+
+            <div class="memory-visual">
+                <div class="ram-container">
+                    <div class="ram-header">Computer RAM</div>
+                    
+                    <div class="memory-block code">
+                        <span class="address">1000</span>
+                        <strong>Code Segment</strong>
+                        <div class="var-box">
+                            Instructions for sum() {<br>
+                            return a + b;<br>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="memory-block stack">
+                        <span class="address">...</span>
+                        <strong>Stack Segment (main)</strong>
+                        <div class="var-box">int s = 0;</div>
+                        <div class="var-box" style="border-color: var(--accent-blue);">
+                            int (*ptr) = 1000;<br>
+                            <em style="font-size: 0.8rem; color: var(--accent-blue);">↳ Points to base address 1000</em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p>Normal pointers point to data. <strong>Function pointers point to executable code.</strong> When we execute <code>ptr(2,3)</code>, the CPU jumps to memory address <code>1000</code> and runs those instructions!</p>
+        </article>
+
+        <!-- Section 5: Calling the Function -->
+        <article class="note-card">
+            <h2>5. Initialization & Execution</h2>
+            <p>Now that the pointer is declared, we assign it the address of our <code>sum</code> function and use it to execute the code.</p>
+
+            <pre><span class="type">void</span> <span class="func">main</span>() {
+    <span class="type">int</span> s = <span class="number">0</span>;
+    
+    <span class="comment">// 1. Initialize pointer with address of sum</span>
+    <span class="type">int</span> (*ptr)(<span class="type">int</span>, <span class="type">int</span>) = &sum; 
+    
+    <span class="comment">// 2. Call the function by dereferencing</span>
+    s = (*ptr)(<span class="number">2</span>, <span class="number">3</span>); 
+    
+    <span class="func">printf</span>(<span class="string">"%d"</span>, s); <span class="comment">// Prints 5</span>
+}</pre>
+        </article>
+
+        <!-- Section 6: Syntax Shortcuts -->
+        <article class="note-card">
+            <h2>6. Practical Syntax Shortcuts</h2>
+            <p>At the end of the video, the instructor demonstrates standard C compiler shortcuts. Because the name of a function automatically decays into a pointer (its base address), the <code>&</code> and <code>*</code> are actually optional!</p>
+
+            <div class="tip">
+                <strong>Strict Syntax:</strong><br>
+                <code>int (*ptr)(int, int) = &sum;</code><br>
+                <code>s = (*ptr)(2, 3);</code>
+                <br><br>
+                <strong>Modern/Shortcut Syntax:</strong><br>
+                <code>int (*ptr)(int, int) = sum;</code><br>
+                <code>s = ptr(2, 3);</code>
+            </div>
+            <p>Both will compile correctly and output the exact same result. Most modern C programmers use the shortcut syntax for cleaner readability.</p>
+        </article>
+
+        <!-- Section 7: Complete Source Code -->
+        <article class="note-card">
+            <h2>7. Complete Source Code</h2>
+            <p>Here is the final, complete code written in VS Code by the instructor at the end of the lecture. Copy and paste this into your own IDE to test it!</p>
+            
+            <pre><span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="comment">// Function Definition</span>
+<span class="type">int</span> <span class="func">sum</span>(<span class="type">int</span> a, <span class="type">int</span> b) {
+    <span class="keyword">return</span> a + b;
+}
+
+<span class="type">void</span> <span class="func">main</span>() {
+    <span class="type">int</span> s = <span class="number">0</span>;
+    
+    <span class="comment">// Function Pointer Declaration & Assignment</span>
+    <span class="comment">// (Using the shortcut syntax)</span>
+    <span class="type">int</span> (*ptr)(<span class="type">int</span>, <span class="type">int</span>) = sum;
+    
+    <span class="comment">// Executing the function via pointer</span>
+    s = ptr(<span class="number">1</span>, <span class="number">2</span>);
+    
+    <span class="func">printf</span>(<span class="string">"sum=%d\n"</span>, s); <span class="comment">// Outputs: sum=3</span>
+}</pre>
+        </article>
+
+    </div>
+
+</body>
+</html>

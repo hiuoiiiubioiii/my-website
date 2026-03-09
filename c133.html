@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Memory Allocation using malloc()</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+        :root {
+            --bg-color: #f4f7f9;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --accent: #2563eb;
+            --accent-light: #eff6ff;
+            --danger: #ef4444;
+            --danger-light: #fef2f2;
+            --code-bg: #1e293b;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.7;
+            padding: 20px;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 40px; /* Continuous spacing between topics */
+            padding-bottom: 100px;
+        }
+
+        /* Header */
+        .page-header {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        }
+        .page-header h1 {
+            font-size: 2.5rem;
+            color: #0f172a;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        .page-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+        .scroll-indicator {
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: var(--accent);
+            font-weight: 600;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(10px); }
+        }
+
+        /* Content Cards */
+        .topic-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            border: 1px solid var(--border);
+        }
+        .topic-card h2 {
+            font-size: 1.8rem;
+            color: #0f172a;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--accent-light);
+        }
+        .topic-card h3 {
+            font-size: 1.3rem;
+            margin: 25px 0 10px;
+            color: #1e293b;
+        }
+        ul {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+
+        /* Code Blocks */
+        pre {
+            background: var(--code-bg);
+            color: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            margin: 20px 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+        code {
+            font-family: 'Fira Code', monospace;
+            background: #e2e8f0;
+            color: #b91c1c;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+        .comment { color: #94a3b8; font-style: italic; }
+        .keyword { color: #38bdf8; }
+        .type { color: #34d399; }
+        .function { color: #facc15; }
+        .string { color: #f87171; }
+
+        /* Callout Boxes */
+        .callout {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid;
+        }
+        .callout.info {
+            background: var(--accent-light);
+            border-color: var(--accent);
+        }
+        .callout.warning {
+            background: var(--danger-light);
+            border-color: var(--danger);
+        }
+        .callout strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* Visualizations */
+        .vis-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin: 30px 0;
+            flex-direction: column;
+        }
+
+        /* Syntax Breakdown Visual */
+        .syntax-breakdown {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.2rem;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .syntax-part {
+            position: relative;
+            padding: 10px 15px;
+            background: #fff;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            text-align: center;
+        }
+        .syntax-part span {
+            display: block;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .syntax-part.blue { border-color: var(--accent); color: var(--accent); }
+        .syntax-part.green { border-color: #10b981; color: #10b981; }
+        .syntax-part.orange { border-color: #f59e0b; color: #f59e0b; }
+
+        /* Heap vs Stack Visual */
+        .memory-layout {
+            display: flex;
+            gap: 40px;
+            width: 100%;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        @media (max-width: 600px) {
+            .memory-layout { flex-direction: column; align-items: center; }
+        }
+        .memory-zone {
+            flex: 1;
+            background: #fff;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            min-width: 250px;
+        }
+        .memory-zone h4 {
+            margin-bottom: 15px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+        .mem-block {
+            background: var(--accent-light);
+            border: 1px solid var(--accent);
+            padding: 15px;
+            margin: 10px auto;
+            border-radius: 6px;
+            font-family: 'Fira Code', monospace;
+            position: relative;
+        }
+        .mem-block.pointer {
+            background: #fef3c7;
+            border-color: #f59e0b;
+        }
+        .address-label {
+            position: absolute;
+            left: -50px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+        .heap-array {
+            display: flex;
+            flex-direction: column;
+            border: 2px solid var(--accent);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .heap-cell {
+            padding: 15px;
+            border-bottom: 1px solid var(--accent);
+            background: var(--accent-light);
+            display: flex;
+            justify-content: space-between;
+            font-family: 'Fira Code', monospace;
+        }
+        .heap-cell:last-child { border-bottom: none; }
+        .heap-cell span.addr { color: var(--text-muted); font-size: 0.85rem; }
+        
+        /* Analogy Visual */
+        .analogy-box {
+            display: flex;
+            gap: 20px;
+            background: #fffbeb;
+            padding: 20px;
+            border-left: 4px solid #f59e0b;
+            border-radius: 8px;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .analogy-icon {
+            font-size: 3rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header -->
+        <header class="page-header">
+            <h1>Dynamic Memory Allocation in C</h1>
+            <p>Complete In-Depth Study Notes on the <code>malloc()</code> Function</p>
+            <div class="scroll-indicator">↓ Scroll to start learning ↓</div>
+        </header>
+
+        <!-- Section 1 -->
+        <article class="topic-card">
+            <h2>1. Introduction to malloc()</h2>
+            <p><strong>What it stands for:</strong> <code>malloc</code> stands for <strong>Memory Allocation</strong>.</p>
+            <p><strong>Primary Use:</strong> It is a function used to dynamically allocate a single, contiguous block of memory at <em>runtime</em>. While often used to allocate memory for structures, it is heavily used to create dynamic arrays where the size is decided by the user.</p>
+            
+            <div class="callout info">
+                <strong>The Stack vs. The Heap</strong>
+                Normal variables (like <code>int a[30];</code>) are allocated on the <strong>Stack</strong> at compile time. Memory allocated by <code>malloc()</code> comes from the <strong>Heap</strong> section of your computer's memory at runtime.
+            </div>
+
+            <p><strong>The Role of Pointers:</strong> Because <code>malloc()</code> reserves memory far away in the Heap, it returns the <em>address</em> of that memory. Therefore, <strong>you absolutely must use pointers</strong> to catch and use that address. Without pointers, dynamic memory allocation is impossible.</p>
+        </article>
+
+        <!-- Section 2 -->
+        <article class="topic-card">
+            <h2>2. The Exact Prototype of malloc()</h2>
+            <p>If you look inside the C standard library, this is how <code>malloc()</code> is defined:</p>
+            
+            <div class="vis-container">
+                <div class="syntax-breakdown">
+                    <div class="syntax-part">void* <span>Return Type</span></div>
+                    <div class="syntax-part">malloc( <span>Function Name</span></div>
+                    <div class="syntax-part">size_t size <span>Argument</span></div>
+                    <div class="syntax-part">); <span></span></div>
+                </div>
+            </div>
+
+            <h3>Breaking down the components:</h3>
+            <ul>
+                <li><strong><code>size_t size</code>:</strong> This is the argument you pass in. <code>size_t</code> is essentially an <code>unsigned int</code>. You can only request a positive number of bytes (or zero). You cannot request "negative" memory.</li>
+                <li><strong><code>void*</code> (The Return Type):</strong> <code>malloc</code> returns a <code>void</code> pointer (a generic pointer). 
+                    <br><br><em>Why?</em> Because <code>malloc</code> just reserves raw bytes. It has no idea if you plan to store integers, floats, or characters in those bytes.
+                </li>
+            </ul>
+        </article>
+
+        <!-- Section 3 -->
+        <article class="topic-card">
+            <h2>3. The Problem with Hardcoding & sizeof()</h2>
+            <p>When calling <code>malloc()</code>, you pass it one argument: the number of bytes you want.</p>
+            
+            <p><strong>Bad Practice:</strong> <code>malloc(20)</code></p>
+            <p>You should rarely hardcode the number of bytes. Why? Because an <code>int</code> might take 4 bytes on a 64-bit machine, but only 2 bytes on an older 32-bit machine. If you hardcode bytes, your code is not portable and might waste memory or crash.</p>
+
+            <p><strong>Best Practice:</strong> Use the <code>sizeof()</code> operator.</p>
+            <pre><code><span class="function">malloc</span>(<span class="string">3</span> * <span class="keyword">sizeof</span>(<span class="type">int</span>));</code></pre>
+            <p>If you want an array of 3 integers, you let the compiler do the math. If an int is 4 bytes, it allocates <code>12</code> bytes. If an int is 2 bytes, it allocates <code>6</code> bytes. It is always safe.</p>
+        </article>
+
+        <!-- Section 4 -->
+        <article class="topic-card">
+            <h2>4. The Master Syntax Formula</h2>
+            <p>Because <code>malloc</code> returns a generic <code>void*</code>, you must <strong>Typecast</strong> the pointer into the data type you intend to use. Combining typecasting and <code>sizeof()</code> gives us the standard formula:</p>
+
+            <div class="vis-container">
+                <div class="syntax-breakdown">
+                    <div class="syntax-part blue">ptr = <span>Pointer Variable</span></div>
+                    <div class="syntax-part green">(int*) <span>Typecasting</span></div>
+                    <div class="syntax-part orange">malloc( <span>Function</span></div>
+                    <div class="syntax-part">n * sizeof(int) <span>Total Bytes Required</span></div>
+                    <div class="syntax-part orange">); <span></span></div>
+                </div>
+            </div>
+            <p><em>(Where <code>n</code> is the number of elements the user wants to store).</em></p>
+        </article>
+
+        <!-- Section 5 -->
+        <article class="topic-card">
+            <h2>5. Two Crucial Behaviors of malloc()</h2>
+            
+            <div class="callout warning">
+                <strong>1. Garbage Values</strong>
+                If <code>malloc</code> successfully allocates memory, the block is left <strong>uninitialized</strong>. If you print the block before putting your own data into it, it will print garbage values left over by previous programs.
+            </div>
+
+            <div class="callout warning">
+                <strong>2. Allocation Failure</strong>
+                What if you ask for memory, but the Heap is full? <code>malloc</code> will fail. If it fails, it returns a <strong><code>NULL</code></strong> pointer. <em>Always check if <code>ptr == NULL</code> after using malloc to ensure your program doesn't crash!</em>
+            </div>
+        </article>
+
+        <!-- Section 6 -->
+        <article class="topic-card">
+            <h2>6. Whiteboard Code Breakdown & Visualization</h2>
+            <p>Here is the complete C program the instructor wrote on the board. Notice the inclusion of <code>stdlib.h</code> (mandatory for memory functions) and the use of <code>free()</code> at the end.</p>
+
+<pre><code><span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt; <span class="comment">// MANDATORY: malloc() and free() live here!</span>
+
+<span class="type">int</span> <span class="function">main</span>() {
+    <span class="type">int</span> n, i, *ptr; <span class="comment">// These static variables live on the Stack</span>
+
+    <span class="function">printf</span>(<span class="string">"Enter total no of values: "</span>);
+    <span class="function">scanf</span>(<span class="string">"%d"</span>, &n); <span class="comment">// Let's say user enters 3</span>
+
+    <span class="comment">// Dynamically allocate memory on the Heap</span>
+    ptr = (<span class="type">int*</span>) <span class="function">malloc</span>(n * <span class="keyword">sizeof</span>(<span class="type">int</span>));
+
+    <span class="comment">// Check for allocation failure</span>
+    <span class="keyword">if</span> (ptr == <span class="keyword">NULL</span>) {
+        <span class="function">printf</span>(<span class="string">"Memory allocation failed!"</span>);
+        <span class="keyword">return</span> 1;
+    }
+
+    <span class="function">printf</span>(<span class="string">"Enter the values:\n"</span>);
+    <span class="keyword">for</span>(i = 0; i < n; i++) {
+        <span class="comment">// ptr holds base address (e.g., 2000). Adding 'i' moves </span>
+        <span class="comment">// the pointer by integer sizes (4 bytes).</span>
+        <span class="comment">// i=0 -> 2000, i=1 -> 2004, i=2 -> 2008.</span>
+        <span class="function">scanf</span>(<span class="string">"%d"</span>, (ptr + i)); 
+    }
+
+    <span class="function">printf</span>(<span class="string">"The entered values are:\n"</span>);
+    <span class="keyword">for</span>(i = 0; i < n; i++) {
+        <span class="comment">// * is the dereference operator. It gets the VALUE at the address.</span>
+        <span class="function">printf</span>(<span class="string">"%d\t"</span>, *(ptr + i)); 
+    }
+
+    <span class="comment">// MANDATORY: You must manually free dynamic memory when done!</span>
+    <span class="function">free</span>(ptr); 
+
+    <span class="keyword">return</span> 0;
+}</code></pre>
+
+            <h3>Visualizing the Execution (Stack vs Heap)</h3>
+            <p>When the code <code>ptr = (int*) malloc(3 * sizeof(int));</code> executes, here is what happens in the computer's memory:</p>
+
+            <div class="vis-container">
+                <div class="memory-layout">
+                    <!-- Stack Area -->
+                    <div class="memory-zone">
+                        <h4>The Stack</h4>
+                        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px;">Static Variables</p>
+                        <div class="mem-block">
+                            n = 3
+                        </div>
+                        <div class="mem-block">
+                            i = 0
+                        </div>
+                        <div class="mem-block pointer">
+                            ptr = 2000
+                            <div style="font-size: 0.75rem; color: #f59e0b; margin-top: 5px;">(Points to Heap ->)</div>
+                        </div>
+                    </div>
+
+                    <!-- Heap Area -->
+                    <div class="memory-zone">
+                        <h4>The Heap</h4>
+                        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 10px;">12 Bytes Allocated Dynamically</p>
+                        <div class="heap-array">
+                            <div class="heap-cell">
+                                <span class="addr">2000</span>
+                                <strong>Value 1</strong>
+                            </div>
+                            <div class="heap-cell">
+                                <span class="addr">2004</span>
+                                <strong>Value 2</strong>
+                            </div>
+                            <div class="heap-cell">
+                                <span class="addr">2008</span>
+                                <strong>Value 3</strong>
+                            </div>
+                        </div>
+                        <p style="margin-top: 15px; font-size: 0.85rem; color: #ef4444;">*Must be cleared using free()</p>
+                    </div>
+                </div>
+            </div>
+            
+        </article>
+
+        <!-- Section 7 -->
+        <article class="topic-card">
+            <h2>7. Why is Dynamic Allocation Better?</h2>
+            <p>During the IDE demonstration, the instructor proves why <code>malloc()</code> is superior to traditional Static Arrays (like <code>int a[30];</code>) using an excellent real-world analogy.</p>
+
+            <div class="analogy-box">
+                <div class="analogy-icon">🫓</div>
+                <div>
+                    <strong>The Hostel Mess / Cafeteria Analogy</strong>
+                    <p><strong>Static Arrays (The Bad Way):</strong> You declare <code>int a[30];</code>. It's like telling the cafeteria in advance to make you 30 chapatis because you <em>might</em> be really hungry. But you show up and only eat 5. You have permanently wasted 25 spaces of memory. Conversely, if you are starving and need 35, the program crashes because you maxed out at 30.</p>
+                    <p style="margin-top: 10px;"><strong>Dynamic Allocation (The malloc Way):</strong> You go to the cafeteria, assess your hunger <em>at that exact moment</em> (Runtime), and ask for exactly 5 chapatis (<code>n=5</code>). The program gives you exactly what you need—no memory is wasted, and you never run out of space.</p>
+                </div>
+            </div>
+        </article>
+
+    </div>
+
+</body>
+</html>

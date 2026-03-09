@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes: Append Mode in C</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Global Styles */
+        :root {
+            --primary: #3b82f6;
+            --primary-light: #eff6ff;
+            --text-dark: #1f2937;
+            --text-light: #6b7280;
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --code-bg: #1e293b;
+            --accent: #10b981;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* Vertical Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .header-title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header-title h1 {
+            font-size: 2.5rem;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+
+        .header-title p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        /* Card Styling */
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-top: 4px solid var(--primary);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            color: var(--primary);
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .highlight {
+            background-color: #fef08a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        /* Whiteboard Visualizations */
+        .whiteboard-container {
+            background-color: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .file-drawing {
+            background: white;
+            border: 2px solid #475569;
+            border-radius: 4px 12px 4px 4px;
+            width: 250px;
+            min-height: 150px;
+            padding: 20px;
+            margin: 0 auto;
+            font-family: 'Fira Code', monospace;
+            box-shadow: 4px 4px 0px #cbd5e1;
+            position: relative;
+        }
+
+        .file-drawing::before {
+            content: "abc.txt";
+            position: absolute;
+            top: -30px;
+            left: 0;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .old-text { color: #64748b; }
+        .new-text { color: var(--accent); font-weight: bold; }
+        
+        .cursor-blink {
+            display: inline-block;
+            width: 8px;
+            height: 1.2em;
+            background-color: var(--primary);
+            vertical-align: middle;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* Code Blocks */
+        .code-window {
+            background-color: var(--code-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 20px 0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .code-header {
+            background-color: #334155;
+            padding: 10px 15px;
+            color: #94a3b8;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .mac-dots span {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .mac-dots .red { background-color: #ff5f56; }
+        .mac-dots .yellow { background-color: #ffbd2e; }
+        .mac-dots .green { background-color: #27c93f; }
+
+        pre {
+            margin: 0;
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+        }
+
+        .c-keyword { color: #c678dd; }
+        .c-type { color: #e5c07b; }
+        .c-string { color: #98c379; }
+        .c-func { color: #61afef; }
+        .c-comment { color: #7f848e; font-style: italic; }
+
+        /* Comparison Table */
+        .table-responsive {
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .vs-code-demo {
+            background-color: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Fira Code', monospace;
+            color: #c9d1d9;
+            margin-bottom: 15px;
+        }
+
+        .terminal-output {
+            color: #8b949e;
+        }
+        .terminal-input {
+            color: #58a6ff;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .card { padding: 20px; }
+            .header-title h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header -->
+        <div class="header-title">
+            <h1>Append Mode in C 📂</h1>
+            <p>Scroll to learn how to add data to existing files without losing content.</p>
+        </div>
+
+        <!-- Section 1: Introduction -->
+        <article class="card">
+            <h2>1. The Core Concept</h2>
+            <p>Before this lesson, we discussed two primary file handling modes:</p>
+            <ul>
+                <li><strong>Read Mode (<code style="color:var(--primary)">"r"</code>):</strong> Look at the content only. No modifications allowed.</li>
+                <li><strong>Write Mode (<code style="color:var(--danger)">"w"</code>):</strong> Write data to a file, but it <span class="highlight">erases (overwrites)</span> everything previously inside it.</li>
+            </ul>
+            <p><strong>Append Mode (<code style="color:var(--accent)">"a"</code>)</strong> is the solution when you want to keep the existing data and simply <strong>add new data to the very end</strong> of the file.</p>
+        </article>
+
+        <!-- Section 2: Visualizing the Whiteboard -->
+        <article class="card">
+            <h2>2. Visualizing Append Mode</h2>
+            <p>Imagine we have an existing text file. In the video, the instructor draws this exact scenario on the whiteboard:</p>
+            
+            <div class="whiteboard-container">
+                <p style="text-align: center; color: #64748b; font-size: 0.9rem; margin-top: 0;">Instructor's Whiteboard Drawing</p>
+                <div class="file-drawing">
+                    <span class="old-text">Jenny</span><br>
+                    <span class="new-text">Khatri</span><span class="cursor-blink"></span>
+                </div>
+            </div>
+
+            <p><strong>What is happening here?</strong></p>
+            <p>The file originally only contained the word <code style="color:var(--text-light)">Jenny</code>. By opening the file in Append Mode, the C compiler automatically places the cursor <strong>after</strong> the existing text. When we write <code style="color:var(--accent)">Khatri</code>, it is added safely without deleting Jenny.</p>
+        </article>
+
+        <!-- Section 3: Code Breakdown -->
+        <article class="card">
+            <h2>3. Step-by-Step Code Implementation</h2>
+            <p>Here is the complete C program the instructor writes, combining her whiteboard code with her verbal explanations.</p>
+
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="mac-dots">
+                        <span class="red"></span><span class="yellow"></span><span class="green"></span>
+                    </div>
+                    append_file.c
+                </div>
+<pre><code><span class="c-keyword">#include</span> <span class="c-string">&lt;stdio.h&gt;</span>
+<span class="c-keyword">#include</span> <span class="c-string">&lt;stdlib.h&gt;</span>
+
+<span class="c-type">void</span> <span class="c-func">main</span>() {
+    <span class="c-comment">// 1. Create a file pointer & initialize to NULL</span>
+    <span class="c-type">FILE</span> *fp = <span class="c-keyword">NULL</span>; 
+    
+    <span class="c-comment">// 2. Create a buffer to hold the user's input</span>
+    <span class="c-type">char</span> str[<span class="c-keyword">50</span>]; 
+
+    <span class="c-comment">// 3. Open the file in APPEND mode ("a")</span>
+    fp = <span class="c-func">fopen</span>(<span class="c-string">"abc.txt"</span>, <span class="c-string">"a"</span>); 
+
+    <span class="c-comment">// 4. Error Handling (If file fails to open)</span>
+    <span class="c-keyword">if</span> (fp == <span class="c-keyword">NULL</span>) {
+        <span class="c-func">printf</span>(<span class="c-string">"error"</span>);
+        <span class="c-func">exit</span>(<span class="c-keyword">1</span>);
+    }
+
+    <span class="c-comment">// 5. Ask user what they want to add</span>
+    <span class="c-func">printf</span>(<span class="c-string">"Enter the content you want to append: "</span>);
+    
+    <span class="c-comment">// 6. Read input (gets reads strings with spaces)</span>
+    <span class="c-func">gets</span>(str); 
+
+    <span class="c-comment">// 7. Write the string into the file</span>
+    <span class="c-comment">// Notice the \n adds the new text to a new line</span>
+    <span class="c-func">fprintf</span>(fp, <span class="c-string">"\n%s"</span>, str);  
+    
+    <span class="c-comment">// 8. Success message to console</span>
+    <span class="c-func">printf</span>(<span class="c-string">"Successfully appended"</span>);
+
+    <span class="c-comment">// 9. Save memory and prevent data corruption</span>
+    <span class="c-func">fclose</span>(fp);
+}</code></pre>
+            </div>
+        </article>
+
+        <!-- Section 4: Alternative Functions -->
+        <article class="card">
+            <h2>4. Functions Used to Append</h2>
+            <p>Once a file is opened in Append Mode (<code>"a"</code>), you can use any standard writing function. The instructor highlights three options:</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <div style="background: var(--primary-light); padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary);">
+                    <code style="color:var(--primary); font-weight:bold; font-size:1.1rem;">fprintf(fp, "%s", str);</code>
+                    <p style="margin: 5px 0 0 0;">Best if you want to control formatting. You can easily add <code>\n</code> here to push appended data to the next line.</p>
+                </div>
+                
+                <div style="background: var(--primary-light); padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary);">
+                    <code style="color:var(--primary); font-weight:bold; font-size:1.1rem;">fputs(str, fp);</code>
+                    <p style="margin: 5px 0 0 0;">A simple function specifically designed for putting a standard string directly into a file.</p>
+                </div>
+
+                <div style="background: var(--primary-light); padding: 15px; border-radius: 8px; border-left: 4px solid var(--primary);">
+                    <code style="color:var(--primary); font-weight:bold; font-size:1.1rem;">fputc(char, fp);</code>
+                    <p style="margin: 5px 0 0 0;">Used to append a <strong>single character</strong>. If you want to write a whole string using this, you must place it inside a <code>while</code> or <code>for</code> loop.</p>
+                </div>
+            </div>
+        </article>
+
+        <!-- Section 5: Exam Prep (w vs a) -->
+        <article class="card">
+            <h2>5. Exam Prep: "w" vs "a" Mode</h2>
+            <p>This is a highly tested concept in exams and interviews. Understand the exact differences:</p>
+            
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Scenario</th>
+                            <th>Write Mode (<code style="color:var(--danger)">"w"</code>)</th>
+                            <th>Append Mode (<code style="color:var(--accent)">"a"</code>)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>If file DOES NOT exist</strong></td>
+                            <td>Creates a brand new file.</td>
+                            <td>Creates a brand new file.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>If file DOES exist</strong></td>
+                            <td><span style="color:var(--danger); font-weight:600;">Erases</span> previous content.</td>
+                            <td><span style="color:var(--accent); font-weight:600;">Keeps</span> previous content.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cursor Location</strong></td>
+                            <td>Starts at the <strong>beginning</strong>.</td>
+                            <td>Starts at the <strong>very end</strong>.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </article>
+
+        <!-- Section 6: Practical Demonstration -->
+        <article class="card">
+            <h2>6. Practical VS Code Demonstration</h2>
+            <p>The instructor demonstrates the difference between appending with and without a new-line character.</p>
+
+            <h3 style="font-size: 1.1rem; color: #475569;">Test 1: Appending on the Same Line</h3>
+            <p>Code used: <code>fputs(str, fp);</code></p>
+            <div class="vs-code-demo">
+                <div class="terminal-output">PS C:\Programs> ./append</div>
+                <div class="terminal-output">Enter the content you want to append: <span class="terminal-input">hello jenny</span></div>
+                <div class="terminal-output">Successfully appended</div>
+            </div>
+            <div class="whiteboard-container" style="padding: 15px;">
+                <p style="margin:0; font-family:'Fira Code', monospace; font-size: 0.9rem;">
+                    <span style="color:#64748b">welcome to jenny's lectures</span><span style="color:var(--accent); font-weight:bold;">hello jenny</span>
+                </p>
+                <p style="font-size: 0.85rem; color: #64748b; margin-top: 10px;">* Notice how the new text slammed directly against the old text on the exact same line.</p>
+            </div>
+
+            <h3 style="font-size: 1.1rem; color: #475569; margin-top: 30px;">Test 2: Appending on a New Line</h3>
+            <p>Code used: <code>fprintf(fp, "\n%s", str);</code></p>
+            <div class="vs-code-demo">
+                <div class="terminal-output">PS C:\Programs> ./append</div>
+                <div class="terminal-output">Enter the content you want to append: <span class="terminal-input">I love India</span></div>
+                <div class="terminal-output">Successfully appended</div>
+            </div>
+            <div class="whiteboard-container" style="padding: 15px;">
+                <p style="margin:0; font-family:'Fira Code', monospace; font-size: 0.9rem; line-height:1.5;">
+                    <span style="color:#64748b">welcome to jenny's lectureshello jenny</span><br>
+                    <span style="color:var(--accent); font-weight:bold;">I love India</span>
+                </p>
+                <p style="font-size: 0.85rem; color: #64748b; margin-top: 10px;">* The <code>\n</code> successfully pushed the cursor down one line before inserting the new text.</p>
+            </div>
+        </article>
+
+        <div style="text-align: center; color: var(--text-light); padding: 20px 0;">
+            <p>End of Module • Keep Coding 💻</p>
+        </div>
+
+    </div>
+
+</body>
+</html>

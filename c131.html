@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: Copy File Contents</title>
+    <style>
+        /* Base Reset & Typography */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f3f4f6;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Vertical Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px; /* Space between feed cards */
+        }
+
+        .header-card {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header-card h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .header-card p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Content Cards */
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-top: 4px solid #4f46e5;
+        }
+
+        .card h2 {
+            color: #1f2937;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+            font-size: 1.5rem;
+        }
+
+        .card p {
+            margin-bottom: 15px;
+            color: #4b5563;
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+            color: #4b5563;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* --- VISUALIZATIONS --- */
+        .visualization-box {
+            background-color: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .files-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .file {
+            background: white;
+            border: 2px solid #94a3b8;
+            border-radius: 6px;
+            width: 200px;
+            min-height: 150px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .file-header {
+            font-family: monospace;
+            font-weight: bold;
+            color: #4f46e5;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .file-content {
+            font-family: monospace;
+            color: #333;
+            line-height: 1.8;
+        }
+
+        /* Animation for character transfer */
+        .moving-char {
+            position: absolute;
+            left: 210px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #10b981;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: bold;
+            animation: moveRight 3s infinite;
+        }
+
+        @keyframes moveRight {
+            0% { left: 210px; opacity: 0; }
+            10% { opacity: 1; }
+            80% { left: calc(100% - 240px); opacity: 1; }
+            90% { opacity: 0; }
+            100% { left: calc(100% - 240px); opacity: 0; }
+        }
+
+        /* Code Block Styling */
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: auto;
+            margin-top: 15px;
+            line-height: 1.5;
+        }
+
+        .keyword { color: #569cd6; }
+        .function { color: #dcdcaa; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; }
+        .variable { color: #9cdcfe; }
+
+        .callout {
+            background: #e0e7ff;
+            border-left: 4px solid #4f46e5;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+
+    <!-- HEADER -->
+    <div class="header-card">
+        <h1>Program to Copy Content of One File into Another</h1>
+        <p>In-Depth Class Notes & Visualizations based on Jenny's Lectures</p>
+    </div>
+
+    <!-- CARD 1: The Concept -->
+    <div class="card">
+        <h2>1. The Conceptual Setup (Whiteboard Logic)</h2>
+        <p>Before writing a single line of code, we must understand the logic. We have an existing file with text, and we want to transfer that text to a brand new file, <strong>character by character</strong>.</p>
+        
+        <div class="visualization-box">
+            <h3 style="text-align: center; margin-bottom: 20px; color: #4b5563;">Visualizing the File Transfer</h3>
+            <div class="files-wrapper">
+                <div class="file">
+                    <div class="file-header">abc.txt (Source)</div>
+                    <div class="file-content">
+                        Hi<br>
+                        Hello<br>
+                        Jenny's lectures
+                    </div>
+                </div>
+
+                <div class="moving-char">'H'</div>
+
+                <div class="file">
+                    <div class="file-header">Destination.txt</div>
+                    <div class="file-content">
+                        H...<br>
+                        <i style="color: #94a3b8; font-size: 0.8rem;">(Building character<br>by character)</i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="callout">
+            <strong>Key Concept:</strong> We cannot use a single file pointer for two files. We need exactly <strong>two file pointers</strong>. One will handle the <code>"r"</code> (Read) mode for the source, and the other will handle the <code>"w"</code> (Write) mode for the destination.
+        </div>
+    </div>
+
+    <!-- CARD 2: Required Functions -->
+    <div class="card">
+        <h2>2. Essential C Functions Required</h2>
+        <p>To achieve this, we will use the standard file handling functions provided by <code>&lt;stdio.h&gt;</code>.</p>
+        <ul>
+            <li><code>fopen()</code>: Used to open the files. We need <code>"r"</code> mode to read the source, and <code>"w"</code> mode to write to the destination.</li>
+            <li><code>fgetc()</code>: <strong>File Get Character.</strong> This fetches a single character from our source file pointer.</li>
+            <li><code>fputc()</code>: <strong>File Put Character.</strong> This places the fetched character into our destination file pointer.</li>
+            <li><code>fclose()</code>: Used to close both files at the end of the program to free up memory.</li>
+            <li><code>exit(1)</code>: Located in <code>&lt;stdlib.h&gt;</code>. Used to immediately terminate the program if a file fails to open.</li>
+        </ul>
+        <p><em>Instructor Note:</em> If you want a file capable of both reading and writing simultaneously, you would use <code>"w+"</code> mode, but for a strict copy-paste operation, <code>"r"</code> and <code>"w"</code> are perfect.</p>
+    </div>
+
+    <!-- CARD 3: Step-by-Step Code Construction -->
+    <div class="card">
+        <h2>3. Step-by-Step Logic Construction</h2>
+        
+        <p><strong>Step 1: Pointers & Variables</strong></p>
+        <p>Declare two file pointers and a character variable to hold the data temporarily.</p>
+        <div class="code-block">
+            <span class="keyword">FILE</span> *fptr1, *fptr2;<br>
+            <span class="keyword">char</span> c;
+        </div>
+
+        <p style="margin-top: 15px;"><strong>Step 2: Open Source File & Error Check</strong></p>
+        <p>Open <code>abc.txt</code> in Read mode. If the file doesn't exist, the pointer returns <code>NULL</code>.</p>
+        <div class="code-block">
+            fptr1 = <span class="function">fopen</span>(<span class="string">"abc.txt"</span>, <span class="string">"r"</span>);<br>
+            <span class="keyword">if</span> (fptr1 == <span class="keyword">NULL</span>) {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="function">printf</span>(<span class="string">"Error opening source file."</span>);<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="function">exit</span>(1);<br>
+            }
+        </div>
+
+        <p style="margin-top: 15px;"><strong>Step 3: Open Destination File & Error Check</strong></p>
+        <p>Open <code>Destination.txt</code> in Write mode. <strong>Magic trick:</strong> In "w" mode, if the file doesn't exist on your computer, C will automatically create it for you!</p>
+        <div class="code-block">
+            fptr2 = <span class="function">fopen</span>(<span class="string">"Destination.txt"</span>, <span class="string">"w"</span>);<br>
+            <span class="keyword">if</span> (fptr2 == <span class="keyword">NULL</span>) {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="function">printf</span>(<span class="string">"Error creating destination file."</span>);<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="function">exit</span>(1);<br>
+            }
+        </div>
+    </div>
+
+    <!-- CARD 4: The Core Loop -->
+    <div class="card">
+        <h2>4. The Core Loop Mechanism</h2>
+        <p>How do we know when to stop copying? We use a <code>while</code> loop that runs until it hits <code>EOF</code> (End Of File).</p>
+        
+        <div class="visualization-box" style="padding: 20px;">
+            <div style="background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 8px; font-family: monospace; font-size: 1.1rem; text-align: center;">
+                <span class="keyword">while</span> ( (c = <span class="function">fgetc</span>(fptr1)) != <span class="keyword">EOF</span> )
+            </div>
+            <p style="margin-top: 15px; text-align: center;"><strong>What is happening inside this single line?</strong></p>
+            <ul style="max-width: 500px; margin: 10px auto; text-align: left;">
+                <li><strong>1.</strong> <code>fgetc(fptr1)</code> grabs a character (e.g., 'H').</li>
+                <li><strong>2.</strong> <code>c = ...</code> assigns that 'H' to our variable <code>c</code>.</li>
+                <li><strong>3.</strong> <code>!= EOF</code> checks: Is 'H' the End of File? No! So, enter the loop.</li>
+            </ul>
+        </div>
+
+        <p>Inside the loop, we simply push that character into the second file:</p>
+        <div class="code-block">
+            <span class="function">fputc</span>(c, fptr2);
+        </div>
+    </div>
+
+    <!-- CARD 5: The Complete Code -->
+    <div class="card">
+        <h2>5. The Complete Final Code</h2>
+        <p>Here is the final, assembled code exactly as written on the whiteboard.</p>
+        
+        <div class="code-block">
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt; <span class="comment">// Required for exit(1)</span>
+
+<span class="keyword">void</span> <span class="function">main</span>() {
+    <span class="keyword">FILE</span> *fptr1, *fptr2;
+    <span class="keyword">char</span> c;
+
+    <span class="comment">// 1. Open source file in Read mode</span>
+    fptr1 = <span class="function">fopen</span>(<span class="string">"abc.txt"</span>, <span class="string">"r"</span>);
+    <span class="keyword">if</span> (fptr1 == <span class="keyword">NULL</span>) {
+        <span class="function">printf</span>(<span class="string">"Cannot open file\n"</span>);
+        <span class="function">exit</span>(1);
+    }
+
+    <span class="comment">// 2. Open destination file in Write mode</span>
+    fptr2 = <span class="function">fopen</span>(<span class="string">"Destination.txt"</span>, <span class="string">"w"</span>);
+    <span class="keyword">if</span> (fptr2 == <span class="keyword">NULL</span>) {
+        <span class="function">printf</span>(<span class="string">"Cannot open file\n"</span>);
+        <span class="function">exit</span>(1);
+    }
+
+    <span class="comment">// 3. Read from fptr1 and Write to fptr2 until End Of File</span>
+    <span class="keyword">while</span>((c = <span class="function">fgetc</span>(fptr1)) != <span class="keyword">EOF</span>) {
+        <span class="function">fputc</span>(c, fptr2);
+    }
+
+    <span class="comment">// 4. Success message and cleanup</span>
+    <span class="function">printf</span>(<span class="string">"Successfully copied!"</span>);
+    
+    <span class="function">fclose</span>(fptr1);
+    <span class="function">fclose</span>(fptr2);
+}
+        </div>
+    </div>
+
+    <!-- CARD 6: Practical Execution -->
+    <div class="card">
+        <h2>6. Practical Execution (Laptop Demo)</h2>
+        <p>During the final segment of the lecture, the instructor proves the logic works in VS Code:</p>
+        <ul>
+            <li><strong>Before Execution:</strong> The directory only contains <code>abc.txt</code>. There is no destination file.</li>
+            <li><strong>Execution:</strong> The program is compiled and run. The terminal outputs <code>"Successfully copied!"</code>.</li>
+            <li><strong>After Execution:</strong> A brand new file named <code>Destination.txt</code> automatically appears in the VS Code file explorer. Clicking it reveals the exact text from <code>abc.txt</code>.</li>
+        </ul>
+        <div class="callout">
+            <strong>Instructor's Challenge:</strong> She mentions this is just one method (character-by-character). You can also achieve this by reading complete strings using different functions (like <code>fgets</code> and <code>fputs</code>). That is your assignment to try!
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: Copy File Contents</title>
+    <style>
+        /* Base Reset & Typography */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f3f4f6;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Vertical Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px; /* Space between feed cards */
+        }
+
+        .header-card {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header-card h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .header-card p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Content Cards */
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-top: 4px solid #4f46e5;
+        }
+
+        .card h2 {
+            color: #1f2937;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+            font-size: 1.5rem;
+        }
+
+        .card p {
+            margin-bottom: 15px;
+            color: #4b5563;
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+            color: #4b5563;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* --- VISUALIZATIONS --- */
+        .visualization-box {
+            background-color: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .files-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .file {
+            background: white;
+            border: 2px solid #94a3b8;
+            border-radius: 6px;
+            width: 200px;
+            min-height: 150px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .file-header {
+            font-family: monospace;
+            font-weight: bold;
+            color: #4f46e5;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .file-content {
+            font-family: monospace;
+            color: #333;
+            line-height: 1.8;
+        }
+
+        /* Animation for character transfer */
+        .moving-char {
+            position: absolute;
+            left: 210px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #10b981;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: bold;
+            animation: moveRight 3s infinite;
+        }
+
+        @keyframes moveRight {
+            0% { left: 210px; opacity: 0; }
+            10% { opacity: 1; }
+            80% { left: calc(100% - 240px); opacity: 1; }
+            90% { opacity: 0; }
+            100% { left: calc(100% - 240px); opacity: 0; }
+        }
+
+        /* Code Block Styling */
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: auto;
+            margin-top: 15px;
+            line-height: 1.5;
+        }
+
+        .keyword { color: #569cd6; }
+        .function { color: #dcdcaa; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; }
+        .variable { color: #9cdcfe; }
+
+        .callout {
+            background: #e0e7ff;
+            border-left: 4px solid #4f46e5;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+
+    <!-- HEADER -->
+    <div class="header-card">
+        <h1>Program to Copy Content of One File into Another</h1>
+        <p>In-Depth Class Notes & Visualizations based on Jenny's Lectures</p>
+    </div>
+
+    <!-- CARD 1: The Concept -->
+    <div class="card">
+        <h2>1. The Conceptual Setup (Whiteboard Logic)</h2>
+        <p>Before writing a single line of code, we must understand the logic. We have an existing file with text, and we want to transfer that text to a brand new file, <strong>character by character</strong>.</p>
+        
+        <div class="visualization-box">
+            <h3 style="text-align: center; margin-bottom: 20px; color: #4b5563;">Visualizing the File Transfer</h3>
+            <div class="files-wrapper">
+                <div class="file">
+                    <div class="file-header">abc.txt (Source)</div>
+                    <div class="file-content">
+                        Hi<br>
+                        Hello<br>
+                        Jenny's lectures
+                    </div>
+                </div>
+
+                <div class="moving-char">'H'</div>
+
+                <div class="file">
+                    <div class="file-header">Destination.txt</div>
+                    <div class="file-content">
+                        H...<br>
+                        <i style="color: #94a3b8; font-size: 0.8rem;">(Building character<br>by character)</i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="callout">
+            <strong>Key Concept:</strong> We cannot use a single file pointer for two files. We need exactly <strong>two file pointers</strong>. One will handle the <code>"r"</code> (Read) mode for the source, and the other will handle the <code>"w"</code> (Write) mode for the destination.
+        </div>
+    </div>
+
+    <!-- CARD 2: Required Functions -->
+    <div class="card">
+        <h2>2. Essential C Functions Required</h2>
+        <p>To achieve this, we will use the standard file handling functions provided by <code>&lt;stdio.h&gt;</code>.</p>
+        <ul>
+            <li><code>fopen()</code>: Used to open the files. We need <code>"r"</code> mode to read the source, and <code>"w"</code> mode to write to the destination.</li>
+            <li><code>fgetc()</code>: <strong>File Get Character.</strong> This fetches a single character from our source file pointer.</li>
+            <li><code>fputc()</code>: <strong>File Put Character.</strong> This places the fetched character into our destination file pointer.</li>
+            <li><code>fclose()</code>: Used to close both files at the end of the program to free up memory.</li>
+            <li><code>exit(1)</code>: Located in <code>&lt;stdlib.h&gt;</code>. Used to immediately terminate the program if a file fails to open.</li>
+        </ul>
+        <p><em>Instructor Note:</em> If you want a file capable of both reading and writing simultaneously, you would use <code>"w+"</code> mode, but for a strict copy-paste operation, <code>"r"</code> and <code>"w"</code> are perfect.</p>
+    </div>
+
+    <!-- CARD 3: Step-by-Step Code Construction -->
+    <div class="card">
+        <h2>3. Step-by-Step Logic Construction</h2>
+        
+        <p><strong>Step 1: Pointers & Variables</strong></p>
+        <p>Declare two file pointers and a character variable to hold the data temporarily.</p>
+        <div class="code-block">
+            <span class="keyword">FILE</span> *fptr1, *fptr2;<br>
+            <span class="keyword">char</span> c;
+        </div>
+
+        <p style="margin-top: 15px;"><strong>Step 2: Open Source File & Error Check</strong></p>
+        <p>Open <code>abc.txt</code> in Read mode. If the file doesn't exist, the pointer returns <code>NULL</code>.</p>
+        <div class="code-block">
+            fptr1 = <span class="function">fopen</span>(<span class="string">"abc.txt"</span>, <span class="string">"r"</span>);<br>
+            <span class="keyword">if</span> (fptr1 == <span class="keyword">NULL</span>) {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="function">printf</span>(<span class="string">"Error opening source file."</span>);<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="function">exit</span>(1);<br>
+            }
+        </div>
+
+        <p style="margin-top: 15px;"><strong>Step 3: Open Destination File & Error Check</strong></p>
+        <p>Open <code>Destination.txt</code> in Write mode. <strong>Magic trick:</strong> In "w" mode, if the file doesn't exist on your computer, C will automatically create it for you!</p>
+        <div class="code-block">
+            fptr2 = <span class="function">fopen</span>(<span class="string">"Destination.txt"</span>, <span class="string">"w"</span>);<br>
+            <span class="keyword">if</span> (fptr2 == <span class="keyword">NULL</span>) {<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="function">printf</span>(<span class="string">"Error creating destination file."</span>);<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="function">exit</span>(1);<br>
+            }
+        </div>
+    </div>
+
+    <!-- CARD 4: The Core Loop -->
+    <div class="card">
+        <h2>4. The Core Loop Mechanism</h2>
+        <p>How do we know when to stop copying? We use a <code>while</code> loop that runs until it hits <code>EOF</code> (End Of File).</p>
+        
+        <div class="visualization-box" style="padding: 20px;">
+            <div style="background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 8px; font-family: monospace; font-size: 1.1rem; text-align: center;">
+                <span class="keyword">while</span> ( (c = <span class="function">fgetc</span>(fptr1)) != <span class="keyword">EOF</span> )
+            </div>
+            <p style="margin-top: 15px; text-align: center;"><strong>What is happening inside this single line?</strong></p>
+            <ul style="max-width: 500px; margin: 10px auto; text-align: left;">
+                <li><strong>1.</strong> <code>fgetc(fptr1)</code> grabs a character (e.g., 'H').</li>
+                <li><strong>2.</strong> <code>c = ...</code> assigns that 'H' to our variable <code>c</code>.</li>
+                <li><strong>3.</strong> <code>!= EOF</code> checks: Is 'H' the End of File? No! So, enter the loop.</li>
+            </ul>
+        </div>
+
+        <p>Inside the loop, we simply push that character into the second file:</p>
+        <div class="code-block">
+            <span class="function">fputc</span>(c, fptr2);
+        </div>
+    </div>
+
+    <!-- CARD 5: The Complete Code -->
+    <div class="card">
+        <h2>5. The Complete Final Code</h2>
+        <p>Here is the final, assembled code exactly as written on the whiteboard.</p>
+        
+        <div class="code-block">
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt; <span class="comment">// Required for exit(1)</span>
+
+<span class="keyword">void</span> <span class="function">main</span>() {
+    <span class="keyword">FILE</span> *fptr1, *fptr2;
+    <span class="keyword">char</span> c;
+
+    <span class="comment">// 1. Open source file in Read mode</span>
+    fptr1 = <span class="function">fopen</span>(<span class="string">"abc.txt"</span>, <span class="string">"r"</span>);
+    <span class="keyword">if</span> (fptr1 == <span class="keyword">NULL</span>) {
+        <span class="function">printf</span>(<span class="string">"Cannot open file\n"</span>);
+        <span class="function">exit</span>(1);
+    }
+
+    <span class="comment">// 2. Open destination file in Write mode</span>
+    fptr2 = <span class="function">fopen</span>(<span class="string">"Destination.txt"</span>, <span class="string">"w"</span>);
+    <span class="keyword">if</span> (fptr2 == <span class="keyword">NULL</span>) {
+        <span class="function">printf</span>(<span class="string">"Cannot open file\n"</span>);
+        <span class="function">exit</span>(1);
+    }
+
+    <span class="comment">// 3. Read from fptr1 and Write to fptr2 until End Of File</span>
+    <span class="keyword">while</span>((c = <span class="function">fgetc</span>(fptr1)) != <span class="keyword">EOF</span>) {
+        <span class="function">fputc</span>(c, fptr2);
+    }
+
+    <span class="comment">// 4. Success message and cleanup</span>
+    <span class="function">printf</span>(<span class="string">"Successfully copied!"</span>);
+    
+    <span class="function">fclose</span>(fptr1);
+    <span class="function">fclose</span>(fptr2);
+}
+        </div>
+    </div>
+
+    <!-- CARD 6: Practical Execution -->
+    <div class="card">
+        <h2>6. Practical Execution (Laptop Demo)</h2>
+        <p>During the final segment of the lecture, the instructor proves the logic works in VS Code:</p>
+        <ul>
+            <li><strong>Before Execution:</strong> The directory only contains <code>abc.txt</code>. There is no destination file.</li>
+            <li><strong>Execution:</strong> The program is compiled and run. The terminal outputs <code>"Successfully copied!"</code>.</li>
+            <li><strong>After Execution:</strong> A brand new file named <code>Destination.txt</code> automatically appears in the VS Code file explorer. Clicking it reveals the exact text from <code>abc.txt</code>.</li>
+        </ul>
+        <div class="callout">
+            <strong>Instructor's Challenge:</strong> She mentions this is just one method (character-by-character). You can also achieve this by reading complete strings using different functions (like <code>fgets</code> and <code>fputs</code>). That is your assignment to try!
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

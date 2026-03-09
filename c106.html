@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes: Types of Recursion in C</title>
+    <style>
+        /* === BASE STYLES & TYPOGRAPHY === */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Fira+Code:wght@400;500&display=swap');
+
+        :root {
+            --bg-color: #f3f4f6;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --card-bg: #ffffff;
+            --code-bg: #1e293b;
+            --code-text: #e2e8f0;
+            --border: #e5e7eb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* === FEED LAYOUT === */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .feed-header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .feed-header h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .feed-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+        }
+
+        .card h2 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+
+        .card h3 {
+            margin: 1.5rem 0 1rem 0;
+            color: var(--text-main);
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* === CODE BLOCK STYLES === */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            margin: 1.5rem 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        code .keyword { color: #c678dd; }
+        code .type { color: #e5c07b; }
+        code .function { color: #61afef; }
+        code .string { color: #98c379; }
+        code .comment { color: #7f848e; font-style: italic; }
+        code .number { color: #d19a66; }
+
+        /* === VISUALIZATIONS & DIAGRAMS === */
+        .diagram-container {
+            background-color: var(--primary-light);
+            border: 1px dashed var(--primary);
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .node-box {
+            background-color: var(--card-bg);
+            border: 2px solid var(--primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            color: var(--primary);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .arrow-down {
+            width: 0; 
+            height: 0; 
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 15px solid var(--primary);
+        }
+
+        .arrow-right {
+            display: inline-block;
+            margin: 0 10px;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        .flex-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .circular-path {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .return-arrow {
+            position: absolute;
+            right: -40px;
+            top: 20%;
+            height: 60%;
+            width: 30px;
+            border-right: 2px dashed var(--accent);
+            border-top: 2px dashed var(--accent);
+            border-bottom: 2px dashed var(--accent);
+            border-radius: 0 15px 15px 0;
+        }
+        
+        .return-arrow::after {
+            content: '▲';
+            color: var(--accent);
+            position: absolute;
+            top: -9px;
+            left: -8px;
+            font-size: 14px;
+        }
+
+        /* === DRY RUN VISUALIZATION (THE CORE) === */
+        .dry-run-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .dry-run-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .trace-phase {
+            background: #fafafa;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .trace-phase h4 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+            font-size: 1.2rem;
+        }
+
+        .forward-phase h4 { color: var(--primary); }
+        .backward-phase h4 { color: var(--secondary); }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-content {
+            background: white;
+            border: 1px solid #d1d5db;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            width: 100%;
+            text-align: center;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            position: relative;
+        }
+
+        .forward-phase .step-content { border-left: 4px solid var(--primary); }
+        .backward-phase .step-content { border-left: 4px solid var(--secondary); }
+
+        .calc-highlight {
+            background-color: #fef3c7;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #b45309;
+        }
+
+        .step-arrow {
+            color: #9ca3af;
+            font-size: 1.2rem;
+            margin: 0.25rem 0;
+        }
+
+        .alert-box {
+            background-color: #fffbeb;
+            border-left: 4px solid var(--accent);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+            color: #92400e;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header -->
+        <header class="feed-header">
+            <h1>Types of Recursion in C</h1>
+            <p>Complete In-Depth Video Breakdown & Whiteboard Tracing</p>
+        </header>
+
+        <!-- Section 1: Introduction -->
+        <section class="card">
+            <h2>1. Introduction & Overview</h2>
+            <p>Recursion occurs when a function calls itself directly or indirectly. The instructor recaps the golden rule: understanding the <strong>execution flow</strong> is the secret to mastering recursion.</p>
+            <p><strong>The Main Types of Recursion:</strong></p>
+            <ul>
+                <li><strong>Direct Recursion</strong> (Covered below)</li>
+                <li><strong>Indirect Recursion</strong> (Covered below)</li>
+                <li><strong>Tail Recursion</strong> (Next video)</li>
+                <li><strong>Non-Tail Recursion</strong> (Next video)</li>
+            </ul>
+            <p><em>Note: Linear and Tree recursion are also mentioned as sub-types that will be covered later.</em></p>
+        </section>
+
+        <!-- Section 2: Direct Recursion -->
+        <section class="card">
+            <h2>2. Direct Recursion</h2>
+            <p>Direct recursion occurs when a function calls itself <strong>directly</strong> within its own body.</p>
+            
+            <div class="alert-box">
+                <strong>Instructor's Analogy:</strong> "It's like I am calling myself directly. Jenny calling Jenny."
+            </div>
+
+            <div class="diagram-container">
+                <div class="node-box">Jenny</div>
+                <div class="arrow-down"></div>
+                <div class="node-box">Jenny</div>
+            </div>
+
+            <p><strong>Code Structure:</strong></p>
+            <pre><code><span class="type">void</span> <span class="function">fun1</span>() 
+{
+    <span class="comment">// some code</span>
+    <span class="function">fun1</span>(); <span class="comment">// The function calls itself directly here</span>
+}</code></pre>
+        </section>
+
+        <!-- Section 3: Indirect Recursion Concepts -->
+        <section class="card">
+            <h2>3. Indirect Recursion (Concepts)</h2>
+            <p>Indirect recursion occurs when a function calls itself <strong>indirectly</strong> through another function (or a series of functions) forming a circular chain.</p>
+
+            <h3>The Analogy (Whiteboard Visualized)</h3>
+            <p>If Jenny calls Payal, and Payal calls Jenny back, that forms an indirect recursive loop.</p>
+            
+            <div class="diagram-container">
+                <div class="flex-row">
+                    <div class="node-box">Jenny</div>
+                    <span class="arrow-right">⇄</span>
+                    <div class="node-box">Payal</div>
+                </div>
+                <p><em>(2-Step Indirect Recursion)</em></p>
+            </div>
+
+            <p>It can also involve multiple people (functions). As long as the chain eventually loops back to the start, it is recursion.</p>
+            
+            <div class="diagram-container">
+                <div class="circular-path">
+                    <div class="node-box">Jenny</div>
+                    <div class="arrow-down"></div>
+                    <div class="node-box">Payal</div>
+                    <div class="arrow-down"></div>
+                    <div class="node-box">Jiya</div>
+                    <div class="return-arrow"></div>
+                </div>
+                <p style="margin-top: 15px;"><em>(Jiya calls Jenny, completing the circle)</em></p>
+            </div>
+
+            <h3>Conceptual Code Structure</h3>
+            <pre><code><span class="type">void</span> <span class="function">fun1</span>() 
+{
+    <span class="function">fun2</span>(); <span class="comment">// fun1 calls fun2</span>
+}
+
+<span class="type">void</span> <span class="function">fun2</span>() 
+{
+    <span class="function">fun1</span>(); <span class="comment">// fun2 calls fun1 back (Circular!)</span>
+}</code></pre>
+        </section>
+
+        <!-- Section 4: The Code -->
+        <section class="card">
+            <h2>4. The Code: Indirect Recursion in C</h2>
+            <p>The instructor writes a complete C program to demonstrate indirect recursion. Note that when functions call each other, you must declare their <strong>prototypes</strong> at the top.</p>
+            <p><em>Fun Fact: The logic below calculates the <strong>Factorial</strong> of a number (5! = 120), just split across two functions.</em></p>
+
+            <pre><code><span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="comment">// Function Prototypes declared first</span>
+<span class="type">int</span> <span class="function">fun1</span>(<span class="type">int</span> n);
+<span class="type">int</span> <span class="function">fun2</span>(<span class="type">int</span> n);
+
+<span class="type">void</span> <span class="function">main</span>() 
+{
+    <span class="function">printf</span>(<span class="string">"%d"</span>, <span class="function">fun1</span>(<span class="number">5</span>)); 
+}
+
+<span class="type">int</span> <span class="function">fun1</span>(<span class="type">int</span> n) 
+{
+    <span class="keyword">if</span> (n &lt;= <span class="number">1</span>)
+        <span class="keyword">return</span> <span class="number">1</span>;   <span class="comment">// Base condition</span>
+    <span class="keyword">else</span>
+        <span class="keyword">return</span> n * <span class="function">fun2</span>(n - <span class="number">1</span>); <span class="comment">// fun1 calls fun2</span>
+}
+
+<span class="type">int</span> <span class="function">fun2</span>(<span class="type">int</span> n) 
+{
+    <span class="keyword">if</span> (n &lt;= <span class="number">1</span>)
+        <span class="keyword">return</span> <span class="number">1</span>;   <span class="comment">// Base condition</span>
+    <span class="keyword">else</span>
+        <span class="keyword">return</span> n * <span class="function">fun1</span>(n - <span class="number">1</span>); <span class="comment">// fun2 calls fun1</span>
+}</code></pre>
+        </section>
+
+        <!-- Section 5: The Dry Run (Crucial) -->
+        <section class="card">
+            <h2>5. The Dry Run (Tracing the Code)</h2>
+            <p>This is the most critical part of understanding recursion. You must trace the code forward until you hit the base case, and then carefully pass the values backward.</p>
+
+            <div class="dry-run-grid">
+                
+                <!-- Forward Phase -->
+                <div class="trace-phase forward-phase">
+                    <h4>Phase 1: Moving Forward (Calling)</h4>
+                    
+                    <div class="step">
+                        <div class="step-content">main() calls <strong>fun1(5)</strong></div>
+                        <div class="step-arrow">↓</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-content">fun1(5): returns 5 * <strong>fun2(4)</strong><br><span style="font-size: 0.8em; color: gray;">(pauses here)</span></div>
+                        <div class="step-arrow">↓</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-content">fun2(4): returns 4 * <strong>fun1(3)</strong><br><span style="font-size: 0.8em; color: gray;">(pauses here)</span></div>
+                        <div class="step-arrow">↓</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-content">fun1(3): returns 3 * <strong>fun2(2)</strong><br><span style="font-size: 0.8em; color: gray;">(pauses here)</span></div>
+                        <div class="step-arrow">↓</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-content">fun2(2): returns 2 * <strong>fun1(1)</strong><br><span style="font-size: 0.8em; color: gray;">(pauses here)</span></div>
+                        <div class="step-arrow">↓</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-content" style="border-left-color: var(--accent);">fun1(1): n &lt;= 1 is True.<br><strong>Returns 1 (Base Case)</strong></div>
+                    </div>
+                </div>
+
+                <!-- Backward Phase -->
+                <div class="trace-phase backward-phase">
+                    <h4>Phase 2: Moving Backward (Returning)</h4>
+                    
+                    <div class="step">
+                        <div class="step-content">fun1(1) passes <span class="calc-highlight">1</span> up to fun2(2)</div>
+                        <div class="step-arrow">↑</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-content">fun2(2) resolves: 2 * 1 = <span class="calc-highlight">2</span></div>
+                        <div class="step-arrow">↑</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-content">fun1(3) resolves: 3 * 2 = <span class="calc-highlight">6</span></div>
+                        <div class="step-arrow">↑</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-content">fun2(4) resolves: 4 * 6 = <span class="calc-highlight">24</span></div>
+                        <div class="step-arrow">↑</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-content">fun1(5) resolves: 5 * 24 = <span class="calc-highlight">120</span></div>
+                        <div class="step-arrow">↑</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-content">main() receives 120.<br><strong>printf outputs 120.</strong></div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Section 6: Golden Rule -->
+        <section class="card">
+            <h2>6. Conclusion & The Golden Rule</h2>
+            <p>The instructor concludes with a vital piece of advice for all students studying recursion:</p>
+            
+            <div class="alert-box" style="border-left-color: var(--secondary); background-color: var(--primary-light); color: var(--primary);">
+                <strong>The Golden Rule:</strong> "Moving forward is usually easy. Mainly, students get confused while moving backward. How you moved forward, you have to follow the <em>exact same path backward</em> to pass the return values up."
+            </div>
+
+            <p>In the next video, the series will continue by covering <strong>Tail Recursion</strong> and <strong>Non-Tail Recursion</strong>.</p>
+        </section>
+
+    </div>
+
+</body>
+</html>

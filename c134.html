@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: calloc() Study Notes</title>
+    <style>
+        /* Base Reset & Typography */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem; /* Creates the continuous scroll feed effect */
+        }
+
+        /* Feed Cards (Sections) */
+        .card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #111827;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            color: #2563eb;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            color: #374151;
+            margin: 1.5rem 0 0.5rem 0;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        ul, ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+            font-size: 1.1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Highlights & Tags */
+        .highlight {
+            background-color: #dbeafe;
+            color: #1e40af;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 1.05rem;
+        }
+
+        .alert-box {
+            background-color: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            margin: 1.5rem 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* Custom Visualizations (Whiteboard Recreation) */
+        .visualization-container {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background-color: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+        }
+
+        .viz-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 1.5rem;
+            color: #475569;
+        }
+
+        /* Memory Blocks Layout */
+        .memory-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .memory-model {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .mem-blocks-calloc {
+            display: flex;
+            border: 2px solid #2563eb;
+            background: #eff6ff;
+        }
+
+        .mem-blocks-malloc {
+            display: flex;
+            border: 2px solid #dc2626;
+            background: #fef2f2;
+        }
+
+        .block-cell {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 2px solid #2563eb;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #1e40af;
+        }
+        
+        .block-cell:last-child {
+            border-right: none;
+        }
+
+        .block-cell-large {
+            width: 300px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #991b1b;
+        }
+
+        .mem-label {
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .pointer-arrow {
+            color: #059669;
+            font-weight: bold;
+            margin-top: 1rem;
+            text-align: left;
+            width: 100%;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header Section -->
+        <div class="card" style="text-align: center; background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white;">
+            <h1 style="color: white; margin-bottom: 0;">Dynamic Memory Allocation: calloc()</h1>
+            <p style="color: #bfdbfe; margin-top: 1rem; margin-bottom: 0;">Complete Study Notes & Visualizations from the Whiteboard Session</p>
+        </div>
+
+        <!-- Section 1: Intro -->
+        <div class="card">
+            <h2>1. Introduction & Basic Definition 📖</h2>
+            <p>Building on our knowledge of <code>malloc()</code>, we are now looking at <strong><code>calloc()</code></strong>. Both are used for Dynamic Memory Allocation (DMA) at runtime, saving memory on the heap.</p>
+            <ul>
+                <li><strong>Full Form:</strong> Contiguous Allocation.</li>
+                <li><strong>Location:</strong> It is a built-in function found inside the <span class="highlight">&lt;stdlib.h&gt;</span> header file.</li>
+            </ul>
+            <div class="alert-box">
+                <strong>Instructor Says:</strong> "<code>calloc()</code> is used to dynamically allocate <em>multiple blocks of memory</em>, and each block is exactly the same size. This is the first major difference from <code>malloc()</code>, which allocates one single large block."
+            </div>
+        </div>
+
+        <!-- Section 2: Syntax -->
+        <div class="card">
+            <h2>2. Syntax & Arguments ⚙️</h2>
+            <p>Unlike <code>malloc</code> which takes only 1 argument, <code>calloc</code> requires <strong>two arguments</strong>.</p>
+            <pre>void* calloc(size_t n, size_t size);</pre>
+            <ul>
+                <li><strong><code>size_t</code>:</strong> Means an unsigned integer (cannot take negative values, only 0 or positive).</li>
+                <li><strong>Argument 1 (<code>n</code>):</strong> The total number of blocks (or elements) you want to store.</li>
+                <li><strong>Argument 2 (<code>size</code>):</strong> The size in bytes of <em>each individual block</em>.</li>
+            </ul>
+
+            <h3>Writing the Code Step-by-Step</h3>
+            <p>If we want to allocate memory for an array of 5 integers, we do it like this:</p>
+            <pre>int *ptr = (int *)calloc(5, sizeof(int));</pre>
+            <ol>
+                <li>We ask <code>calloc</code> for <code>5</code> blocks.</li>
+                <li>Each block is the size of an integer (<code>sizeof(int)</code>, usually 4 bytes).</li>
+                <li><code>calloc</code> returns the <strong>base address</strong> (the address of the very first byte) as a <code>void *</code> (void pointer), because it doesn't know what data type you will store yet.</li>
+                <li>We use <strong>Typecasting</strong> <code>(int *)</code> to tell the compiler: "Treat this address as a pointer to an integer."</li>
+            </ol>
+        </div>
+
+        <!-- Section 3: Visualizations -->
+        <div class="card">
+            <h2>3. Visualizing Memory: calloc vs. malloc 🧠</h2>
+            <p>What actually happens in the Heap memory when we run these functions? Look at the whiteboard breakdown below.</p>
+            
+            <div class="visualization-container">
+                <div class="viz-title">calloc(5, sizeof(int)) vs. malloc(5 * sizeof(int))</div>
+                
+                <div class="memory-wrapper">
+                    
+                    <!-- Calloc Vis -->
+                    <div class="memory-model">
+                        <div style="margin-bottom: 0.5rem; font-weight: bold; color: #1e40af;">calloc() Model</div>
+                        <div class="mem-blocks-calloc">
+                            <div class="block-cell">0</div>
+                            <div class="block-cell">0</div>
+                            <div class="block-cell">0</div>
+                            <div class="block-cell">0</div>
+                            <div class="block-cell">0</div>
+                        </div>
+                        <div class="mem-label">5 separate blocks (4 bytes each)</div>
+                        <div class="pointer-arrow">↑ Base Address (e.g., 1042)</div>
+                    </div>
+
+                    <!-- Malloc Vis -->
+                    <div class="memory-model">
+                        <div style="margin-bottom: 0.5rem; font-weight: bold; color: #991b1b;">malloc() Model</div>
+                        <div class="mem-blocks-malloc">
+                            <div class="block-cell-large">Garbage Values</div>
+                        </div>
+                        <div class="mem-label">1 single large block (20 bytes total)</div>
+                        <div class="pointer-arrow" style="color:#b45309;">↑ Base Address (e.g., 2048)</div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="alert-box">
+                <strong>The Biggest Difference (Initialization):</strong> <code>calloc</code> automatically initializes all the memory it creates to <strong>0</strong>. <code>malloc</code> does not initialize the memory, leaving leftover <strong>garbage values</strong> inside it.
+            </div>
+            
+            <p><strong>Performance Note:</strong> Because <code>calloc</code> takes the extra step to write zeroes into the memory, it has a slight "overhead" and is technically a bit slower than <code>malloc</code>. Use <code>malloc</code> if you plan to immediately overwrite the values. Use <code>calloc</code> if you specifically need the memory to start out empty/zeroed.</p>
+        </div>
+
+        <!-- Section 4: Static vs Dynamic -->
+        <div class="card">
+            <h2>4. Static vs. Dynamic Allocation ⚖️</h2>
+            <p>During the lesson, the instructor pointed out a quick distinction on the whiteboard:</p>
+            <ul>
+                <li><span class="highlight">int *ptr;</span> ➔ This is <strong>Static Memory Allocation (SMA)</strong>. The memory for the pointer itself is allocated at compile time on the Stack.</li>
+                <li><span class="highlight">ptr = (int *)calloc(...);</span> ➔ This is <strong>Dynamic Memory Allocation (DMA)</strong>. The memory block it points to is allocated at runtime on the Heap.</li>
+            </ul>
+        </div>
+
+        <!-- Section 5: VS Code Practical -->
+        <div class="card">
+            <h2>5. Practical Code Demo (VS Code) 💻</h2>
+            <p>To prove the zero-initialization concept, the instructor ran the following code. She specifically commented out the <code>scanf</code> input loop to see what was inside the memory <em>before</em> the user touched it.</p>
+            
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int main() {
+    int *ptr;
+    int n, i;
+
+    printf("Enter total no of values: ");
+    scanf("%d", &n);
+
+    // Using calloc to allocate memory based on user input
+    ptr = (int *)calloc(n, sizeof(int));
+
+    /* 
+    User input code is COMMENTED OUT. 
+    We want to print the default memory state!
+    */
+
+    printf("\nThe entered values are: \n");
+    for(i=0; i&lt;n; i++) {
+        // Printing what is currently in the memory
+        printf("%d\t", *(ptr+i));
+    }
+
+    free(ptr);
+    return 0;
+}
+</pre>
+            <h3>Live Execution Results:</h3>
+            <ul>
+                <li><strong>Test 1 (Using <code>calloc</code>):</strong> She inputs <code>3</code>. The output printed is <code>0  0  0</code>. Proving `calloc` initializes to zero.</li>
+                <li><strong>Test 2 (Using <code>malloc</code>):</strong> She swaps `calloc` for `malloc` and runs it. The output is <code>7472000  349102  -102948</code>. Proving `malloc` leaves garbage values.</li>
+            </ul>
+        </div>
+
+        <!-- Section 6: Homework -->
+        <div class="card">
+            <h2>6. Your Homework / Assignment 📝</h2>
+            <p>At the end of the video, the instructor assigned the following task to test your understanding. Write a single C program that does the following in exact order:</p>
+            <ol>
+                <li>Dynamically allocate memory for <strong>5 integers</strong> using the <code>calloc()</code> function.</li>
+                <li>Free that memory using <code>free()</code>.</li>
+                <li>Dynamically allocate memory for <strong>10 float values</strong> using the <code>malloc()</code> function.</li>
+                <li>Free that memory using <code>free()</code>.</li>
+                <li><strong>Bonus:</strong> Write down the 3 major differences between <code>malloc()</code> and <code>calloc()</code> in your notebook.</li>
+            </ol>
+            <p style="margin-top:1.5rem; text-align:center; color:#6b7280; font-style:italic;">"I hope now calloc function is clear to you. In the next video we'll see about realloc function. Bye-bye, take care!"</p>
+        </div>
+
+    </div>
+
+</body>
+</html>

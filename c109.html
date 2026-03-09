@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Structure in C - Visual Study Notes</title>
+    <style>
+        /* === BASE STYLES & VARIABLES === */
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --danger: #dc2626;
+            --danger-light: #fef2f2;
+            --success: #16a34a;
+            --warning: #ca8a04;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-top: 20px;
+        }
+
+        /* === FEED LAYOUT === */
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px 60px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px; /* Space between feed items */
+        }
+
+        /* === CARD STYLES === */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card h2 {
+            font-size: 1.8rem;
+            color: var(--text-main);
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .card h3 {
+            font-size: 1.3rem;
+            margin: 20px 0 10px 0;
+            color: var(--primary);
+        }
+
+        .card p {
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+        }
+
+        /* === CODE BLOCKS === */
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-size: 1rem;
+            font-family: "Courier New", Courier, monospace;
+        }
+
+        code.inline {
+            background: #e2e8f0;
+            color: #0f172a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.95em;
+        }
+
+        /* === ALERTS / RULES === */
+        .rule-box {
+            border-left: 5px solid var(--danger);
+            background: var(--danger-light);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+
+        .rule-box h4 {
+            color: var(--danger);
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+
+        /* === VISUALIZATIONS === */
+        .vis-container {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        /* Single Var vs Array Vis */
+        .mem-block {
+            display: inline-block;
+            background: var(--primary-light);
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            margin: 5px;
+        }
+
+        .mem-array {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .mem-array .mem-block {
+            border-radius: 0;
+            margin: 0;
+            border-right: none;
+        }
+        .mem-array .mem-block:first-child { border-radius: 8px 0 0 8px; }
+        .mem-array .mem-block:last-child { border-radius: 0 8px 8px 0; border-right: 2px solid var(--primary); }
+
+        /* Messy Data Vis */
+        .messy-data {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .messy-box {
+            border: 2px dashed #94a3b8;
+            padding: 15px;
+            border-radius: 8px;
+            background: #fff;
+        }
+        .messy-item {
+            background: #e2e8f0;
+            margin: 5px 0;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        /* Memory Allocation Vis */
+        .blueprint {
+            border: 3px dashed var(--warning);
+            background: #fefce8;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .blueprint-title { color: var(--warning); font-weight: bold; margin-bottom: 10px;}
+
+        .memory-object {
+            border: 3px solid var(--success);
+            background: #f0fdf4;
+            padding: 20px;
+            border-radius: 12px;
+            width: fit-content;
+            margin: 0 auto;
+        }
+        .memory-title { color: var(--success); font-weight: bold; margin-bottom: 10px;}
+        
+        .byte-box {
+            display: flex;
+            justify-content: space-between;
+            background: #fff;
+            border: 1px solid #bbb;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 6px;
+            width: 250px;
+        }
+        .byte-box.int { border-left: 5px solid #3b82f6; }
+        .byte-box.char { border-left: 5px solid #a855f7; }
+        .byte-box.float { border-left: 5px solid #f97316; }
+
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <h1>Structure in C</h1>
+        <p>In-depth Video Lecture Breakdown • Scroll to Learn</p>
+    </header>
+
+    <main class="feed-container">
+
+        <!-- CARD 1: Why do we need it -->
+        <section class="card">
+            <h2>1. The Progression of Data Storage</h2>
+            <p>Before understanding <em>what</em> a structure is, we must understand <em>why</em> we need them. Let's look at how we store data in C.</p>
+            
+            <h3>A. Primitive Variables</h3>
+            <p>If you want to store a single value, you use a standard variable.</p>
+            <pre><code>int a = 5;</code></pre>
+            <div class="vis-container">
+                <p><strong>Memory Visual:</strong></p>
+                <div class="mem-block">5</div>
+            </div>
+
+            <h3>B. Arrays</h3>
+            <p>If you want to store the roll numbers of 60 students, creating 60 individual variables is inefficient. We use arrays to store a collection of <strong>homogeneous</strong> (same type) data items.</p>
+            <pre><code>int rollno[60];</code></pre>
+            <div class="vis-container">
+                <p><strong>Memory Visual:</strong></p>
+                <div class="mem-array">
+                    <div class="mem-block">1</div>
+                    <div class="mem-block">2</div>
+                    <div class="mem-block">3</div>
+                    <div class="mem-block">...</div>
+                    <div class="mem-block">60</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CARD 2: The Real World Problem -->
+        <section class="card">
+            <h2>2. The Real-World Problem</h2>
+            <p>In real-world software, data is rarely just one type. A "Student" isn't just a number. A student consists of <strong>Heterogeneous Data</strong> (mixed types):</p>
+            <ul>
+                <li><code class="inline">rollno</code> ➔ Integer</li>
+                <li><code class="inline">name</code> ➔ String (char array)</li>
+                <li><code class="inline">marks</code> ➔ Decimal (float)</li>
+            </ul>
+
+            <h3>Attempt 1: Individual Variables (The Messy Way)</h3>
+            <p>If we try to store just 2 students without structures, we need 6 variables. For 60 students, we'd need 180 variables!</p>
+            <div class="vis-container">
+                <div class="messy-data">
+                    <div class="messy-box">
+                        <strong>Student 1</strong>
+                        <div class="messy-item">int rollnoS1;</div>
+                        <div class="messy-item">char nameS1[20];</div>
+                        <div class="messy-item">float marksS1;</div>
+                    </div>
+                    <div class="messy-box">
+                        <strong>Student 2</strong>
+                        <div class="messy-item">int rollnoS2;</div>
+                        <div class="messy-item">char nameS2[20];</div>
+                        <div class="messy-item">float marksS2;</div>
+                    </div>
+                </div>
+            </div>
+            
+            <h3>Attempt 2: Parallel Arrays</h3>
+            <p>We could create three separate arrays: <code class="inline">rollno[60]</code>, <code class="inline">name[60][20]</code>, and <code class="inline">marks[60]</code>. But the data is scattered. The solution? Group them under one single name.</p>
+        </section>
+
+        <!-- CARD 3: Definition and Syntax -->
+        <section class="card">
+            <h2>3. What is a Structure? & Syntax</h2>
+            <p>A structure is a <strong>user-defined data type</strong>. You take primitive data types (int, char, float) and group them together under a single name.</p>
+            
+            <pre><code>struct Student 
+{
+    int rollno;
+    char name[20];
+    float marks;
+};</code></pre>
+            
+            <div class="vis-container" style="text-align: left;">
+                <p><strong>Syntax Breakdown:</strong></p>
+                <ul>
+                    <li><code class="inline">struct</code> : The mandatory C keyword.</li>
+                    <li><code class="inline">Student</code> : The Structure Tag (your new data type name).</li>
+                    <li><code class="inline">int rollno; ...</code> : The <strong>Members</strong> of the structure.</li>
+                    <li><code class="inline">};</code> : The closing brace and <strong>mandatory semicolon</strong>.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- CARD 4: Rules -->
+        <section class="card">
+            <h2>4. Crucial Rules for Declarations ⚠️</h2>
+            <p>The instructor explicitly highlights common mistakes. Pay close attention!</p>
+
+            <div class="rule-box">
+                <h4>Rule 1: Semicolon is Mandatory</h4>
+                <p>You MUST put a semicolon <code class="inline">;</code> after the closing curly brace <code class="inline">}</code>.</p>
+            </div>
+
+            <div class="rule-box">
+                <h4>Rule 2: No Duplicate Members</h4>
+                <p>Two members inside the exact same structure cannot share the same name.</p>
+                <pre style="background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger);"><code>struct Student {
+    int rollno;
+    float rollno; // ❌ ERROR!
+};</code></pre>
+            </div>
+
+            <div class="rule-box">
+                <h4>Rule 3: NO Initialization Inside</h4>
+                <p>You cannot assign values to variables when declaring the structure.</p>
+                <pre style="background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger);"><code>struct Student {
+    int rollno = 1; // ❌ ERROR!
+};</code></pre>
+            </div>
+        </section>
+
+        <!-- CARD 5: Memory -->
+        <section class="card">
+            <h2>5. Memory Allocation (Why Rule 3 exists)</h2>
+            <p>When you write <code class="inline">struct Student { ... };</code>, <strong>NO memory is allocated</strong> in the computer. You are just creating a template/blueprint. Because no memory exists yet, you cannot store a value like <code class="inline">1</code> inside it!</p>
+
+            <div class="vis-container blueprint">
+                <div class="blueprint-title">⚙️ struct Student (BLUEPRINT - 0 Bytes)</div>
+                <p>Tells compiler: <em>"When I create a student, it will look like this."</em></p>
+            </div>
+
+            <h3>Creating an Object</h3>
+            <p>To actually store data, you must create a variable (an <strong>object</strong>) of your new data type in the <code class="inline">main()</code> function.</p>
+            <pre><code>void main() {
+    int a;              // Primitive (4 bytes)
+    struct Student s1;  // Object (Memory allocated here!)
+}</code></pre>
+
+            <div class="vis-container">
+                <p><strong>How much memory does `s1` take?</strong></p>
+                <div class="memory-object">
+                    <div class="memory-title">📦 struct Student s1 (Total: 28 Bytes)</div>
+                    <div class="byte-box int">
+                        <span>int rollno;</span>
+                        <strong>4 Bytes</strong>
+                    </div>
+                    <div class="byte-box char">
+                        <span>char name[20];</span>
+                        <strong>20 Bytes</strong>
+                    </div>
+                    <div class="byte-box float">
+                        <span>float marks;</span>
+                        <strong>4 Bytes</strong>
+                    </div>
+                </div>
+            </div>
+            <p style="text-align: center; color: var(--text-muted);">
+                <em>4 + 20 + 4 = 28 bytes of memory allocated consecutively.</em>
+            </p>
+        </section>
+
+    </main>
+
+    <!-- Simple JS to create a smooth reveal effect as the user scrolls -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const cards = document.querySelectorAll('.card');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.15 // Triggers when 15% of the card is visible
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target); // Stop observing once visible
+                    }
+                });
+            }, observerOptions);
+
+            cards.forEach(card => {
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>

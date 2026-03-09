@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The C Preprocessor - Student Notes</title>
+    <style>
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --accent-blue: #2563eb;
+            --accent-green: #059669;
+            --accent-orange: #ea580c;
+            --accent-purple: #7c3aed;
+            --code-bg: #1e293b;
+            --code-text: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Topic Cards */
+        .topic-card {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border-top: 5px solid var(--accent-blue);
+        }
+
+        .topic-card:nth-child(even) {
+            border-top-color: var(--accent-purple);
+        }
+
+        .topic-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .topic-card h2::before {
+            content: "📌";
+            font-size: 1.5rem;
+        }
+
+        p, ul {
+            margin-bottom: 15px;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        strong {
+            color: var(--text-main);
+        }
+
+        /* Code Blocks */
+        pre, code {
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-size: 1rem;
+        }
+
+        code {
+            background-color: #e5e7eb;
+            color: #b91c1c;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        /* --- VISUALIZATIONS (Whiteboard CSS) --- */
+        .visual-board {
+            background-color: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 30px 20px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        /* Shapes */
+        .v-box {
+            background-color: white;
+            border: 2px solid var(--accent-blue);
+            padding: 15px 25px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .v-circle {
+            background-color: var(--accent-orange);
+            color: white;
+            padding: 20px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .v-arrow {
+            font-size: 2rem;
+            color: #94a3b8;
+            font-weight: bold;
+        }
+
+        .v-arrow-down {
+            font-size: 2rem;
+            color: #94a3b8;
+            width: 100%;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .v-header-box {
+            border-color: var(--accent-green);
+            background-color: #ecfdf5;
+            color: var(--accent-green);
+        }
+
+        .v-large-box {
+            width: 100%;
+            max-width: 400px;
+            text-align: left;
+            border-color: var(--accent-purple);
+            background-color: #f5f3ff;
+            color: #4c1d95;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid var(--accent-purple);
+        }
+
+        .highlight-text {
+            background-color: #fef08a;
+            padding: 2px 4px;
+            border-radius: 3px;
+            color: #854d0e;
+            font-weight: bold;
+        }
+
+        /* Assignment Box */
+        .assignment-box {
+            background-color: #eff6ff;
+            border-left: 5px solid var(--accent-blue);
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 20px;
+        }
+
+        .assignment-box h3 {
+            color: var(--accent-blue);
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header -->
+        <header>
+            <h1>The C Preprocessor</h1>
+            <p>Complete Student Notes, Visualizations, and Breakdown</p>
+        </header>
+
+        <!-- Section 1 -->
+        <section class="topic-card">
+            <h2>1. Introduction: What is a Preprocessor?</h2>
+            <p>In every C program, you often see the <code>#</code> symbol (like <code>#include &lt;stdio.h&gt;</code>). This symbol represents a <strong>preprocessor directive</strong>.</p>
+            <ul>
+                <li><strong>"Program"</strong>: The preprocessor is a separate piece of software/code.</li>
+                <li><span class="highlight-text">Not a part of the compiler!</span> This is crucial. The preprocessor finishes its job completely before the compiler even starts looking at your code.</li>
+                <li><strong>"Text Substitution Tool"</strong>: Its primary function. It simply replaces certain text (like macros) or pastes files into your code before compilation begins.</li>
+            </ul>
+        </section>
+
+        <!-- Section 2 -->
+        <section class="topic-card">
+            <h2>2. The Compilation Pipeline</h2>
+            <p>When you click "compile," the compiler doesn't run immediately. The Preprocessor steps in first. It takes your raw C code and prepares it.</p>
+            
+            <div class="visual-board">
+                <div class="v-box">first.c<br><small>(Your raw code)</small></div>
+                <div class="v-arrow">➔</div>
+                <div class="v-circle">Preprocessor</div>
+                <div class="v-arrow">➔</div>
+                <div class="v-box" style="border-color: var(--accent-purple); background-color: #f5f3ff;">first.i<br><small>(Expanded code)</small></div>
+                <div class="v-arrow">➔</div>
+                <div class="v-circle" style="background-color: #3b82f6;">Compiler</div>
+            </div>
+
+            <p><strong>Note:</strong> The preprocessor generates an intermediate file (often with a <code>.i</code> extension). This file contains your code, but <strong>all lines starting with <code>#</code> have been removed and resolved</strong>.</p>
+        </section>
+
+        <!-- Section 3 -->
+        <section class="topic-card">
+            <h2>3. Preprocessor Directives (The '#' Commands)</h2>
+            <p>Any line starting with <code>#</code> is a command directed <em>only</em> at the preprocessor. The actual C compiler does not understand lines starting with <code>#</code>.</p>
+            <pre>
+#include &lt;stdio.h&gt;
+#include &lt;string.h&gt;
+#define PI 3.14</pre>
+            <p>Because the compiler doesn't understand these, the preprocessor resolves them and deletes the <code>#</code> directives before handing the code over to the compiler.</p>
+        </section>
+
+        <!-- Section 4 -->
+        <section class="topic-card">
+            <h2>4. Deep Dive: How #include Works (File Expansion)</h2>
+            <p>Header files like <code>stdio.h</code> contain the actual code and definitions for standard functions like <code>printf()</code> and <code>scanf()</code>.</p>
+            <p>When the preprocessor sees <code>#include &lt;stdio.h&gt;</code>, it literally <strong>copies</strong> the entire contents of that system file and <strong>pastes</strong> it into your program.</p>
+
+            <div class="visual-board" style="flex-direction: column;">
+                <div style="display: flex; gap: 20px;">
+                    <div class="v-box v-header-box">stdio.h</div>
+                    <div class="v-box v-header-box">string.h</div>
+                </div>
+                <div class="v-arrow-down">⬇</div>
+                <div class="v-large-box">
+                    <strong>first.i (Intermediate File)</strong>
+                    <br><br>
+                    <small style="color: #6b7280;">/* Hundreds of lines copied from stdio.h pasted here */</small><br>
+                    <small style="color: #6b7280;">/* Lines copied from string.h pasted here */</small><br>
+                    <br>
+                    <code>int main() { ... } /* Your original code */</code>
+                </div>
+            </div>
+            <p>In this new expanded file, the <code>#include</code> lines no longer exist!</p>
+        </section>
+
+        <!-- Section 5 -->
+        <section class="topic-card">
+            <h2>5. Deep Dive: How #define Works (Macro Substitution)</h2>
+            <p><code>#define</code> creates a <strong>Macro</strong>. The preprocessor acts like a "Find and Replace" tool.</p>
+            <p>If you write <code>#define PI 3.14</code>, the preprocessor searches your entire document. Everywhere it finds the word "PI", it deletes it and substitutes it with "3.14".</p>
+
+            <div class="visual-board">
+                <div class="v-box">Area = <strong style="color:red;">PI</strong> * r * r;</div>
+                <div class="v-arrow">➔</div>
+                <div class="v-box" style="border-color: var(--accent-green);">Area = <strong style="color:var(--accent-green);">3.14</strong> * r * r;</div>
+            </div>
+            <p>By the time the compiler reads the code, it doesn't see "PI * r * r"; it only sees the actual numbers.</p>
+        </section>
+
+        <!-- Section 6 -->
+        <section class="topic-card">
+            <h2>6. List of Other Preprocessor Directives</h2>
+            <p>Aside from include and define, there are several other directives you will encounter (to be covered in future lessons):</p>
+            <ul>
+                <li><code>#if</code>, <code>#else</code>, <code>#elif</code> : Used for conditional compilation.</li>
+                <li><code>#undef</code> : Used to un-define a macro you previously created.</li>
+                <li><code>#pragma</code> : Used to give special, compiler-specific instructions.</li>
+            </ul>
+        </section>
+
+        <!-- Section 7 -->
+        <section class="topic-card">
+            <h2>7. Crucial Distinction: &lt; &gt; vs. " " in #include</h2>
+            <p>This is a very common exam question and essential coding concept.</p>
+            
+            <div style="display: flex; flex-direction: column; gap: 15px;">
+                <div style="background: #f8fafc; padding: 15px; border-left: 4px solid var(--accent-orange);">
+                    <strong>#include &lt;stdio.h&gt;</strong> (Angle Brackets)<br>
+                    Tells the preprocessor to look for the file in the <strong>Standard System Directories</strong> (where the C language stores its official libraries).
+                </div>
+                
+                <div style="background: #f8fafc; padding: 15px; border-left: 4px solid var(--accent-blue);">
+                    <strong>#include "support.c"</strong> (Double Quotes)<br>
+                    Tells the preprocessor to look for the file in your <strong>Local/Current Directory</strong> first (the exact same folder where your main <code>.c</code> file is saved).
+                </div>
+            </div>
+            <p style="margin-top: 15px;"><em>Note:</em> You can also put a complete file path inside the double quotes (e.g., <code>"C:/Users/Student/support.c"</code>) if the file is saved somewhere else on your computer.</p>
+        </section>
+
+        <!-- Section 8 -->
+        <section class="topic-card">
+            <h2>8. Summary of the Process</h2>
+            <ul>
+                <li><strong>Step 1:</strong> You write <code>first.c</code> (Contains `#` directives).</li>
+                <li><strong>Step 2:</strong> <strong>Preprocessor</strong> runs. It expands included files and substitutes macro text.</li>
+                <li><strong>Step 3:</strong> Preprocessor outputs <code>first.i</code> (Expanded source code, containing NO `#` symbols).</li>
+                <li><strong>Step 4:</strong> <strong>Compiler</strong> takes <code>first.i</code> and turns it into object code (<code>.obj</code>).</li>
+                <li><strong>Step 5:</strong> Assembler and Linker finish the job to create the final executable program.</li>
+            </ul>
+        </section>
+
+        <!-- Section 9 -->
+        <section class="topic-card">
+            <h2>9. Instructor's Assignment</h2>
+            <div class="assignment-box">
+                <h3>💻 Your Task:</h3>
+                <p>Write a C program that utilizes a local header file.</p>
+                <ol>
+                    <li>Create a separate file (e.g., <code>support.c</code> or a custom <code>.h</code> file).</li>
+                    <li>Write a simple function or variable in that file.</li>
+                    <li>Include it in your main program using the double quotes syntax: <code>#include "support.c"</code>.</li>
+                    <li>Compile and run to see the preprocessor pull your custom file into the main program!</li>
+                </ol>
+            </div>
+        </section>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: Recursion & Static Variables</title>
+    <style>
+        /* === Global Styles & Vertical Feed Layout === */
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --primary: #4A90E2;
+            --secondary: #E94E77;
+            --accent: #50E3C2;
+            --code-bg: #1e1e1e;
+            --memory-bg: #fff3e0;
+            --memory-border: #ff9800;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        .feed-container {
+            max-width: 800px;
+            width: 100%;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 3rem; /* Creates the continuous scroll pacing */
+        }
+
+        /* === Typography === */
+        h1 { color: var(--primary); font-size: 2.5rem; text-align: center; margin-bottom: 0.5rem; line-height: 1.2;}
+        h2 { color: var(--secondary); font-size: 1.8rem; border-bottom: 2px solid #eee; padding-bottom: 0.5rem; margin-bottom: 1.5rem; }
+        h3 { color: var(--primary); margin: 1.5rem 0 0.5rem 0; }
+        p { margin-bottom: 1rem; font-size: 1.1rem; }
+        strong { color: #000; }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* === Cards (Feed Items) === */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--primary);
+        }
+
+        .card.alert { border-top-color: var(--secondary); }
+        .card.success { border-top-color: var(--accent); }
+
+        /* === Code Block === */
+        pre {
+            background: var(--code-bg);
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .keyword { color: #569cd6; }
+        .type { color: #4ec9b0; }
+        .func { color: #dcdcaa; }
+        .string { color: #ce9178; }
+        .number { color: #b5cea8; }
+
+        /* === Visualizations === */
+        
+        /* 1. Memory Box */
+        .memory-visualization {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            background: var(--memory-bg);
+            border: 2px dashed var(--memory-border);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            font-weight: bold;
+        }
+        .memory-box {
+            background: #fff;
+            border: 3px solid var(--memory-border);
+            padding: 1rem 1.5rem;
+            font-size: 1.5rem;
+            border-radius: 6px;
+            color: var(--secondary);
+            box-shadow: 4px 4px 0px rgba(255, 152, 0, 0.2);
+        }
+
+        /* 2. Timeline / Step-by-Step */
+        .timeline {
+            border-left: 4px solid var(--primary);
+            padding-left: 2rem;
+            margin-left: 1rem;
+        }
+        .timeline-step {
+            position: relative;
+            margin-bottom: 2.5rem;
+        }
+        .timeline-step::before {
+            content: '';
+            position: absolute;
+            left: -2.65rem;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            background: var(--card-bg);
+            border: 4px solid var(--primary);
+            border-radius: 50%;
+        }
+        .step-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        .output-box {
+            display: inline-block;
+            background: #e1f5fe;
+            color: #0277bd;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+            border: 1px solid #b3e5fc;
+        }
+
+        /* 3. Recursion Tree */
+        .tree-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            padding: 2rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .tree-node {
+            background: white;
+            border: 2px solid var(--primary);
+            padding: 1rem;
+            border-radius: 8px;
+            width: 250px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .tree-arrow {
+            width: 2px;
+            height: 30px;
+            background: var(--primary);
+            position: relative;
+        }
+        .tree-arrow::after {
+            content: '▼';
+            position: absolute;
+            bottom: -10px;
+            left: -6px;
+            color: var(--primary);
+            font-size: 12px;
+        }
+        .paused-state {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px dashed #ef9a9a;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            border-radius: 4px;
+        }
+        
+        /* Final Output Highlights */
+        .final-output {
+            font-size: 2rem;
+            text-align: center;
+            letter-spacing: 5px;
+            font-family: monospace;
+            color: #fff;
+            background: var(--secondary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            box-shadow: 0 4px 15px rgba(233, 78, 119, 0.3);
+        }
+
+        .tag {
+            display: inline-block;
+            background: #eee;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- HEADER -->
+        <header>
+            <h1>C Programming Masterclass</h1>
+            <div class="subtitle">Recursion & Static Variables (GATE 2016 Question Breakdown)</div>
+            <p style="text-align: center; color: var(--text-muted);">↓ Scroll down to trace the code step-by-step ↓</p>
+        </header>
+
+        <!-- CARD 1: THE CODE -->
+        <div class="card">
+            <h2>1. The Problem Statement</h2>
+            <p>This exact question appeared in the GATE 2016 examination. Take a moment to read the code before we break it down.</p>
+            
+<pre><code><span class="keyword">#include</span> <span class="string">&lt;stdio.h&gt;</span>
+
+<span class="type">void</span> <span class="func">count</span>(<span class="type">int</span> n) {
+    <span class="keyword">static int</span> d = <span class="number">1</span>;
+    
+    <span class="func">printf</span>(<span class="string">"%d "</span>, n);
+    <span class="func">printf</span>(<span class="string">"%d "</span>, d);
+    
+    d++;
+    
+    <span class="keyword">if</span> (n > <span class="number">1</span>) {
+        <span class="func">count</span>(n - <span class="number">1</span>);
+    }
+    
+    <span class="func">printf</span>(<span class="string">"%d "</span>, d);
+}
+
+<span class="type">void</span> <span class="func">main</span>() {
+    <span class="func">count</span>(<span class="number">3</span>);
+}</code></pre>
+        </div>
+
+        <!-- CARD 2: INSTRUCTOR ANALYSIS -->
+        <div class="card">
+            <h2>2. Instructor's Pre-Analysis</h2>
+            <p>Before executing the code, the instructor identifies two crucial characteristics of this function:</p>
+            <br>
+            <p><span class="tag">Direct Recursion</span> The function <code>count()</code> calls itself directly inside its own body.</p>
+            <p><span class="tag">Non-Tail Recursion</span> The recursive call <code>count(n - 1)</code> is <strong>not</strong> the last statement to execute. Because there is a <code>printf</code> statement after it, the function must pause, execute the child function, and then <strong>return back</strong> to finish the final print statement.</p>
+        </div>
+
+        <!-- CARD 3: THE STATIC TRAP -->
+        <div class="card alert">
+            <h2 style="color: var(--secondary);">3. ⚠️ The Trap: The `static` Keyword</h2>
+            <p>Many students get this question wrong because they misunderstand how <code>static int d = 1;</code> works in recursion.</p>
+            <ul>
+                <li><strong>Initialization happens ONLY ONCE:</strong> The variable <code>d</code> is set to 1 only during the very first time the function is called. Future recursive calls <strong>skip</strong> this line entirely.</li>
+                <li><strong>Global Lifetime, Local Scope:</strong> It is stored in a separate memory location, not on the local function stack. It retains its updated value across all function calls.</li>
+            </ul>
+
+            <div class="memory-visualization">
+                <div>
+                    <strong>Global/Static Memory Space</strong><br>
+                    <small>Shared by all recursive calls</small>
+                </div>
+                <div class="memory-box">d = 1</div>
+            </div>
+        </div>
+
+        <!-- CARD 4: DRY RUN (FORWARD PHASE) -->
+        <div class="card">
+            <h2>4. The Dry Run: Moving Forward</h2>
+            <p>We start in <code>main()</code> and trace the execution moving down the recursion tree.</p>
+
+            <div class="timeline">
+                
+                <!-- Step 1 -->
+                <div class="timeline-step">
+                    <div class="step-title">Step 1: count(3) is called</div>
+                    <p><strong>Local <code>n</code>:</strong> 3</p>
+                    <p><strong>Static <code>d</code>:</strong> 1 (Initialized for the first and only time)</p>
+                    <ul>
+                        <li>Prints <code>n</code> (3)</li>
+                        <li>Prints <code>d</code> (1)</li>
+                        <li><code>d++</code> happens. <strong>Static Memory Box <code>d</code> becomes 2.</strong></li>
+                        <li>Condition <code>(3 > 1)</code> is True. Calls <code>count(2)</code>.</li>
+                        <li><em>Note: The final <code>printf(d)</code> is paused and waiting in memory!</em></li>
+                    </ul>
+                    <div class="output-box">Output so far: 3 1</div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="timeline-step">
+                    <div class="step-title">Step 2: count(2) is called</div>
+                    <p><strong>Local <code>n</code>:</strong> 2</p>
+                    <p><strong>Static <code>d</code>:</strong> 2 (Retains value from Step 1)</p>
+                    <ul>
+                        <li>Prints <code>n</code> (2)</li>
+                        <li>Prints <code>d</code> (2)</li>
+                        <li><code>d++</code> happens. <strong>Static Memory Box <code>d</code> becomes 3.</strong></li>
+                        <li>Condition <code>(2 > 1)</code> is True. Calls <code>count(1)</code>.</li>
+                        <li><em>Note: Another <code>printf(d)</code> is paused and waiting!</em></li>
+                    </ul>
+                    <div class="output-box">Output so far: 3 1 2 2</div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="timeline-step">
+                    <div class="step-title">Step 3: count(1) is called</div>
+                    <p><strong>Local <code>n</code>:</strong> 1</p>
+                    <p><strong>Static <code>d</code>:</strong> 3 (Retains value from Step 2)</p>
+                    <ul>
+                        <li>Prints <code>n</code> (1)</li>
+                        <li>Prints <code>d</code> (3)</li>
+                        <li><code>d++</code> happens. <strong>Static Memory Box <code>d</code> becomes 4.</strong></li>
+                        <li>Condition <code>(1 > 1)</code> is False! Recursion stops moving forward.</li>
+                    </ul>
+                    <div class="output-box">Output so far: 3 1 2 2 1 3</div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- CARD 5: RECURSION TREE VISUAL -->
+        <div class="card">
+            <h2>5. Visualizing the Recursion Tree</h2>
+            <p>Here is what the instructor draws on the whiteboard. Notice how the final statements are "paused" waiting for the recursive calls to finish.</p>
+            
+            <div class="tree-container">
+                <div class="tree-node">
+                    <strong>count(3)</strong>
+                    <div class="paused-state">⏸️ Waiting to execute: printf(d)</div>
+                </div>
+                <div class="tree-arrow"></div>
+                
+                <div class="tree-node">
+                    <strong>count(2)</strong>
+                    <div class="paused-state">⏸️ Waiting to execute: printf(d)</div>
+                </div>
+                <div class="tree-arrow"></div>
+                
+                <div class="tree-node" style="border-color: var(--accent);">
+                    <strong>count(1)</strong><br>
+                    <small>Base Case Hit! Starts Unwinding.</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 6: UNWINDING PHASE -->
+        <div class="card">
+            <h2>6. The Unwinding Phase: Moving Backward</h2>
+            <p>Because this is <em>Non-Tail Recursion</em>, we must travel backward up the tree to execute those paused <code>printf("%d ", d);</code> statements. </p>
+            
+            <div class="memory-visualization" style="border-color: var(--secondary);">
+                <div>
+                    <strong>Current Global State</strong><br>
+                </div>
+                <div class="memory-box" style="border-color: var(--secondary); box-shadow: 4px 4px 0px rgba(233, 78, 119, 0.2);">d = 4</div>
+            </div>
+
+            <div class="timeline" style="border-color: var(--secondary);">
+                <div class="timeline-step">
+                    <div class="step-title" style="color: var(--secondary);">Step 4: Finishing count(1)</div>
+                    <p>We skip the <code>if</code> block and execute the final statement: <code>printf(d)</code>.</p>
+                    <p>Because <code>d</code> is static and shared, we look at the Global Memory Box. <code>d</code> is currently <strong>4</strong>.</p>
+                    <div class="output-box">Prints: 4</div>
+                </div>
+
+                <div class="timeline-step">
+                    <div class="step-title" style="color: var(--secondary);">Step 5: Finishing count(2)</div>
+                    <p>We return to the paused state of <code>count(2)</code> and execute its final statement: <code>printf(d)</code>.</p>
+                    <p>The global memory box still says <code>d</code> is <strong>4</strong>.</p>
+                    <div class="output-box">Prints: 4</div>
+                </div>
+
+                <div class="timeline-step">
+                    <div class="step-title" style="color: var(--secondary);">Step 6: Finishing count(3)</div>
+                    <p>We return to the paused state of <code>count(3)</code>. Execute final <code>printf(d)</code>.</p>
+                    <p>The global memory box still says <code>d</code> is <strong>4</strong>.</p>
+                    <div class="output-box">Prints: 4</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CARD 7: FINAL OUTPUT -->
+        <div class="card success">
+            <h2 style="color: var(--accent);">7. Final Output & Takeaways</h2>
+            <p>Combining the forward execution phase and the backward unwinding phase, we get the final answer to the GATE 2016 question:</p>
+            
+            <div class="final-output">
+                3 1 2 2 1 3 4 4 4
+            </div>
+
+            <h3 style="margin-top: 2rem;">📝 Pro-Tips for Exams:</h3>
+            <ul>
+                <li><strong>Always draw a recursion tree:</strong> Write out a visual tree just like the instructor did to keep track of paused function calls.</li>
+                <li><strong>Separate Local vs. Global/Static variables:</strong> Keep a designated spot on your scratch paper for <code>static</code> variables. Do not tie them to a specific branch of the tree!</li>
+                <li><strong>Remember the Unwinding Phase:</strong> If there is code <em>after</em> the recursive call, you are not done when the base case is hit. You must walk back up the tree.</li>
+            </ul>
+        </div>
+
+    </div>
+
+</body>
+</html>

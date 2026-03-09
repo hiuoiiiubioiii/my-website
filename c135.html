@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: realloc() Study Notes</title>
+    <style>
+        /* CSS Variables for Theme */
+        :root {
+            --bg-color: #f4f7f6;
+            --text-main: #333;
+            --text-light: #555;
+            --accent: #2563eb;
+            --accent-light: #eff6ff;
+            --warning: #eab308;
+            --danger: #ef4444;
+            --danger-light: #fef2f2;
+            --success: #22c55e;
+            --code-bg: #1e293b;
+            --code-text: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+        }
+
+        /* Global Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Vertical Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .feed-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+        }
+
+        h1 { font-size: 2.5rem; color: var(--accent); margin-bottom: 10px; }
+        h2 { font-size: 1.8rem; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--accent-light); }
+        h3 { font-size: 1.3rem; margin: 20px 0 10px 0; color: var(--text-main); }
+        p { margin-bottom: 15px; color: var(--text-light); font-size: 1.1rem; }
+        ul { margin-left: 20px; margin-bottom: 15px; color: var(--text-light); font-size: 1.1rem; }
+        li { margin-bottom: 8px; }
+
+        /* Callout Boxes */
+        .callout {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            border-left: 5px solid;
+        }
+        .callout.exam { background-color: var(--accent-light); border-color: var(--accent); }
+        .callout.danger { background-color: var(--danger-light); border-color: var(--danger); }
+        .callout-title { font-weight: bold; margin-bottom: 5px; color: var(--text-main); }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+        code { font-family: 'Courier New', Courier, monospace; }
+        .inline-code {
+            background-color: #e2e8f0;
+            color: #b91c1c;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+
+        /* --- VISUALIZATIONS --- */
+        .vis-container {
+            background-color: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .vis-title {
+            font-weight: bold;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        .memory-heap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pointer {
+            font-family: monospace;
+            background-color: var(--accent);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            position: relative;
+        }
+        
+        .pointer::after {
+            content: '↓';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--accent);
+            font-size: 1.5rem;
+        }
+
+        .array-row { display: flex; gap: 4px; }
+        
+        .memory-cell {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            background-color: white;
+            position: relative;
+        }
+
+        .memory-cell.new { border-color: var(--success); background-color: #dcfce7; }
+        .memory-cell.lost { border-color: var(--danger); background-color: #fee2e2; color: var(--danger); text-decoration: line-through; }
+        .memory-cell.occupied { background-color: #cbd5e1; border-color: #64748b; color: #64748b; }
+        
+        .address-label {
+            position: absolute;
+            bottom: -25px;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            font-family: monospace;
+            white-space: nowrap;
+        }
+
+        .arrow-down { font-size: 2rem; color: var(--text-light); margin: 10px 0; }
+
+        .equation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-family: monospace;
+            font-size: 1.2rem;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+
+        <!-- HEADER -->
+        <div class="feed-card" style="text-align: center; background: linear-gradient(135deg, var(--card-bg) 0%, var(--accent-light) 100%);">
+            <h1>The <span class="inline-code">realloc()</span> Function in C</h1>
+            <p style="font-size: 1.2rem; color: var(--text-main);">Dynamic Memory Allocation (DMA) Series</p>
+            <p style="font-size: 0.9rem; margin-top: 10px;">Continuous scrolling notes based on the instructor's whiteboard breakdown.</p>
+        </div>
+
+        <!-- SECTION 1: WHAT IS REALLOC -->
+        <div class="feed-card">
+            <h2>1. What is <span class="inline-code">realloc()</span>?</h2>
+            <p><strong>realloc</strong> stands for <strong>reallocation</strong> of memory. It is a built-in function defined in the <span class="inline-code">&lt;stdlib.h&gt;</span> library.</p>
+            <p><strong>Purpose:</strong> It is used to <strong>resize</strong> a memory block that was <em>previously allocated</em> dynamically (using <span class="inline-code">malloc()</span> or <span class="inline-code">calloc()</span>).</p>
+            
+            <ul>
+                <li><strong>Increase Size:</strong> Expand a block to store more data.</li>
+                <li><strong>Decrease Size:</strong> Shrink a block to free up unused space.</li>
+            </ul>
+
+            <div class="callout danger">
+                <div class="callout-title">⚠️ Crucial Rule</div>
+                <p style="margin-bottom:0; color:var(--danger)">You can <strong>only</strong> use <span class="inline-code">realloc()</span> on memory that was allocated dynamically. If you try to use it on memory allocated statically (like a standard array <span class="inline-code">int arr[10];</span>), it will result in <strong>undefined behavior</strong>.</p>
+            </div>
+        </div>
+
+        <!-- SECTION 2: SYNTAX -->
+        <div class="feed-card">
+            <h2>2. Syntax & Arguments</h2>
+            <p>How do we write the function? Let's break down the signature.</p>
+            
+            <pre><code>void* realloc (void *pointer, size_t size);</code></pre>
+
+            <ul>
+                <li><strong>Argument 1 (<span class="inline-code">void *pointer</span>):</strong> The pointer pointing to the base address of the <em>previously allocated</em> memory block.</li>
+                <li><strong>Argument 2 (<span class="inline-code">size_t size</span>):</strong> The <strong>new total size</strong> you want for the memory block in bytes. <em>(Note: It is NOT the amount of memory you want to add, it is the new total).</em></li>
+                <li><strong>Return Type (<span class="inline-code">void*</span>):</strong> It returns a generic void pointer to the new memory block. You must <strong>typecast</strong> it to match your data type.</li>
+            </ul>
+
+            <div class="vis-container">
+                <div class="vis-title">Syntax Mapping Example</div>
+                <p>Resize an existing integer pointer to hold 400 bytes (100 integers):</p>
+                <div style="font-family: monospace; font-size: 1.1rem; background: #e2e8f0; padding: 10px; border-radius: 5px;">
+                    ptr = <span style="color:var(--accent); font-weight:bold;">(int*)</span> realloc( <span style="color:purple; font-weight:bold;">ptr</span> , <span style="color:green; font-weight:bold;">400</span> );
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: BEHIND THE SCENES (EXPANDING) -->
+        <div class="feed-card">
+            <h2>3. Behind the Scenes: Expanding Memory</h2>
+            <p>The absolute best feature of <span class="inline-code">realloc()</span> is that it resizes memory <strong>without losing your previous content/data</strong>. When you ask for a larger size, the system attempts to do one of two things automatically.</p>
+
+            <h3>Case 1: Contiguous Space is Available (In-Place Expansion)</h3>
+            <p>If there is free space immediately following your current memory block in the heap, <span class="inline-code">realloc()</span> will simply extend the existing block.</p>
+            <ul>
+                <li>The base address remains exactly the same.</li>
+                <li>Your old data stays exactly where it is.</li>
+            </ul>
+
+            <div class="vis-container">
+                <div class="vis-title">Visualizing Case 1</div>
+                <div class="memory-heap">
+                    <div class="pointer" style="margin-bottom: 20px;">ptr (1000)</div>
+                    <div class="array-row">
+                        <div class="memory-cell">1<span class="address-label" style="left:0;">1000</span></div>
+                        <div class="memory-cell">2</div>
+                        <div class="memory-cell">3</div>
+                        <div class="memory-cell new">?</div>
+                        <div class="memory-cell new">?</div>
+                    </div>
+                </div>
+                <p style="font-size: 0.9rem; color: var(--text-light);">Expanded from 3 to 5 integers. Address remains 1000.</p>
+            </div>
+
+            <hr style="border: 1px solid var(--border); margin: 30px 0;">
+
+            <h3>Case 2: Contiguous Space is NOT Available (New Block Allocation)</h3>
+            <p>If the space immediately after your block is occupied by other program data, <span class="inline-code">realloc()</span> cannot just stretch the block. It performs a 4-step process behind the scenes:</p>
+            
+            <div class="callout exam">
+                <div class="callout-title">📝 Interview Focus: The 4 Steps of Reallocation</div>
+                <ol style="margin-top: 10px; margin-left: 20px;">
+                    <li>Searches the heap for a brand new block large enough for the new requested size.</li>
+                    <li><strong>Copies</strong> all your existing data into the new block.</li>
+                    <li>Automatically <strong>frees (deallocates)</strong> the old memory block.</li>
+                    <li>Returns the base address of the <em>new</em> block.</li>
+                </ol>
+            </div>
+
+            <div class="vis-container">
+                <div class="vis-title">Visualizing Case 2</div>
+                
+                <!-- Old Block -->
+                <div class="memory-heap">
+                    <p style="font-weight:bold; color: var(--danger);">Old Location (Deallocated)</p>
+                    <div class="pointer" style="margin-bottom: 20px; background-color: #64748b;">ptr (1000)</div>
+                    <div class="array-row">
+                        <div class="memory-cell lost">1<span class="address-label" style="left:0;">1000</span></div>
+                        <div class="memory-cell lost">2</div>
+                        <div class="memory-cell lost">3</div>
+                        <!-- Occupied block preventing expansion -->
+                        <div class="memory-cell occupied">X<span class="address-label" style="left:0;">1012</span></div>
+                    </div>
+                </div>
+
+                <div class="arrow-down">⬇️ System Moves Data ⬇️</div>
+
+                <!-- New Block -->
+                <div class="memory-heap">
+                    <p style="font-weight:bold; color: var(--success);">New Location</p>
+                    <div class="pointer" style="margin-bottom: 20px;">ptr1 (3000)</div>
+                    <div class="array-row">
+                        <div class="memory-cell">1<span class="address-label" style="left:0;">3000</span></div>
+                        <div class="memory-cell">2</div>
+                        <div class="memory-cell">3</div>
+                        <div class="memory-cell new">?</div>
+                        <div class="memory-cell new">?</div>
+                    </div>
+                </div>
+            </div>
+            
+            <p><em>Note:</em> If the heap is totally full and <span class="inline-code">realloc</span> cannot find enough space anywhere, it will return <span class="inline-code">NULL</span>. Your original data and memory block will remain untouched and safe.</p>
+        </div>
+
+        <!-- SECTION 4: SHRINKING MEMORY -->
+        <div class="feed-card">
+            <h2>4. Behind the Scenes: Shrinking Memory</h2>
+            <p>If you use <span class="inline-code">realloc()</span> to <em>decrease</em> the size (e.g., from 5 ints down to 3 ints), the block is shrunk. The base address remains the same, but data in the cut-off portion will be <strong>lost forever</strong>.</p>
+
+            <div class="vis-container">
+                <div class="vis-title">Visualizing Shrinking</div>
+                <div class="memory-heap">
+                    <div class="pointer" style="margin-bottom: 20px;">ptr (1000)</div>
+                    <div class="array-row">
+                        <div class="memory-cell">1<span class="address-label" style="left:0;">1000</span></div>
+                        <div class="memory-cell">2</div>
+                        <div class="memory-cell">3</div>
+                        <div class="memory-cell lost">4</div>
+                        <div class="memory-cell lost">5</div>
+                    </div>
+                </div>
+                <p style="font-size: 0.9rem; color: var(--danger);">Elements 4 and 5 are deallocated and lost.</p>
+            </div>
+        </div>
+
+        <!-- SECTION 5: EDGE CASES -->
+        <div class="feed-card">
+            <h2>5. Crucial Edge Cases (Cheat Codes)</h2>
+            <p>There are two special scenarios where <span class="inline-code">realloc()</span> perfectly mimics other memory functions. Write these down!</p>
+
+            <div class="equation">
+                <span class="inline-code">realloc(NULL, size)</span> 
+                <span>=</span> 
+                <span class="inline-code">malloc(size)</span>
+            </div>
+            <p style="text-align: center; font-size: 0.95rem;">If the pointer passed is NULL, it just creates a brand new memory block.</p>
+
+            <div class="equation">
+                <span class="inline-code">realloc(ptr, 0)</span> 
+                <span>=</span> 
+                <span class="inline-code">free(ptr)</span>
+            </div>
+            <p style="text-align: center; font-size: 0.95rem;">If the requested size is 0, it deallocates the memory and returns NULL.</p>
+        </div>
+
+        <!-- SECTION 6: PRACTICAL CODE -->
+        <div class="feed-card">
+            <h2>6. Practical Code Demonstration</h2>
+            <p>Here is the full C program demonstrated by the instructor on her laptop. It proves whether the memory expands in-place or jumps to a new address.</p>
+
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+int main() {
+    int *ptr, *ptr1, n, i;
+    
+    printf("Enter initial number of values (n): ");
+    scanf("%d", &n);
+
+    // Initial allocation using calloc
+    ptr = (int*) calloc(n, sizeof(int)); 
+
+    printf("Enter %d values:\n", n);
+    for(i=0; i&lt;n; i++) {
+        scanf("%d", (ptr+i));
+    }
+
+    printf("Enter updated size of n: ");
+    scanf("%d", &n);
+
+    // Reallocation - storing in a new pointer ptr1
+    ptr1 = (int*) realloc(ptr, n * sizeof(int));
+
+    // Checking if the address changed
+    printf("Previous addr: %d, new address: %d\n", ptr, ptr1);
+
+    printf("Values are:\n");
+    for(i=0; i&lt;n; i++) {
+        printf("%d\t", *(ptr1+i));
+    }
+
+    // Always free the final dynamically allocated pointer
+    free(ptr1); 
+    
+    return 0;
+}</code></pre>
+
+            <h3>Terminal Output Scenarios:</h3>
+            
+            <div style="background: #000; color: #0f0; padding: 15px; border-radius: 8px; font-family: monospace; margin-bottom: 15px;">
+                <p style="color: #fff; margin-bottom: 10px;">> SCENARIO 1: EXPANDING (In-Place Success)</p>
+                Enter initial number of values (n): 3<br>
+                Enter 3 values: 1 2 3<br>
+                Enter updated size of n: 5<br>
+                Previous addr: 7084032, new address: 7084032<br>
+                Values are: 1   2   3   0   0
+            </div>
+
+            <div style="background: #000; color: #0f0; padding: 15px; border-radius: 8px; font-family: monospace;">
+                <p style="color: #fff; margin-bottom: 10px;">> SCENARIO 2: SHRINKING</p>
+                Enter initial number of values (n): 5<br>
+                Enter 5 values: 1 2 3 4 5<br>
+                Enter updated size of n: 3<br>
+                Previous addr: 11012816, new address: 11012816<br>
+                Values are: 1   2   3
+            </div>
+            <p style="margin-top: 10px; font-size: 0.9rem;"><em>Note: In scenario 2, values 4 and 5 are permanently lost as the block size was reduced.</em></p>
+
+        </div>
+
+        <!-- SECTION 7: SUMMARY -->
+        <div class="feed-card" style="border: 2px solid var(--success);">
+            <h2 style="border-bottom:none; margin-bottom: 0;">✅ Summary Cheat Sheet</h2>
+            <ul style="margin-top: 15px;">
+                <li><strong>Include:</strong> <span class="inline-code">&lt;stdlib.h&gt;</span></li>
+                <li><strong>Primary Use:</strong> Resizing existing dynamically allocated memory.</li>
+                <li><strong>Data Safety:</strong> Old data is preserved when expanding. Data is truncated (lost) when shrinking.</li>
+                <li><strong>Return Value:</strong> Returns a <span class="inline-code">void*</span> pointer (requires typecasting) to the newly allocated space, or <span class="inline-code">NULL</span> if allocation fails.</li>
+                <li><strong>Next Topic:</strong> Deallocating memory using <span class="inline-code">free()</span>.</li>
+            </ul>
+        </div>
+
+    </div>
+
+</body>
+</html>

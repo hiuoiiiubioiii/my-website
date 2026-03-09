@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes: Designated Initialization in C</title>
+    <style>
+        /* --- Base Styles & Typography --- */
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --accent: #3b82f6;
+            --code-bg: #1e293b;
+            --code-text: #e2e8f0;
+            --color-a: #ef4444; /* Red for var a */
+            --color-b: #10b981; /* Green for var b */
+            --color-c: #f59e0b; /* Yellow for var c */
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* --- Vertical Feed Layout --- */
+        .feed-container {
+            max-width: 800px;
+            width: 100%;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- Typography --- */
+        h1 { margin-top: 0; color: #0f172a; font-size: 2rem; border-bottom: 2px solid var(--accent); padding-bottom: 10px; display: inline-block;}
+        h2 { margin-top: 0; color: #0f172a; font-size: 1.5rem; display: flex; align-items: center; gap: 10px;}
+        h2::before { content: "📘"; }
+        .instructor-tag { font-size: 0.9rem; color: var(--text-muted); font-weight: 500; margin-bottom: 20px; }
+
+        /* --- Code Blocks --- */
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.95rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .keyword { color: #c678dd; }
+        .type { color: #e5c07b; }
+        .func { color: #61afef; }
+        .string { color: #98c379; }
+        .number { color: #d19a66; }
+        .comment { color: #5c6370; font-style: italic; }
+
+        /* --- Visualizations --- */
+        .visualization-box {
+            background: #f1f5f9;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .flex-row {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .memory-block {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            min-width: 120px;
+            position: relative;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+        .badge.a { background: var(--color-a); }
+        .badge.b { background: var(--color-b); }
+        .badge.c { background: var(--color-c); }
+
+        .arrow-down {
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        /* --- Terminal Window --- */
+        .terminal {
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            padding: 15px;
+            border-radius: 8px;
+            border-top: 25px solid #333;
+            position: relative;
+        }
+        .terminal::before {
+            content: "🔴 🟡 🟢";
+            position: absolute;
+            top: -20px;
+            left: 10px;
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+        }
+
+        .highlight-box {
+            background: #e0f2fe;
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- INTRO CARD -->
+        <div class="card header-card">
+            <h1>Designated Initialization of Structures in C</h1>
+            <div class="instructor-tag">Instructor: Jayanti Khatri Lamba | Video Breakdown</div>
+            <p>Welcome to the interactive study feed! Scroll down to follow the instructor's logic step-by-step. We will cover the final concept in C structures: initializing specific members regardless of their order.</p>
+        </div>
+
+        <!-- THE CHALLENGE CARD -->
+        <div class="card">
+            <h2>1. The Whiteboard Challenge</h2>
+            <p>The video starts with this code on the whiteboard. The instructor asks you to pause and guess the output. Take a look at the code below:</p>
+            <pre>
+<span class="keyword">struct</span> <span class="type">question</span> {
+    <span class="type">int</span> a;
+    <span class="type">float</span> b;
+    <span class="type">int</span> c;
+};
+
+<span class="type">void</span> <span class="func">main</span>() {
+    <span class="comment">// The confusing line:</span>
+    <span class="keyword">struct</span> <span class="type">question</span> q = {<span class="keyword">.b</span> = <span class="number">1</span>, <span class="keyword">.c</span> = <span class="number">10</span>, <span class="keyword">.a</span> = <span class="number">15</span>};
+    
+    <span class="func">printf</span>(<span class="string">"%d %f %d"</span>, q.a, q.b, q.c);
+}</pre>
+            <div class="highlight-box">
+                <strong>Notice the printf statement:</strong> It specifically asks to print the variables in the exact order: <code>a</code>, <code>b</code>, then <code>c</code>.
+            </div>
+        </div>
+
+        <!-- CONCEPT 1: STANDARD INIT CARD -->
+        <div class="card">
+            <h2>2. Concept 1: Standard Initialization</h2>
+            <p>Before answering the challenge, the instructor explains how standard initialization works to show the contrast.</p>
+            <pre><span class="keyword">struct</span> <span class="type">question</span> q = {<span class="number">1</span>, <span class="number">10</span>, <span class="number">15</span>};</pre>
+            
+            <p><strong>How the compiler reads this:</strong> If you don't use dot operators, the C compiler assigns values strictly based on the order the members were defined at the top of the program.</p>
+            
+            <!-- Standard Init Visualization -->
+            <div class="visualization-box">
+                <h4 style="text-align: center; margin-top: 0;">Visualizing Standard Order Mapping</h4>
+                <div class="flex-row">
+                    <div class="memory-block">
+                        <strong>Value: 1</strong>
+                        <div class="arrow-down">⬇️</div>
+                        <span class="badge a">int a</span>
+                        <div>(1st defined)</div>
+                    </div>
+                    <div class="memory-block">
+                        <strong>Value: 10</strong>
+                        <div class="arrow-down">⬇️</div>
+                        <span class="badge b">float b</span>
+                        <div>(2nd defined)</div>
+                    </div>
+                    <div class="memory-block">
+                        <strong>Value: 15</strong>
+                        <div class="arrow-down">⬇️</div>
+                        <span class="badge c">int c</span>
+                        <div>(3rd defined)</div>
+                    </div>
+                </div>
+            </div>
+
+            <p><strong>Expected Output:</strong></p>
+            <div class="terminal">
+                1 10.000000 15
+            </div>
+            <p><small><em>Note: '10' becomes '10.000000' because 'b' is a float, which prints with 6 decimal places by default in C.</em></small></p>
+        </div>
+
+        <!-- CONCEPT 2: DESIGNATED INIT CARD -->
+        <div class="card">
+            <h2>3. Concept 2: Designated Initialization</h2>
+            <p>Now, returning to the original whiteboard code. This is what makes Designated Initialization special.</p>
+            <pre><span class="keyword">struct</span> <span class="type">question</span> q = {<span class="keyword">.b</span> = <span class="number">1</span>, <span class="keyword">.c</span> = <span class="number">10</span>, <span class="keyword">.a</span> = <span class="number">15</span>};</pre>
+            
+            <p><strong>The Dot Operator is Key:</strong> Using the dot operator (<code>.b</code>, <code>.c</code>, <code>.a</code>) tells the compiler exactly which member gets which value, <strong>regardless of the order they are listed in the curly braces.</strong></p>
+
+            <!-- Designated Init Visualization -->
+            <div class="visualization-box">
+                <h4 style="text-align: center; margin-top: 0;">Visualizing Designated Mapping</h4>
+                <div class="flex-row">
+                    <div class="memory-block">
+                        <strong>Value: 1</strong><br><small>(assigned to .b)</small>
+                        <div class="arrow-down">↘️</div>
+                        <span class="badge b">float b</span>
+                    </div>
+                    <div class="memory-block">
+                        <strong>Value: 10</strong><br><small>(assigned to .c)</small>
+                        <div class="arrow-down">⬇️</div>
+                        <span class="badge c">int c</span>
+                    </div>
+                    <div class="memory-block">
+                        <strong>Value: 15</strong><br><small>(assigned to .a)</small>
+                        <div class="arrow-down">↙️</div>
+                        <span class="badge a">int a</span>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: #64748b;">
+                    <em>The instructor drew crossing arrows on the board to show that order doesn't matter here. 'a' gets 15, 'b' gets 1, 'c' gets 10.</em>
+                </div>
+            </div>
+        </div>
+
+        <!-- THE PRINTF TRAP CARD -->
+        <div class="card">
+            <h2>4. The printf() Trap & Final Output</h2>
+            <p>Even though we assigned the values out of order, look at how we asked the program to print them:</p>
+            <pre><span class="func">printf</span>(<span class="string">"%d %f %d"</span>, q.a, q.b, q.c);</pre>
+            <p>Because we explicitly requested <code>q.a</code> first, <code>q.b</code> second, and <code>q.c</code> third, the program will format the output in that exact order, using the specific values we designated to them.</p>
+            
+            <p><strong>Final VS Code Compiler Output (Live Proof from Video):</strong></p>
+            <div class="terminal">
+                15 1.000000 10
+            </div>
+            
+            <div class="highlight-box">
+                <strong>Summary Takeaway:</strong> Designated initialization allows you to assign structure members safely without having to memorize the exact order they were declared in the structure definition. Just use the <code>.member_name</code> syntax!
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript for smooth scrolling fade-in animation -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const cards = document.querySelectorAll(".card");
+            
+            const observerOptions = {
+                root: null,
+                rootMargin: "0px",
+                threshold: 0.15
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add("visible");
+                        observer.unobserve(entry.target); // Stop observing once it's visible
+                    }
+                });
+            }, observerOptions);
+
+            cards.forEach(card => {
+                observer.observe(card);
+            });
+            
+            // Trigger first card immediately
+            if(cards.length > 0) {
+                cards[0].classList.add("visible");
+            }
+        });
+    </script>
+</body>
+</html>

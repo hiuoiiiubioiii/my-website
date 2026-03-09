@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming Notes: a+ Mode</title>
+    <style>
+        /* Base & Reset Styles */
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --primary: #4A90E2;
+            --accent: #E24A4A;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --border-radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.7;
+            padding: 20px;
+        }
+
+        /* Vertical Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 40px; /* Consistent spacing between sections */
+            padding-bottom: 60px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 40px 0 20px 0;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--text-main);
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Content Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary);
+        }
+
+        .card.warning {
+            border-left-color: var(--accent);
+        }
+
+        .card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h3 {
+            margin: 20px 0 10px 0;
+            font-size: 1.3rem;
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        /* Visualizations (CSS Art for Whiteboard) */
+        .visual-container {
+            background-color: #eef2f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .file-box {
+            background-color: #fff;
+            border: 2px solid #ccc;
+            border-top: 25px solid #ccc;
+            border-radius: 4px;
+            width: 300px;
+            min-height: 150px;
+            padding: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            position: relative;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .file-box::before {
+            content: attr(data-filename);
+            position: absolute;
+            top: -22px;
+            left: 5px;
+            font-size: 12px;
+            font-family: sans-serif;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .existing-text { color: #555; }
+        .appended-text { color: var(--primary); font-weight: bold; }
+        
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 15px;
+            background-color: var(--accent);
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+            margin-left: 2px;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.95rem;
+            margin: 20px 0;
+        }
+
+        code .comment { color: #6A9955; }
+        code .keyword { color: #569cd6; }
+        code .string { color: #ce9178; }
+        code .function { color: #DCDCAA; }
+
+        /* Comparison Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f9fbfd;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        @media (max-width: 600px) {
+            .card { padding: 20px; }
+            th, td { padding: 10px; font-size: 0.9rem; }
+            .file-box { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header Section -->
+        <header>
+            <h1>📚 File Handling in C</h1>
+            <p>In-Depth Breakdown: <strong>a+ Mode (Read & Append)</strong></p>
+            <p><em>Based on Jenny's Lectures</em></p>
+        </header>
+
+        <!-- Section 1: Concept -->
+        <div class="card">
+            <h2>🧠 What is a+ Mode?</h2>
+            <p>The <code>a+</code> mode is the final mode in the series of 6 standard file opening modes (<code>r</code>, <code>w</code>, <code>a</code>, <code>r+</code>, <code>w+</code>, <code>a+</code>). It stands for <strong>Reading and Appending</strong>.</p>
+            
+            <h3>Core Rules of a+ Mode:</h3>
+            <ul>
+                <li><strong>Purpose:</strong> Opens a file for both Reading and Appending.</li>
+                <li><strong>Appending vs. Writing:</strong> Appending is strict. You can <strong>only</strong> write data at the very end of the file. You cannot overwrite data in the middle.</li>
+                <li><strong>File Existence Check:</strong> 
+                    <ul>
+                        <li>If the file <em>exists</em>: Previous content is kept safe.</li>
+                        <li>If the file <em>does not exist</em>: A brand new file is created.</li>
+                    </ul>
+                </li>
+                <li><strong>The File Pointer (Cursor):</strong> There is only <em>one</em> pointer. When you read, it moves through the text. When you append, it automatically jumps to the end.</li>
+            </ul>
+
+            <!-- Visual 1 -->
+            <div class="visual-container">
+                <p><em>Visualizing Appending in a+ Mode:</em></p>
+                <div class="file-box" data-filename="abc.txt">
+                    <span class="existing-text">Jenny</span><span class="appended-text">khatri</span><span class="cursor"></span>
+                </div>
+                <p style="font-size: 0.9rem; color: #666;">The pointer jumps to the end. Existing text is preserved, new text is added after it.</p>
+            </div>
+        </div>
+
+        <!-- Section 2: The Code -->
+        <div class="card">
+            <h2>💻 Writing the Logic (Whiteboard Code)</h2>
+            <p>Here is the complete C program Jenny wrote on the whiteboard, implementing both reading and appending simultaneously.</p>
+            
+            <pre><code><span class="comment">// Standard inclusions</span>
+<span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+
+<span class="keyword">void</span> <span class="function">main</span>() {
+    <span class="comment">// 1. Create file pointer and variables</span>
+    FILE *fp = NULL;
+    <span class="keyword">char</span> ch;
+
+    <span class="comment">// 2. Open file in a+ mode</span>
+    fp = <span class="function">fopen</span>(<span class="string">"abc.txt"</span>, <span class="string">"a+"</span>);
+
+    <span class="comment">// 3. Error handling</span>
+    <span class="keyword">if</span> (fp == NULL) {
+        <span class="function">printf</span>(<span class="string">"File doesn't exist / Cannot open"</span>);
+        <span class="function">exit</span>(1); 
+    }
+
+    <span class="comment">// --- APPENDING LOGIC ---</span>
+    <span class="comment">// Pointer automatically jumps to EOF for appending</span>
+    <span class="function">fputs</span>(<span class="string">"khatri"</span>, fp); 
+
+    <span class="comment">// --- CRUCIAL STEP ---</span>
+    <span class="comment">// Move cursor from the end back to the beginning!</span>
+    <span class="function">rewind</span>(fp);
+
+    <span class="comment">// --- READING LOGIC ---</span>
+    <span class="keyword">while</span> (!<span class="function">feof</span>(fp)) {
+        ch = <span class="function">fgetc</span>(fp);
+        <span class="function">printf</span>(<span class="string">"%c"</span>, ch);
+    }
+
+    <span class="comment">// 4. Close the file</span>
+    <span class="function">fclose</span>(fp);
+}</code></pre>
+        </div>
+
+        <!-- Section 3: The Rewind Bug -->
+        <div class="card warning">
+            <h2>⚠️ The rewind() Edge Case</h2>
+            <p>A common mistake students make in <code>a+</code> mode is appending data and then immediately trying to read the file without using <code>rewind()</code>.</p>
+            
+            <p><strong>What happens if you forget rewind()?</strong><br>
+            Your console will be completely blank!</p>
+            
+            <div class="visual-container">
+                <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
+                    <div class="file-box" data-filename="Without rewind()">
+                        <span class="existing-text">Jennykhatri</span><span class="cursor"></span>
+                        <br><br><span style="color: var(--accent); font-size: 0.8rem;">Reading starts here (EOF). Finds nothing!</span>
+                    </div>
+                    <div class="file-box" data-filename="With rewind()">
+                        <span class="cursor"></span><span class="existing-text">Jennykhatri</span>
+                        <br><br><span style="color: var(--primary); font-size: 0.8rem;">Reading starts at the beginning. Success!</span>
+                    </div>
+                </div>
+            </div>
+            
+            <p>Because appending forces the cursor to the absolute end of the file, your <code>while(!feof(fp))</code> loop immediately detects the End-Of-File and terminates before printing a single character. <code>rewind(fp)</code> pushes the cursor back to index 0.</p>
+        </div>
+
+        <!-- Section 4: Comparison Table -->
+        <div class="card">
+            <h2>📊 Exam Prep: Comparing r+, w+, and a+</h2>
+            <p>These three modes are highly testable. Here is how they differ:</p>
+            
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th><code>r+</code> Mode</th>
+                            <th><code>w+</code> Mode</th>
+                            <th><code>a+</code> Mode</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Primary Actions</strong></td>
+                            <td>Read & Write</td>
+                            <td>Write & Read</td>
+                            <td>Read & Append</td>
+                        </tr>
+                        <tr>
+                            <td><strong>If file missing?</strong></td>
+                            <td><span style="color: var(--accent); font-weight: bold;">Returns NULL</span></td>
+                            <td>Creates new file</td>
+                            <td>Creates new file</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Previous Content?</strong></td>
+                            <td>Kept safe (Overwrites based on cursor)</td>
+                            <td><span class="highlight">Erased entirely</span></td>
+                            <td>Kept safe</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cursor Location</strong></td>
+                            <td>Beginning of file</td>
+                            <td>Fresh start (Beginning)</td>
+                            <td><span class="highlight">Strictly End of file</span> (for writing)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Section 5: VS Code Practical Demos -->
+        <div class="card">
+            <h2>🛠️ Practical Demos (VS Code)</h2>
+            <p>During the computer demonstration, Jenny proved three specific scenarios:</p>
+            
+            <ul>
+                <li><strong>Scenario 1: Standard Execution</strong><br>
+                She opened an existing <code>abc.txt</code> containing "Jenny khatri is awesome faculty". She appended "this is awesome", used <code>rewind()</code>, and read the file. The console successfully printed both strings together.</li>
+                
+                <li><strong>Scenario 2: Creating a Missing File</strong><br>
+                She changed her code to target <code>a.txt</code> (which didn't exist). The program didn't crash; instead, it successfully created a brand new <code>a.txt</code> on her hard drive and appended the text into it.</li>
+                
+                <li><strong>Scenario 3: Proving the Bug</strong><br>
+                She intentionally deleted the <code>rewind(fp)</code> line. She ran the code, and the console was totally empty. Upon checking the actual text file, the text <em>was</em> appended multiple times, proving that writing worked, but reading failed due to cursor placement.</li>
+            </ul>
+        </div>
+
+        <!-- Section 6: Next Steps -->
+        <div class="card">
+            <h2>⏭️ What's Next?</h2>
+            <p>This concludes the 6 standard file opening modes! In the upcoming videos, the lectures will dive deep into specific cursor manipulation functions in C:</p>
+            <ul>
+                <li><code>rewind()</code> - Moving the cursor back to the start.</li>
+                <li><code>fseek()</code> - Moving the cursor to a specific byte location in a file.</li>
+            </ul>
+            <p style="text-align: center; margin-top: 20px; color: var(--text-muted);"><em>End of Notes</em></p>
+        </div>
+
+    </div>
+
+</body>
+</html>

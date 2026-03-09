@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Preprocessor Notes: #define & #undef</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Fira+Code:wght@400;600&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Variables for Theming */
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --accent-blue: #0056b3;
+            --accent-red: #d32f2f;
+            --accent-green: #28a745;
+            --code-bg: #1e1e1e;
+            --whiteboard-bg: #fcfcfc;
+        }
+
+        /* Base Styles */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; }
+        
+        /* Header */
+        header { background: #1a1a2e; color: white; text-align: center; padding: 60px 20px 40px; position: relative; overflow: hidden; }
+        header h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 10px; }
+        header p { font-size: 1.1rem; color: #a8b2d1; max-width: 600px; margin: 0 auto; }
+        
+        /* Vertical Feed Container */
+        .feed-container { max-width: 800px; margin: -20px auto 60px; padding: 0 20px; display: flex; flex-direction: column; gap: 30px; position: relative; z-index: 10; }
+
+        /* Feed Cards */
+        .feed-card { background: var(--card-bg); border-radius: 12px; padding: 35px; box-shadow: 0 8px 30px rgba(0,0,0,0.06); border-top: 4px solid var(--accent-blue); opacity: 0; transform: translateY(40px); transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
+        .feed-card.visible { opacity: 1; transform: translateY(0); }
+        .feed-card h2 { font-size: 1.6rem; color: var(--accent-blue); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .feed-card h2 span { background: #eef2f7; color: var(--accent-blue); font-size: 0.9rem; padding: 4px 10px; border-radius: 20px; font-weight: 600; }
+        .feed-card p { margin-bottom: 20px; font-size: 1.05rem; }
+
+        /* Whiteboard Visualizations */
+        .whiteboard { background: var(--whiteboard-bg); border: 2px solid #e0e0e0; border-radius: 8px; padding: 25px; margin: 20px 0; font-family: 'Kalam', cursive; font-size: 1.2rem; color: #111; box-shadow: inset 0 0 20px rgba(0,0,0,0.02); position: relative; }
+        .whiteboard::before { content: 'Instructor Whiteboard'; position: absolute; top: -12px; left: 20px; background: white; padding: 0 10px; font-family: 'Inter', sans-serif; font-size: 0.8rem; font-weight: 600; color: #888; border-radius: 10px; border: 1px solid #e0e0e0; }
+        .wb-highlight { color: var(--accent-blue); font-weight: 700; }
+        .wb-error { color: var(--accent-red); font-weight: 700; }
+
+        /* Code Blocks */
+        pre { background: var(--code-bg); border-radius: 8px; padding: 20px; margin: 20px 0; overflow-x: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        code { font-family: 'Fira Code', monospace; color: #d4d4d4; font-size: 0.95rem; }
+        .code-keyword { color: #569cd6; }
+        .code-macro { color: #c586c0; }
+        .code-string { color: #ce9178; }
+        .code-comment { color: #6a9955; font-style: italic; }
+
+        /* Callout Boxes (Gotchas & Tips) */
+        .callout { padding: 20px 25px; border-radius: 8px; margin: 25px 0; display: flex; flex-direction: column; gap: 10px; }
+        .callout-title { font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+        .gotcha { background: #fff4f4; border-left: 5px solid var(--accent-red); }
+        .gotcha .callout-title { color: var(--accent-red); }
+        .tip { background: #f0f8ff; border-left: 5px solid var(--accent-blue); }
+        .tip .callout-title { color: var(--accent-blue); }
+
+        /* Step-by-step breakdown */
+        .step-list { list-style: none; counter-reset: my-counter; margin: 20px 0; padding-left: 10px; }
+        .step-list li { position: relative; padding-left: 45px; margin-bottom: 15px; font-size: 1.05rem; }
+        .step-list li::before { content: counter(my-counter); counter-increment: my-counter; position: absolute; left: 0; top: -2px; background: var(--accent-blue); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; }
+
+        /* Connecting Line for timeline feel */
+        .feed-container::before { content: ''; position: absolute; top: 0; bottom: 0; left: 40px; width: 4px; background: #e0e5ec; z-index: -1; }
+        @media (max-width: 768px) {
+            .feed-container::before { display: none; }
+            header { padding: 40px 20px; }
+            .feed-card { padding: 25px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>C Preprocessor Directives</h1>
+        <p>In-Depth Study Notes: #define & #undef. Scroll through the timeline to review the instructor's whiteboard examples, code snippets, and exam gotchas.</p>
+    </header>
+
+    <main class="feed-container">
+
+        <!-- Topic 1 -->
+        <article class="feed-card">
+            <h2><span>Topic 1</span> The Basics: What is #define?</h2>
+            <p><strong>Instructor Audio Note:</strong> "Preprocessing is a step that happens <em>before</em> your code is actually compiled. You can use <code>#define</code> to create constants. The preprocessor will search your code and literally text-replace the name with the value before the compiler ever sees it."</p>
+            
+            <div class="whiteboard">
+                #define <span class="wb-highlight">A</span> 10 <br><br>
+                Whenever you use <span class="wb-highlight">A</span> in your program, it gets replaced by 10.<br>
+                <span class="wb-error">Do NOT put a semicolon (;) at the end!</span>
+            </div>
+
+            <pre><code><span class="code-keyword">#define</span> <span class="code-macro">A</span> 10
+
+<span class="code-keyword">int</span> main() {
+    <span class="code-keyword">int</span> x = <span class="code-macro">A</span>; <span class="code-comment">// Preprocessor changes this to: int x = 10;</span>
+    printf(<span class="code-string">"%d"</span>, x);
+}</code></pre>
+
+            <div class="callout tip">
+                <div class="callout-title">💡 Instructor's Golden Rule</div>
+                <p>Always write macro names in <strong>UPPERCASE</strong> (e.g., <code>A</code>, <code>PI</code>, <code>MSG</code>). This is a standard coding convention so programmers instantly know it is a preprocessor macro and not a normal variable.</p>
+            </div>
+        </article>
+
+        <!-- Topic 2 -->
+        <article class="feed-card" style="border-top-color: #f39c12;">
+            <h2><span>Topic 2</span> Defining Strings & Decimals</h2>
+            <p><strong>Instructor Audio Note:</strong> "The first part is the <em>Macro Name</em>, and the second part is the <em>Character Sequence</em>. You are not limited to just integers. You can define floating-point numbers or long text strings so you don't have to retype them repeatedly."</p>
+
+            <div class="whiteboard">
+                <span class="wb-highlight">Macro Name</span> | <span class="wb-highlight">Character Sequence</span><br>
+                #define PI &nbsp;&nbsp;&nbsp;&nbsp;| 3.14159<br>
+                #define MSG &nbsp;&nbsp;&nbsp;| "Jenny's Lectures CS/IT NET&JRF"
+            </div>
+
+            <pre><code><span class="code-keyword">#define</span> <span class="code-macro">PI</span> 3.14159
+<span class="code-keyword">#define</span> <span class="code-macro">MSG</span> <span class="code-string">"Jenny's Lectures CS/IT"</span>
+
+<span class="code-keyword">int</span> main() {
+    <span class="code-keyword">int</span> r = 5;
+    printf(<span class="code-string">"Area: %f"</span>, <span class="code-macro">PI</span> * r * r); <span class="code-comment">// Evaluates to 3.14159 * 5 * 5</span>
+    printf(<span class="code-string">"%s"</span>, <span class="code-macro">MSG</span>); <span class="code-comment">// Prints the long string</span>
+}</code></pre>
+        </article>
+
+        <!-- Topic 3 -->
+        <article class="feed-card" style="border-top-color: var(--accent-red);">
+            <h2><span>Topic 3</span> Function-Like Macros (Crucial Exam Topic)</h2>
+            <p><strong>Instructor Audio Note:</strong> "You can define macros that act like functions by passing arguments. This is faster than a normal C function because there is no 'function call overhead'. It is pure text substitution."</p>
+
+            <div class="whiteboard">
+                #define <span class="wb-highlight">MUL(a, b)</span> a * b<br><br>
+                If we pass: MUL(2, 3)<br>
+                Code becomes: 2 * 3 (Compiler calculates 6)
+            </div>
+
+            <div class="callout gotcha">
+                <div class="callout-title">🚨 The Ultimate Exam "Gotcha"</div>
+                <p>Students get this wrong in exams and interviews all the time. What happens if we pass equations instead of single numbers?</p>
+                <br>
+                <p><strong>Code:</strong> <code>MUL(5-2, 7+4)</code></p>
+                <br>
+                <ul class="step-list">
+                    <li><strong>What you THINK happens:</strong> <code>a</code> becomes 3. <code>b</code> becomes 11. Answer = 33. <strong class="wb-error">(WRONG!)</strong></li>
+                    <li><strong>What ACTUALLY happens:</strong> The preprocessor is "dumb." It doesn't do math; it only does copy and paste.</li>
+                    <li>It substitutes text exactly: <code>5 - 2 * 7 + 4</code></li>
+                    <li>The compiler applies BODMAS (Multiplication first): <code>-2 * 7 = -14</code></li>
+                    <li>Equation is now: <code>5 - 14 + 4</code></li>
+                    <li><strong>Final Answer: <code>-5</code></strong></li>
+                </ul>
+            </div>
+        </article>
+
+        <!-- Topic 4 -->
+        <article class="feed-card" style="border-top-color: #9b59b6;">
+            <h2><span>Topic 4</span> Multi-line Macros using Backslash (\)</h2>
+            <p><strong>Instructor Audio Note:</strong> "Sometimes your macro logic is too long to fit on one line. If you hit 'Enter', C will throw an error. To fix this, use the backslash character (<code>\</code>) at the end of the line to tell the compiler 'this macro continues on the next line'."</p>
+
+            <pre><code><span class="code-comment">// The backslash \ connects multiple lines into one macro</span>
+<span class="code-keyword">#define</span> <span class="code-macro">MAX(a, b)</span> <span class="code-keyword">if</span>(a > b) \
+    printf(<span class="code-string">"%d is max"</span>, a); \
+<span class="code-keyword">else</span> \
+    printf(<span class="code-string">"%d is max"</span>, b)
+
+<span class="code-keyword">int</span> main() {
+    <span class="code-macro">MAX</span>(5, 6); <span class="code-comment">// Will output "6 is max"</span>
+}</code></pre>
+
+            <div class="callout tip">
+                <div class="callout-title">⚠️ String Substitution Note</div>
+                <p>If you write <code>printf("a is max");</code> inside the macro, the compiler will literally print the letter "a". It will <strong>not</strong> replace the letter "a" inside double quotes with the number 5. You must use the <code>%d</code> format specifier to print variable values.</p>
+            </div>
+        </article>
+
+        <!-- Topic 5 -->
+        <article class="feed-card" style="border-top-color: var(--accent-green);">
+            <h2><span>Topic 5</span> Destroying Macros with #undef</h2>
+            <p><strong>Instructor Audio Note:</strong> "If you are done using a macro and want to remove it so it cannot be used anymore in the rest of the file, you use <code>#undef</code>. It frees up the macro name to be reused, or simply prevents accidental usage down the line."</p>
+
+            <div class="whiteboard">
+                #define MAX(a,b) a > b ? a : b <br><br>
+                printf("%d", MAX(10, 20)); <span class="code-comment">// Works fine</span><br><br>
+                <span class="wb-highlight">#undef MAX</span> <span class="code-comment">// Macro is destroyed here!</span><br><br>
+                printf("%d", MAX(5, 6)); <span class="wb-error">// CRASH! Implicit declaration error.</span>
+            </div>
+
+            <pre><code><span class="code-keyword">#define</span> <span class="code-macro">MAX(a,b)</span> a > b ? a : b
+
+<span class="code-keyword">int</span> main() {
+    printf(<span class="code-string">"%d"</span>, <span class="code-macro">MAX</span>(10, 20)); 
+
+    <span class="code-keyword">#undef</span> <span class="code-macro">MAX</span> <span class="code-comment">// Destroying the macro</span>
+
+    <span class="code-comment">// If you uncomment the line below, the program will not compile</span>
+    <span class="code-comment">// printf("%d", MAX(5, 6)); </span>
+}</code></pre>
+        </article>
+
+        <article class="feed-card" style="border-top-color: #34495e; text-align: center; padding: 40px 20px;">
+            <h3>End of Study Notes! 🎉</h3>
+            <p style="margin-top: 10px; color: var(--text-muted);">You've reviewed the entire lesson on #define and #undef.</p>
+        </article>
+
+    </main>
+
+    <!-- JavaScript for the Scroll Fade-in Animation -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.feed-card');
+            
+            // Set up Intersection Observer
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.15 // Trigger when 15% of the card is visible
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target); // Stop observing once it's visible
+                    }
+                });
+            }, observerOptions);
+
+            // Observe every card
+            cards.forEach(card => {
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>

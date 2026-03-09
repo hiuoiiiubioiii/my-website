@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming Study Notes: ftell()</title>
+    <style>
+        /* CSS Variables for consistent theming */
+        :root {
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --card-bg: #ffffff;
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --highlight-bg: #e8f4fd;
+            --code-bg: #1e1e1e;
+            --terminal-bg: #000000;
+            --terminal-text: #00ff00;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Vertical Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            padding-bottom: 50px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        /* Feed Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--accent-color);
+        }
+
+        .card h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card p, .card ul {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .card ul {
+            padding-left: 20px;
+        }
+
+        /* Pro-tip / Highlight Box */
+        .takeaway-box {
+            background-color: var(--highlight-bg);
+            border-left: 4px solid var(--accent-color);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-weight: 500;
+        }
+
+        /* Whiteboard Visualization */
+        .whiteboard {
+            background-color: #fff;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+            font-family: 'Courier New', Courier, monospace;
+            overflow-x: auto;
+        }
+
+        .whiteboard-title {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .array-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .array-table th, .array-table td {
+            border: 1px solid #34495e;
+            padding: 10px;
+            font-size: 1.2rem;
+            width: 8.33%;
+        }
+
+        .array-table th {
+            background-color: #ecf0f1;
+            color: #c0392b;
+            font-size: 0.9rem;
+        }
+
+        .array-table td {
+            font-weight: bold;
+            color: #2980b9;
+        }
+
+        .pointer-indicator {
+            color: #e74c3c;
+            font-weight: bold;
+            display: block;
+            margin-top: 5px;
+            font-size: 0.8rem;
+        }
+
+        /* Code Blocks */
+        .ide-block {
+            background-color: var(--code-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .ide-header {
+            color: #858585;
+            font-family: monospace;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+
+        pre code {
+            color: #d4d4d4;
+            font-family: 'Consolas', monospace;
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+        /* Syntax Highlighting */
+        .keyword { color: #569cd6; }
+        .type { color: #4ec9b0; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; }
+        .function { color: #dcdcaa; }
+        .number { color: #b5cea8; }
+
+        /* Terminal Window */
+        .terminal-window {
+            background-color: var(--terminal-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            font-family: 'Consolas', monospace;
+            color: var(--terminal-text);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .terminal-header {
+            color: #fff;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            border-bottom: 1px dashed #333;
+            padding-bottom: 5px;
+        }
+
+        .step-tag {
+            display: inline-block;
+            background: var(--primary-color);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <main class="feed-container">
+        
+        <!-- Header -->
+        <header>
+            <h1>📝 The ftell() Function in C</h1>
+            <p>Comprehensive Lecture Notes & Code Visualizations</p>
+        </header>
+
+        <!-- Section 1: Introduction -->
+        <section class="card">
+            <h2>🧠 1. Introduction to Random File Access</h2>
+            <p>In C programming, when dealing with File Handling, we sometimes need to read or write data from specific, random locations in a file rather than just reading it sequentially from beginning to end.</p>
+            <ul>
+                <li><strong>Previous Knowledge:</strong> The <code>fseek()</code> function is used to <em>move</em> the file pointer to a specific location.</li>
+                <li><strong>Today's Topic:</strong> The <code>ftell()</code> function is used to <em>find out</em> exactly where that file pointer currently is.</li>
+            </ul>
+        </section>
+
+        <!-- Section 2: Core Concept & Visualization -->
+        <section class="card">
+            <h2>👁️ 2. Core Concept: What does ftell() do?</h2>
+            <p><strong>Definition:</strong> As the name suggests, it "tells" you the current position of the file pointer. It returns the current position as the number of bytes (or characters) calculated <strong>from the starting position of the file</strong>.</p>
+            
+            <div class="whiteboard">
+                <div class="whiteboard-title">Whiteboard Visualization: File "abc.txt"</div>
+                <table class="array-table">
+                    <tr>
+                        <th>0</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th><th>11</th>
+                    </tr>
+                    <tr>
+                        <td>J</td><td>e</td><td>n</td><td>n</td><td>y</td><td>␣</td><td>k</td><td>h</td><td>a</td><td>t</td><td>r</td><td>i</td>
+                    </tr>
+                </table>
+            </div>
+
+            <p><strong>Scenarios based on the whiteboard:</strong></p>
+            <ul>
+                <li><strong>Scenario 1:</strong> When you first open the file in read mode (<code>"r"</code>), the pointer is at the very beginning ('J'). <br>
+                    ➔ <code>ftell()</code> will return: <strong>0</strong></li>
+                <li><strong>Scenario 2:</strong> If you use <code>fseek()</code> to move the pointer to the letter 'k'. <br>
+                    ➔ <code>ftell()</code> will return: <strong>6</strong></li>
+            </ul>
+
+            <div class="takeaway-box">
+                💡 <strong>Major Application:</strong> Because <code>ftell()</code> counts bytes from the very start of the file, its most common practical application is finding the total length (size) of a file.
+            </div>
+        </section>
+
+        <!-- Section 3: Syntax -->
+        <section class="card">
+            <h2>📜 3. Syntax and Return Type</h2>
+            <p>Here is the formal syntax the instructor writes on the board:</p>
+            
+            <div class="ide-block">
+                <pre><code><span class="type">long int</span> <span class="function">ftell</span>(<span class="type">FILE</span> *pointer);</code></pre>
+            </div>
+
+            <ul>
+                <li><strong>Return Type (<code>long int</code>):</strong> It returns an integer representing the position. It uses <code>long int</code> because files can be very large, and the byte count might exceed the limit of a standard <code>int</code>.</li>
+                <li><strong>Argument (<code>FILE *pointer</code>):</strong> It takes exactly one argument—the file pointer of the file you are currently working with.</li>
+            </ul>
+        </section>
+
+        <!-- Section 4: Code Breakdown -->
+        <section class="card">
+            <h2>💻 4. Step-by-Step Code Breakdown</h2>
+            <p>The instructor writes a complete C program to demonstrate how <code>ftell()</code> reacts as the file pointer moves. Here is the synthesized code:</p>
+
+            <div class="ide-block">
+                <div class="ide-header">ftell_demo.c</div>
+                <pre><code><span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;stdlib.h&gt;
+
+<span class="type">void</span> <span class="function">main</span>() {
+    <span class="type">FILE</span> *fp = <span class="keyword">NULL</span>;
+    <span class="type">int</span> pos;         <span class="comment">// To store location from ftell</span>
+    <span class="type">char</span> ch;         <span class="comment">// To read a single character</span>
+    <span class="type">char</span> str[<span class="number">50</span>];    <span class="comment">// To read a string</span>
+
+    <span class="comment">// 1. Open the file</span>
+    fp = <span class="function">fopen</span>(<span class="string">"abc.txt"</span>, <span class="string">"r"</span>);
+    <span class="keyword">if</span> (fp == <span class="keyword">NULL</span>) {
+        <span class="function">printf</span>(<span class="string">"Can't open file"</span>);
+        <span class="function">exit</span>(<span class="number">1</span>);
+    }
+
+    <span class="comment">// 2. Initial Position (Pointer is at index 0)</span>
+    pos = <span class="function">ftell</span>(fp); 
+    <span class="function">printf</span>(<span class="string">"%d\n"</span>, pos);  <span class="comment">// Output: 0</span>
+
+    <span class="comment">// 3. Move the pointer using fseek (5 bytes forward)</span>
+    <span class="function">fseek</span>(fp, <span class="number">5</span>, SEEK_SET); 
+    <span class="function">printf</span>(<span class="string">"%d\n"</span>, <span class="function">ftell</span>(fp)); <span class="comment">// Output: 5 (At space after "Jenny")</span>
+
+    <span class="comment">// 4. Read character (Moves pointer forward by 1 byte)</span>
+    ch = <span class="function">fgetc</span>(fp); 
+    <span class="function">printf</span>(<span class="string">"%c\n"</span>, ch);        <span class="comment">// Output: (prints blank space)</span>
+    <span class="function">printf</span>(<span class="string">"%d\n"</span>, <span class="function">ftell</span>(fp)); <span class="comment">// Output: 6 (Moved past space to 'k')</span>
+
+    <span class="comment">// 5. Read string (Reads until space)</span>
+    <span class="function">fscanf</span>(fp, <span class="string">"%s"</span>, str);     <span class="comment">// Reads "khatri" (6 letters)</span>
+    <span class="function">printf</span>(<span class="string">"%s\n"</span>, str);       <span class="comment">// Output: khatri</span>
+    <span class="function">printf</span>(<span class="string">"%d\n"</span>, <span class="function">ftell</span>(fp)); <span class="comment">// Output: 12 (6 + 6 letters read)</span>
+
+    <span class="function">fclose</span>(fp);
+}</code></pre>
+            </div>
+        </section>
+
+        <!-- Section 5: Practical Application (File Length) -->
+        <section class="card">
+            <h2>📏 5. Finding the Length of a File</h2>
+            <p>The instructor highlights this as a crucial exam and interview concept. <em>How do you find the exact size of a file using ftell?</em></p>
+            
+            <div class="takeaway-box">
+                <strong>The Logic:</strong><br>
+                1. Move the file pointer to the absolute end of the file using <code>fseek()</code>.<br>
+                2. Ask <code>ftell()</code> where the pointer is. Because it counts from 0, the position at the end of the file IS the total byte count!
+            </div>
+
+            <div class="ide-block">
+                <pre><code><span class="comment">// Move pointer to the end (0 offset from SEEK_END)</span>
+<span class="function">fseek</span>(fp, <span class="number">0</span>, SEEK_END); 
+
+<span class="comment">// Print the current location</span>
+<span class="function">printf</span>(<span class="string">"Total file length: %d\n"</span>, <span class="function">ftell</span>(fp));</code></pre>
+            </div>
+        </section>
+
+        <!-- Section 6: Live VS Code Demo Output -->
+        <section class="card">
+            <h2>🛠️ 6. Practical Demonstration (VS Code Tests)</h2>
+            <p>To prove the whiteboard concepts, the instructor runs a text file containing: <code>Jenny khatri is awesome</code> (Length: 23 characters).</p>
+            
+            <span class="step-tag">Live Test 1: Reading Characters</span>
+            <p>Using <code>fgetc(fp)</code> reads the first character ('J') and pushes the pointer forward.</p>
+            
+            <span class="step-tag">Live Test 2: Reading Strings</span>
+            <p>Using <code>fscanf(fp, "%s", str)</code> reads the word "Jenny" (5 letters) and stops at the space. Pointer moves to 5.</p>
+
+            <span class="step-tag">Live Test 3: Finding File Length</span>
+            <p>Executing the <code>SEEK_END</code> logic.</p>
+
+            <div class="terminal-window">
+                <div class="terminal-header">Terminal Output</div>
+                C:\Users\Student\Desktop\Programs> gcc ftell.c<br>
+                C:\Users\Student\Desktop\Programs> ./a.out<br>
+                <br>
+                0<br>
+                Jenny<br>
+                5<br>
+                Total file length: 23<br>
+                <br>
+                Process finished with exit code 0.
+            </div>
+
+            <div class="takeaway-box">
+                <strong>Ultimate Takeaways:</strong><br>
+                • <code>fseek()</code> = <strong>Moves</strong> the pointer.<br>
+                • <code>ftell()</code> = <strong>Tells you</strong> where the pointer is located.<br>
+                • Remember that reading operations (<code>fgetc</code>, <code>fscanf</code>) consume bytes and push the pointer forward automatically!
+            </div>
+        </section>
+
+    </main>
+
+</body>
+</html>

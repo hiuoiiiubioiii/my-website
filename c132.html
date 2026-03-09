@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Memory Allocation - Study Notes</title>
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --white: #ffffff;
+            --accent: #2563eb;
+            --accent-light: #eff6ff;
+            --success: #dcfce7;
+            --success-text: #166534;
+            --danger: #fee2e2;
+            --danger-text: #991b1b;
+            --code-bg: #1e293b;
+            --code-text: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.7;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* The Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            width: 100%;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        /* Card Style for each topic */
+        .note-card {
+            background-color: var(--white);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-top: 5px solid var(--accent);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #0f172a;
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: #0f172a;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            color: var(--accent);
+            margin: 25px 0 10px 0;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .highlight {
+            background-color: #fef08a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        /* Code Block Styling */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background-color: #e2e8f0;
+            color: #0f172a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        /* Visualizations (Whiteboard Simulator) */
+        .whiteboard {
+            background-color: var(--white);
+            border: 2px dashed #94a3b8;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 25px 0;
+            position: relative;
+        }
+
+        .whiteboard::before {
+            content: 'Instructor Visual';
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background-color: var(--accent-light);
+            color: var(--accent);
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        /* Array Wastage Visualization */
+        .memory-array {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .mem-slot {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 8px;
+            border: 2px solid #cbd5e1;
+        }
+
+        .mem-used {
+            background-color: var(--success);
+            border-color: var(--success-text);
+            color: var(--success-text);
+        }
+
+        .mem-wasted {
+            background-color: var(--danger);
+            border-color: var(--danger-text);
+            color: var(--danger-text);
+        }
+
+        /* String Wastage Visualization */
+        .string-bar {
+            display: flex;
+            height: 50px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .str-used {
+            width: 8%; /* 4 bytes out of 50 */
+            background-color: var(--success);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--success-text);
+            border-right: 2px solid #cbd5e1;
+        }
+
+        .str-wasted {
+            width: 92%; /* 46 bytes out of 50 */
+            background-color: var(--danger);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--danger-text);
+            font-style: italic;
+        }
+
+        /* Memory Architecture Visualization */
+        .ram-container {
+            width: 100%;
+            max-width: 350px;
+            margin: 0 auto;
+            border: 4px solid #0f172a;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .ram-segment {
+            padding: 25px;
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 2px dashed #94a3b8;
+            position: relative;
+        }
+        
+        .ram-segment:last-child {
+            border-bottom: none;
+        }
+
+        .seg-stack { background-color: #fef3c7; }
+        .seg-heap { background-color: #e0e7ff; }
+        .seg-global { background-color: #f3e8ff; }
+        .seg-code { background-color: #f1f5f9; }
+
+        .arrow-down::after { content: '↓ Grows Down'; display: block; font-size: 0.8rem; margin-top: 5px; color: #b45309; }
+        .arrow-up::before { content: '↑ Grows Up'; display: block; font-size: 0.8rem; margin-bottom: 5px; color: #4338ca; }
+        .free-space { height: 60px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-style: italic; background: repeating-linear-gradient(45deg, #f8fafc, #f8fafc 10px, #ffffff 10px, #ffffff 20px);}
+
+        /* Pointer Visualization */
+        .pointer-vis {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            gap: 20px;
+        }
+        .stack-box, .heap-box {
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            width: 45%;
+        }
+        .stack-box { background-color: #fef3c7; border: 2px solid #d97706; }
+        .heap-box { background-color: #e0e7ff; border: 2px solid #4338ca; }
+        .ptr-arrow {
+            font-size: 2rem;
+            color: #0f172a;
+        }
+
+        /* Callout Box */
+        .callout {
+            background-color: var(--accent-light);
+            border-left: 4px solid var(--accent);
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header Section -->
+        <div>
+            <h1 style="text-align: center;">Dynamic Memory Allocation (DMA) in C</h1>
+            <p style="text-align: center; color: var(--text-light); font-size: 1.1rem;">Comprehensive Lecture Notes & Visualizations based on Jenny's Lectures</p>
+        </div>
+
+        <!-- Topic 1 -->
+        <article class="note-card">
+            <h2>1. The Basics: SMA vs. DMA</h2>
+            <p>In C programming, there are two primary ways to allocate memory to your program:</p>
+            <ul>
+                <li><strong>SMA (Static Memory Allocation):</strong> Memory requirement is fixed at <span class="highlight">compile time</span>.</li>
+                <li><strong>DMA (Dynamic Memory Allocation):</strong> Memory is allocated at <span class="highlight">run time</span>.</li>
+            </ul>
+
+            <div class="callout">
+                <strong>⚠️ Crucial Concept Clarification: "Compile Time"</strong><br>
+                Even though we say SMA happens at "compile time," memory from your RAM is <em>not</em> actually given to the program during compilation. At compile time, your English-like C code is simply converted into an Object file (<code>.obj</code> / machine code). 
+                <br><br>
+                <strong>Why do we say it happens at compile time?</strong> Because the <em>amount</em> of memory to be allocated is strictly <strong>fixed</strong> by the compiler. RAM is only physically assigned when the program is actually executed.
+            </div>
+
+            <div class="whiteboard">
+                <p><strong>Example of Static Memory Allocation:</strong></p>
+<pre><code>int main() {
+    int a, b;  // Compiler fixes this to 8 bytes (4 bytes each)
+    printf("Enter value for a and b:");
+    scanf("%d %d", &a, &b);
+    printf("a = %d b = %d", a, b);
+    return 0;
+}</code></pre>
+                <p>The compiler sees <code>int a, b;</code> and decides, "I will need exactly 8 bytes." Once the program runs, you cannot change this fixed size.</p>
+            </div>
+        </article>
+
+        <!-- Topic 2 -->
+        <article class="note-card">
+            <h2>2. The Drawbacks of Static Memory Allocation</h2>
+            <p>To understand why we need Dynamic Memory Allocation, we must look at the flaws of SMA. There are three major drawbacks.</p>
+
+            <h3>Drawback 1: Wastage of Memory</h3>
+            <p>If you declare an array or string but don't use all of it, the unused memory sits empty and cannot be used by anything else.</p>
+            
+            <div class="whiteboard">
+                <p><strong>Example 1: Array Wastage</strong></p>
+                <code>int arr[5]; // Allocates 20 bytes (5 blocks of 4 bytes)</code>
+                <p>If you only input 3 values (e.g., <code>1, 3, -1</code>), the remaining 2 slots are wasted.</p>
+                <div class="memory-array">
+                    <div class="mem-slot mem-used">1</div>
+                    <div class="mem-slot mem-used">3</div>
+                    <div class="mem-slot mem-used">-1</div>
+                    <div class="mem-slot mem-wasted">Empty</div>
+                    <div class="mem-slot mem-wasted">Empty</div>
+                </div>
+            </div>
+
+            <div class="whiteboard">
+                <p><strong>Example 2: String Wastage</strong></p>
+                <code>char Str[50]; // Allocates 50 bytes maximum</code>
+                <p>If you enter the name "Sonu", it takes 4 bytes. The remaining 46 bytes are completely wasted. Good programmers treat memory as a crucial resource.</p>
+                <div class="string-bar">
+                    <div class="str-used">Sonu</div>
+                    <div class="str-wasted">46 Bytes Wasted (Jayant, Jenny, Pradeep wouldn't fit here now)</div>
+                </div>
+            </div>
+
+            <h3>Drawback 2: Shortage of Memory</h3>
+            <p>If you created <code>int arr[5];</code> but suddenly realize at runtime you need to store 7 values, you cannot do it. The size is fixed and will crash or overflow if exceeded.</p>
+
+            <h3>Drawback 3: Memory Cannot be Freed or Reused</h3>
+            <p>In SMA, memory remains occupied until the program completely finishes and exits. You cannot free up the 46 wasted bytes from the string example in the middle of your program to use it for something else.</p>
+        </article>
+
+        <!-- Topic 3 -->
+        <article class="note-card">
+            <h2>3. Enter Dynamic Memory Allocation (DMA)</h2>
+            <p>DMA solves all the drawbacks of SMA. Memory is allocated at runtime and is <strong>not fixed</strong>. You can modify (increase or decrease) the size of the memory based on your programming needs while the program is running.</p>
+            
+            <p>C provides 4 built-in functions for DMA (we will learn the syntax in the next lecture):</p>
+            <ul>
+                <li><code>malloc()</code> - Memory Allocation</li>
+                <li><code>calloc()</code> - Contiguous Allocation</li>
+                <li><code>realloc()</code> - Re-allocation (resizing)</li>
+                <li><code>free()</code> - De-allocation (deleting)</li>
+            </ul>
+        </article>
+
+        <!-- Topic 4 -->
+        <article class="note-card">
+            <h2>4. The C Program Memory Layout</h2>
+            <p>To truly understand DMA, you must know how a C program uses your computer's RAM. The memory assigned to your program is divided into 4 main segments.</p>
+
+            <div class="whiteboard">
+                <div class="ram-container">
+                    <div class="ram-segment seg-stack arrow-down">
+                        Stack Segment<br>
+                        <span style="font-size: 0.8rem; font-weight: normal;">Local variables (int a, b) & function calls (main, printf).<br>Has a limited size (e.g., 2MB).</span>
+                    </div>
+                    <div class="free-space">Free RAM</div>
+                    <div class="ram-segment seg-heap arrow-up">
+                        Heap Segment<br>
+                        <span style="font-size: 0.8rem; font-weight: normal;">A massive pool of free memory. DMA exclusively uses the Heap.</span>
+                    </div>
+                    <div class="ram-segment seg-global">
+                        Global / Static Segment<br>
+                        <span style="font-size: 0.8rem; font-weight: normal;">e.g., global <code>int i = 10;</code> or uninitialized <code>int a;</code></span>
+                    </div>
+                    <div class="ram-segment seg-code">
+                        Code / Text Segment<br>
+                        <span style="font-size: 0.8rem; font-weight: normal;">Where compiled machine instructions live.</span>
+                    </div>
+                </div>
+            </div>
+            <p><strong>Note:</strong> The Stack grows downwards, and the Heap grows upwards toward each other. All Dynamic Memory Allocation happens strictly inside the <strong>Heap</strong>.</p>
+        </article>
+
+        <!-- Topic 5 -->
+        <article class="note-card">
+            <h2>5. How DMA Actually Works</h2>
+            <p>Here is the core mechanic of Dynamic Memory Allocation. <strong>You cannot use DMA without Pointers.</strong> Pointers are absolutely mandatory.</p>
+
+            <h3>The Allocation Process</h3>
+            <p>When you use a DMA function like <code>malloc()</code>, you ask the computer for a specific amount of bytes. The block is created in the <strong>Heap</strong>, but it has no variable name. Therefore, a pointer living in the <strong>Stack</strong> must hold the <em>base address</em> of that Heap block to access it.</p>
+
+            <div class="whiteboard">
+                <code>int *p; // Creating pointer in Stack</code>
+                <div class="pointer-vis">
+                    <div class="stack-box">
+                        <strong>Stack</strong><br><br>
+                        Pointer <code>*p</code><br>
+                        <span style="font-size: 0.8em; color: #666;">(Holds Base Address)</span>
+                    </div>
+                    <div class="ptr-arrow">➔</div>
+                    <div class="heap-box">
+                        <strong>Heap</strong><br><br>
+                        [ Nameless 8-Byte Block ]<br>
+                        <span style="font-size: 0.8em; color: #666;">(Allocated via malloc)</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3>The Crucial Role of the <code>free()</code> Function</h3>
+            <p>In SMA, memory is destroyed automatically when the program ends. In DMA, <strong>it is the programmer's responsibility to free the memory.</strong></p>
+            
+            <div class="callout">
+                <strong>🚨 Danger: Memory Leaks</strong><br>
+                If you write <code>p = NULL;</code> before freeing the memory, the arrow breaks. The pointer no longer points to the Heap memory. However, that 8-byte block in the Heap <em>is still reserved</em>. You can no longer access it, but the computer can't use it either. Doing this repeatedly causes a <strong>Memory Leak</strong>, eventually exhausting the Heap and crashing the program.
+            </div>
+
+            <p>To properly delete the memory so it can be reused by your program, you must use <code>free(p);</code>. You can call this anywhere in your program once you are done with the memory block.</p>
+        </article>
+
+        <!-- Topic 6 -->
+        <article class="note-card">
+            <h2>6. Summary: The Golden Rule of Reusability</h2>
+            <p>The entire concept boils down to resource management:</p>
+            <ul>
+                <li><strong>SMA:</strong> Memory size is fixed. It cannot be increased, decreased, or freed during program execution. It cannot be reused.</li>
+                <li><strong>DMA:</strong> Memory size is flexible. It is allocated from the Heap. By using the <code>free()</code> function, you can release the memory back to the Heap during execution, allowing it to be reused later in the exact same program.</li>
+            </ul>
+            
+            <div class="callout" style="border-left-color: #10b981; background-color: #ecfdf5;">
+                <strong>🎓 Homework Assignment:</strong><br>
+                Write down the differences between Static Memory Allocation and Dynamic Memory Allocation in your own words. (Next up: learning the exact syntax of the <code>malloc</code> function).
+            </div>
+        </article>
+
+    </div>
+
+</body>
+</html>

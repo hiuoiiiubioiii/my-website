@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: Reading from a File</title>
+    <style>
+        /* CSS Reset & Variables */
+        :root {
+            --bg-color: #f4f7f6;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --card-bg: #ffffff;
+            --accent-blue: #007bff;
+            --accent-green: #28a745;
+            --accent-red: #dc3545;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --border-radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem; /* Spacing between cards */
+        }
+
+        /* Main Header */
+        header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--accent-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Content Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--accent-blue);
+        }
+
+        .card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #222;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .card h3 {
+            font-size: 1.3rem;
+            margin: 1.5rem 0 0.5rem 0;
+            color: var(--accent-blue);
+        }
+
+        .card p {
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+        }
+
+        .highlight {
+            background-color: #ffeeba;
+            padding: 0.1rem 0.3rem;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            border: 1px solid #333;
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .code-inline {
+            background-color: #e9ecef;
+            color: #d63384;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        /* Visualizations */
+        .visualization-box {
+            background-color: var(--bg-color);
+            border: 2px dashed #ccc;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin: 1.5rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .arch-diagram {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            align-items: center;
+        }
+
+        .device {
+            background: white;
+            border: 2px solid var(--accent-blue);
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            width: 40%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .device h4 { margin-bottom: 1rem; color: var(--text-muted); }
+        
+        .file-box {
+            border: 1px solid #999;
+            padding: 1rem;
+            background: #fdfdfd;
+            font-family: monospace;
+        }
+
+        .arrow {
+            font-size: 2rem;
+            color: var(--accent-blue);
+        }
+
+        /* Array Visualization for fgets */
+        .array-vis {
+            display: flex;
+            gap: 0.2rem;
+            margin-top: 1rem;
+        }
+        .array-cell {
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--text-muted);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-family: monospace;
+            background: white;
+        }
+        .array-null {
+            background: #ffeeba;
+            color: var(--accent-red);
+        }
+        .array-empty {
+            background: #e9ecef;
+        }
+
+        /* Stopping Conditions List */
+        .stopping-conditions {
+            background-color: #e8f4f8;
+            border-left: 4px solid var(--accent-blue);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .stopping-conditions ul {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        .stopping-conditions li {
+            margin-bottom: 0.5rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <header>
+            <h1>File Handling in C: Reading Files</h1>
+            <p>In-depth study notes based on Jenny's Lectures</p>
+        </header>
+
+        <!-- Card 1: Context -->
+        <article class="card">
+            <h2>1. Introduction & Context</h2>
+            <p>In previous lessons, we covered writing to files using the <span class="code-inline">"w"</span> (write) mode. If a file doesn't exist in write mode, C creates a new one for you.</p>
+            <p><strong>Reading is different.</strong> To read a file, we use the <span class="code-inline">"r"</span> (read) mode. The most crucial rule here is:</p>
+            <p class="highlight">The file MUST already exist on your hard drive before you run the program. If it doesn't, the compiler will return an error (NULL).</p>
+            <h3>Functions we will learn:</h3>
+            <ul>
+                <li><span class="code-inline">fgetc()</span>: "File get character" - Reads a single character.</li>
+                <li><span class="code-inline">fgets()</span>: "File get string" - Reads a complete string or line.</li>
+            </ul>
+        </article>
+
+        <!-- Card 2: Mental Model -->
+        <article class="card">
+            <h2>2. The Mental Model (How it works behind the scenes)</h2>
+            <p>When you read a file, you are not deleting it from your computer. You are creating a bridge (a pointer) between your Hard Disk and your RAM, copying the data into your program's variables.</p>
+            
+            <div class="visualization-box">
+                <div class="arch-diagram">
+                    <div class="device">
+                        <h4>Hard Disk (H/D)</h4>
+                        <div class="file-box">abc.txt<br><br>"Jenny"</div>
+                    </div>
+                    <div class="arrow">⟵</div>
+                    <div class="device">
+                        <h4>RAM (Main Memory)</h4>
+                        <div class="file-box" style="border-color: var(--accent-green);">
+                            C Program<br><br>
+                            <span class="code-inline" style="font-size: 0.8rem;">FILE *fp</span><br>
+                            <span class="code-inline" style="font-size: 0.8rem;">char ch = 'J'</span>
+                        </div>
+                    </div>
+                </div>
+                <p><em>The <span class="code-inline">FILE *fp</span> pointer connects to the file in the hard disk. Using <span class="code-inline">fgetc</span> pulls data across the bridge into RAM.</em></p>
+            </div>
+        </article>
+
+        <!-- Card 3: Opening Safely -->
+        <article class="card">
+            <h2>3. Opening the File Safely</h2>
+            <p>Because the file must exist, we <strong>must always</strong> check if the file opened successfully before trying to read from it.</p>
+<pre>
+FILE *fp = NULL;
+
+// 1. Open in Read Mode
+fp = fopen("abc.txt", "r");
+
+// 2. Crucial Error Check
+if (fp == NULL) {
+    printf("Error: File does not exist.\n");
+    exit(1); // Stop the program immediately
+}
+</pre>
+        </article>
+
+        <!-- Card 4: fgetc -->
+        <article class="card">
+            <h2>4. Reading Character by Character: <span style="color: var(--accent-blue);">fgetc()</span></h2>
+            <p>The <span class="code-inline">fgetc(file_pointer)</span> function looks at where the pointer is currently located, grabs exactly one character, and automatically moves the internal pointer to the next character.</p>
+            
+            <h3>Reading one character:</h3>
+<pre>
+char ch;
+ch = fgetc(fp); 
+// If file has "Jenny", 'ch' now holds 'J'.
+// The internal pointer is now looking at 'e'.
+printf("%c", ch);
+</pre>
+
+            <h3>Reading the ENTIRE file using a Loop</h3>
+            <p>To read the whole file, we use a <span class="code-inline">while</span> loop alongside a special function called <span class="code-inline">feof()</span> (File End Of File).</p>
+            <ul>
+                <li><span class="code-inline">feof(fp)</span> returns <strong style="color: var(--accent-red);">0 (False)</strong> if we are NOT at the end of the file.</li>
+                <li><span class="code-inline">feof(fp)</span> returns <strong style="color: var(--accent-green);">1 (True)</strong> if we HAVE reached the end.</li>
+            </ul>
+            <p>Therefore, our loop condition is <span class="code-inline">while(!feof(fp))</span>, which translates to: <em>"While we are NOT at the end of the file..."</em></p>
+<pre>
+while (!feof(fp)) {
+    ch = fgetc(fp);   // Read current char
+    printf("%c", ch); // Print it
+}
+</pre>
+        </article>
+
+        <!-- Card 5: fgets -->
+        <article class="card">
+            <h2>5. Reading Strings/Chunks: <span style="color: var(--accent-blue);">fgets()</span></h2>
+            <p>Instead of one character, <span class="code-inline">fgets()</span> reads chunks of text. To use it, we must first declare a character array (string) to hold the incoming data.</p>
+            <p><strong>Syntax:</strong> <span class="code-inline">fgets(variable_name, length, file_pointer);</span></p>
+
+            <h3>The (N-1) Rule & Null Terminator</h3>
+            <p>If you tell <span class="code-inline">fgets</span> the length is <strong>5</strong>, it will actually only read <strong>4</strong> characters from the text file. It reserves the 5th spot to automatically insert a Null Terminator (<span class="code-inline">\0</span>), which C requires to know where a string ends.</p>
+            
+            <div class="visualization-box" style="padding: 1rem;">
+                <p>Code: <span class="code-inline">fgets(str, 5, fp);</span> reading the word "Jenny"</p>
+                <div class="array-vis">
+                    <div class="array-cell">J</div>
+                    <div class="array-cell">e</div>
+                    <div class="array-cell">n</div>
+                    <div class="array-cell">n</div>
+                    <div class="array-cell array-null">\0</div>
+                    <div class="array-cell array-empty"></div>
+                    <div class="array-cell array-empty"></div>
+                </div>
+                <p><em>Notice the 'y' is left behind in the file because it hit the size limit!</em></p>
+            </div>
+
+            <div class="stopping-conditions">
+                <h3>⚠️ The 3 Stopping Conditions</h3>
+                <p>The <span class="code-inline">fgets</span> function will stop reading and return what it has if it hits <strong>ANY</strong> of these three conditions first:</p>
+                <ol>
+                    <li>It reads <strong>N - 1</strong> characters (Size limit reached).</li>
+                    <li>It hits the <strong>End of File (EOF)</strong>.</li>
+                    <li><strong>Crucial:</strong> It encounters a <strong>Newline Character (\n)</strong>. If your file has multiple lines, <span class="code-inline">fgets</span> will stop at the end of line 1, even if the size limit hasn't been reached.</li>
+                </ol>
+            </div>
+            <p>Because of rule #3, <span class="code-inline">fgets</span> inside a loop is the perfect way to read a multi-line file line-by-line.</p>
+        </article>
+
+        <!-- Card 6: Full Practical Code -->
+        <article class="card" style="border-top-color: var(--accent-green);">
+            <h2>6. Final Practical Implementation</h2>
+            <p>Here is the complete, compilable VS Code example demonstrating how to read a multi-line file perfectly using <span class="code-inline">fgets</span> in a loop.</p>
+<pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+void main() {
+    FILE *fp = NULL;
+    char str[50]; // Buffer to hold our lines
+
+    // 1. Open the file
+    fp = fopen("abc.txt", "r");
+
+    // 2. Error Check (CRITICAL)
+    if (fp == NULL) {
+        printf("Error: File not found.\n");
+        exit(1);
+    }
+
+    // 3. Loop until End Of File
+    while (!feof(fp)) {
+        // Read up to 49 chars OR until a newline (\n) is hit
+        fgets(str, 50, fp);
+        
+        // Print the string (it includes the newline if it read one)
+        printf("%s", str);
+    }
+
+    // 4. Always close the file to free memory
+    fclose(fp);
+}
+</pre>
+        </article>
+
+    </div>
+
+</body>
+</html>

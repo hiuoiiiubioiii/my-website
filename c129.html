@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming Notes: The rewind() Function</title>
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --primary: #4f46e5;
+            --primary-light: #e0e7ff;
+            --secondary: #0ea5e9;
+            --code-bg: #0f172a;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .feed-container {
+            max-width: 800px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 1.75rem;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-light);
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            margin: 1.5rem 0 0.5rem 0;
+            color: var(--secondary);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        .highlight {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: #f8f8f2;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 1rem 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        code .keyword { color: #ff79c6; }
+        code .function { color: #50fa7b; }
+        code .string { color: #f1fa8c; }
+        code .comment { color: #6272a4; }
+        code .variable { color: #8be9fd; }
+
+        /* Visualization Interactive Elements */
+        .viz-container {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .file-tape {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            max-width: 100%;
+            padding-bottom: 2rem;
+        }
+
+        .char-box {
+            width: 35px;
+            height: 40px;
+            background: #282a36;
+            border: 1px solid #44475a;
+            color: #f8f8f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: monospace;
+            font-size: 1.2rem;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .char-box .index {
+            position: absolute;
+            top: -20px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .pointer {
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ff5555;
+            font-size: 1.5rem;
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            opacity: 0;
+        }
+
+        .char-box.active .pointer {
+            opacity: 1;
+        }
+
+        .viz-controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #4338ca;
+        }
+
+        button.btn-secondary {
+            background-color: var(--secondary);
+        }
+        button.btn-secondary:hover {
+            background-color: #0284c7;
+        }
+
+        .terminal-output {
+            background: #000;
+            color: #0f0;
+            font-family: monospace;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            min-height: 60px;
+            width: 100%;
+        }
+
+        .note-box {
+            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Step layout */
+        .step {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .step-num {
+            background: var(--primary-light);
+            color: var(--primary);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+    
+    <!-- 1. HEADER SECTION -->
+    <header class="card">
+        <h1>The <span class="highlight">rewind()</span> Function</h1>
+        <p style="font-size: 1.2rem; color: var(--text-muted);">In-depth study notes from the C File Handling lecture. Keep scrolling to learn the concept, see the code, and interact with the file pointer.</p>
+    </header>
+
+    <!-- 2. CONCEPT SECTION -->
+    <section class="card">
+        <h2>1. What is rewind()?</h2>
+        <p>In file handling, whenever you read or write data, an internal "cursor" (called the file pointer) moves forward. If you reach the middle or the end of the file and realize you need to read the file from the very beginning again, you have two choices:</p>
+        <ul>
+            <li><strong>The hard way:</strong> Close the file using <span class="highlight">fclose()</span> and reopen it using <span class="highlight">fopen()</span>.</li>
+            <li><strong>The smart way:</strong> Use the <span class="highlight">rewind()</span> function.</li>
+        </ul>
+        <div class="note-box">
+            <strong>Analogy:</strong> Just like rewinding an old VHS tape or cassette, <code>rewind()</code> instantly rolls the file pointer back to the starting index <code>0</code> of the file.
+        </div>
+
+        <h3>Syntax</h3>
+        <pre><code><span class="keyword">void</span> <span class="function">rewind</span>(<span class="variable">FILE</span> *fp);</code></pre>
+        <ul>
+            <li><strong>Argument:</strong> It takes exactly one argument, which is the file pointer (<code>fp</code>) of the file you want to rewind.</li>
+            <li><strong>Return Type:</strong> It returns <code>void</code> (it does not return any value).</li>
+        </ul>
+    </section>
+
+    <!-- 3. INTERACTIVE VISUALIZATION SECTION -->
+    <section class="card">
+        <h2>2. Interactive Pointer Visualization</h2>
+        <p>Let's simulate the exact VS Code demonstration from the video. Our file contains the text: <strong>"Jenny is awesome"</strong>. Click the buttons below to see how the file pointer behaves.</p>
+        
+        <div class="viz-container">
+            <div class="file-tape" id="fileTape">
+                <!-- JavaScript will populate this -->
+            </div>
+            
+            <div class="terminal-output" id="termOutput">
+                Terminal Output: <br><span id="outText"></span>
+            </div>
+
+            <div class="viz-controls">
+                <button onclick="runFseek()">1. fseek(fp, 6, SEEK_SET)</button>
+                <button class="btn-secondary" onclick="runRead()">2. while(!feof(fp)) { print }</button>
+                <button onclick="runRewind()">3. rewind(fp)</button>
+                <button style="background: var(--text-muted);" onclick="resetViz()">Reset Simulation</button>
+            </div>
+        </div>
+        <p style="font-size: 0.9rem; color: var(--text-muted); text-align: center;">Notice how reading moves the pointer to the end, and rewind snaps it back to index 0.</p>
+    </section>
+
+    <!-- 4. WHITEBOARD CODE BREAKDOWN SECTION -->
+    <section class="card">
+        <h2>3. Whiteboard Code Breakdown</h2>
+        <p>Here is the exact code logic the instructor wrote on the whiteboard, annotated for your notes.</p>
+        
+        <div class="step">
+            <div class="step-num">1</div>
+            <div>
+                <p><strong>Setup & Opening the File:</strong> She chooses the <code>"r+"</code> mode (read/update). She specifically notes that if you use <code>"w+"</code>, it will erase the existing content of the file immediately.</p>
+<pre><code><span class="variable">FILE</span> *fp = <span class="keyword">NULL</span>;
+<span class="keyword">char</span> ch;
+
+fp = <span class="function">fopen</span>(<span class="string">"abc.txt"</span>, <span class="string">"r+"</span>);
+<span class="keyword">if</span> (fp == <span class="keyword">NULL</span>) {
+    <span class="function">printf</span>(<span class="string">"Error"</span>);
+    <span class="function">exit</span>(1);
+}</code></pre>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">2</div>
+            <div>
+                <p><strong>Moving the Cursor manually:</strong> Using <code>fseek</code>, she moves the cursor 6 bytes forward from the beginning (<code>SEEK_SET</code>).</p>
+<pre><code><span class="comment">// Moves pointer past "Jenny'" to the 's' at index 6</span>
+<span class="function">fseek</span>(fp, 6, SEEK_SET);</code></pre>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">3</div>
+            <div>
+                <p><strong>First Reading Loop:</strong> She uses a standard loop to read from the current cursor position to the end of the file.</p>
+<pre><code><span class="keyword">while</span> (!<span class="function">feof</span>(fp)) {
+    ch = <span class="function">fgetc</span>(fp);
+    <span class="function">printf</span>(<span class="string">"%c"</span>, ch);
+}
+<span class="comment">// OUTPUT: "s lectures is great channel for CS/IT"</span>
+<span class="comment">// Cursor is now at the END of the file.</span></code></pre>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">4</div>
+            <div>
+                <p><strong>The Rewind:</strong> She wants to print the entire file from the start. Instead of reopening the file, she simply rewinds it.</p>
+<pre><code><span class="function">rewind</span>(fp); 
+<span class="comment">// Cursor snaps back to index 0.</span></code></pre>
+            </div>
+        </div>
+
+        <div class="step">
+            <div class="step-num">5</div>
+            <div>
+                <p><strong>Second Reading Loop:</strong> The exact same while loop is run again.</p>
+<pre><code><span class="keyword">while</span> (!<span class="function">feof</span>(fp)) {
+    ch = <span class="function">fgetc</span>(fp);
+    <span class="function">printf</span>(<span class="string">"%c"</span>, ch);
+}
+<span class="comment">// OUTPUT: "Jenny's lectures is great channel for CS/IT"</span>
+
+<span class="function">fclose</span>(fp);</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. PRACTICAL VS CODE OUTCOMES -->
+    <section class="card">
+        <h2>4. Practical VS Code Outcomes</h2>
+        <p>In the final part of the video, she switches to VS Code. Her text file reads: <code>Jenny is awesome faculty</code>. Here are the 3 variations she proves in the terminal:</p>
+
+        <h3>Variation 1: Normal Read Only</h3>
+        <p>Code: Just <code>fopen</code> -> <code>while(read)</code></p>
+        <div class="terminal-output">Jenny is awesome faculty</div>
+
+        <h3>Variation 2: Read -> Rewind -> Read</h3>
+        <p>Code: <code>while(read)</code> -> <code>rewind(fp)</code> -> <code>while(read)</code></p>
+        <div class="terminal-output">Jenny is awesome facultyJenny is awesome faculty</div>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem;">*Note: There is no newline character because she didn't program a <code>printf("\n")</code> between the loops.</p>
+
+        <h3>Variation 3: fseek -> Read -> Rewind -> Read</h3>
+        <p>Code: <code>fseek(fp,6,SEEK_SET)</code> -> <code>while(read)</code> -> <code>rewind(fp)</code> -> <code>while(read)</code></p>
+        <div class="terminal-output">is awesome facultyJenny is awesome faculty</div>
+    </section>
+
+    <!-- 6. SUMMARY -->
+    <section class="card">
+        <h2>5. Key Takeaways 🎯</h2>
+        <ul>
+            <li><code>rewind(fp)</code> is the dedicated function to reset the file pointer to the beginning of the file (index 0).</li>
+            <li>It saves processing time and code lines because you don't have to <code>fclose()</code> and <code>fopen()</code> again.</li>
+            <li>Writing <code>fseek(fp, 0, SEEK_SET);</code> essentially does the exact same thing under the hood. <code>rewind()</code> is just a cleaner, more readable shorthand for this.</li>
+            <li>Always be mindful of your opening modes (<code>"r+"</code> vs <code>"w+"</code>). Rewinding a file opened in <code>"w+"</code> after reading won't give you old data, because <code>"w+"</code> erased it upon opening. Write first, then rewind, then read.</li>
+        </ul>
+    </section>
+
+</div>
+
+<!-- JavaScript for Interactive Visualization -->
+<script>
+    const fileString = "Jenny is awesome";
+    const fileTape = document.getElementById('fileTape');
+    const outText = document.getElementById('outText');
+    let cursorPosition = 0;
+    let isEOF = false;
+
+    // Initialize the file tape visually
+    function initTape() {
+        fileTape.innerHTML = '';
+        for (let i = 0; i <= fileString.length; i++) {
+            let char = i < fileString.length ? fileString[i] : 'EOF';
+            if (char === ' ') char = '&nbsp;'; // visual space
+
+            let box = document.createElement('div');
+            box.className = 'char-box';
+            box.id = 'box-' + i;
+            
+            box.innerHTML = `
+                <span class="index">${i}</span>
+                ${char}
+                <div class="pointer">▲</div>
+            `;
+            fileTape.appendChild(box);
+        }
+        updateCursor();
+    }
+
+    function updateCursor() {
+        // Remove active class from all
+        document.querySelectorAll('.char-box').forEach(el => el.classList.remove('active'));
+        // Add active class to current position
+        let currentBox = document.getElementById('box-' + cursorPosition);
+        if(currentBox) currentBox.classList.add('active');
+        
+        // Scroll into view if needed
+        if(currentBox) currentBox.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+
+    // Button Functions
+    function runFseek() {
+        cursorPosition = 6;
+        isEOF = false;
+        updateCursor();
+    }
+
+    function runRead() {
+        if (isEOF) return;
+        
+        // Output from current cursor to end
+        let output = fileString.substring(cursorPosition);
+        outText.innerHTML += output;
+        
+        // Move cursor to EOF
+        cursorPosition = fileString.length;
+        isEOF = true;
+        updateCursor();
+    }
+
+    function runRewind() {
+        cursorPosition = 0;
+        isEOF = false;
+        updateCursor();
+    }
+
+    function resetViz() {
+        cursorPosition = 0;
+        isEOF = false;
+        outText.innerHTML = '';
+        updateCursor();
+    }
+
+    // Run on load
+    window.onload = initTape;
+</script>
+
+</body>
+</html>

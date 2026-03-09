@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Notes: Union in C Programming</title>
+    <style>
+        /* Base & Typography */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --primary: #4F46E5;
+            --primary-light: #E0E7FF;
+            --accent: #F59E0B;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Feed Elements */
+        .hero {
+            text-align: center;
+            padding: 4rem 0 2rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+
+        .topic-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-top: 4px solid var(--primary);
+        }
+
+        .topic-card h2 {
+            margin-top: 0;
+            font-size: 1.5rem;
+            color: #111827;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 0.75rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .topic-card h3 {
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-top: 1.5rem;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 1.5rem 0;
+        }
+
+        code .keyword { color: #569cd6; }
+        code .type { color: #4ec9b0; }
+        code .string { color: #ce9178; }
+        code .comment { color: #6a9955; font-style: italic; }
+
+        /* Side-by-Side Code Comparison */
+        .code-comparison {
+            display: flex;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .code-comparison > div {
+            flex: 1;
+            background: var(--bg-color);
+            border-radius: 8px;
+            padding: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .code-comparison h4 {
+            margin-top: 0;
+            text-align: center;
+            color: var(--primary);
+        }
+
+        .code-comparison pre {
+            margin: 0;
+            padding: 1rem;
+        }
+
+        /* Visualizations: Memory Diagrams */
+        .visualization-box {
+            background: var(--primary-light);
+            padding: 2rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .memory-track {
+            display: flex;
+            gap: 4px;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+
+        .mem-block {
+            background: white;
+            border: 2px solid var(--primary);
+            padding: 1rem;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .mem-block::after {
+            content: attr(data-address);
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .mem-4 { flex: 4; }
+        .mem-1 { flex: 1; }
+
+        .union-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .union-block {
+            background: white;
+            border: 3px solid var(--accent);
+            padding: 1.5rem 3rem;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-weight: 600;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 10px rgba(245, 158, 11, 0.2);
+        }
+
+        .union-pointers {
+            display: flex;
+            gap: 2rem;
+            font-family: 'Fira Code', monospace;
+            color: var(--text-main);
+            font-weight: bold;
+        }
+
+        /* Callouts / Info Boxes */
+        .callout {
+            background-color: #FEF3C7;
+            border-left: 4px solid var(--accent);
+            padding: 1rem 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1.5rem 0;
+        }
+
+        .callout strong {
+            color: #B45309;
+        }
+
+        /* Homework Section */
+        .assignment {
+            border-top: 4px solid #10B981;
+            background-color: #ECFDF5;
+        }
+        
+        .assignment h2 {
+            color: #047857;
+            border-bottom-color: #A7F3D0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .code-comparison {
+                flex-direction: column;
+            }
+            .feed-container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Hero Section -->
+        <header class="hero">
+            <h1>📚 Union in C Programming</h1>
+            <p>Complete Lecture Notes & Visualizations — Scroll to study</p>
+        </header>
+
+        <!-- Section 1 -->
+        <section class="topic-card">
+            <h2>1. Introduction to Unions</h2>
+            <p><strong>What is a Union?</strong> Just like a Structure (<code>struct</code>), a Union is a <strong>user-defined data type</strong> that can hold members of different data types under a single name.</p>
+            <p>While they look almost identical in syntax, there is one massive difference between the two: <strong>How memory is allocated.</strong></p>
+        </section>
+
+        <!-- Section 2 -->
+        <section class="topic-card">
+            <h2>2. Structures vs. Unions (Side-by-Side)</h2>
+            <p>To understand Unions, we must compare them to Structures. Notice how identical the syntax is—you simply replace the keyword <code>struct</code> with <code>union</code>. You access members the exact same way using the <strong>dot (<code>.</code>) operator</strong>.</p>
+            
+            <div class="code-comparison">
+                <div>
+                    <h4>The Structure (<code>struct</code>)</h4>
+<pre><code><span class="keyword">struct</span> <span class="type">demo</span> {
+    <span class="keyword">int</span> a;
+    <span class="keyword">char</span> b;
+    <span class="keyword">float</span> c;
+};
+
+<span class="keyword">void</span> <span class="type">main</span>() {
+    <span class="keyword">struct</span> <span class="type">demo</span> S = {<span class="string">1</span>, <span class="string">'a'</span>, <span class="string">4.0</span>}; 
+    <span class="type">printf</span>(<span class="string">"%d %c %f"</span>, S.a, S.b, S.c); 
+}</code></pre>
+                </div>
+                <div>
+                    <h4>The Union (<code>union</code>)</h4>
+<pre><code><span class="keyword">union</span> <span class="type">abc</span> {
+    <span class="keyword">int</span> a;
+    <span class="keyword">char</span> b;
+    <span class="keyword">float</span> c;
+};
+
+<span class="keyword">void</span> <span class="type">main</span>() {
+    <span class="keyword">union</span> <span class="type">abc</span> u;
+    <span class="comment">// Initialization is different!</span>
+}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3 -->
+        <section class="topic-card">
+            <h2>3. The Core Concept: Memory Allocation</h2>
+            <p>This is the most important concept in the lecture. The way RAM handles these two data types is fundamentally different.</p>
+
+            <h3>Memory in a Structure</h3>
+            <ul>
+                <li><strong>Rule:</strong> Every member gets its <em>own separate memory block</em>.</li>
+                <li><strong>Calculation:</strong> Total memory = sum of the sizes of all members.</li>
+                <li><code>int a</code> (4) + <code>char b</code> (1) + <code>float c</code> (4) = <strong>9 Bytes Total</strong>.</li>
+            </ul>
+            
+            <div class="visualization-box">
+                <p><strong>Structure Memory Layout (9 Bytes)</strong></p>
+                <div class="memory-track">
+                    <div class="mem-block mem-4" data-address="1000">a (4 bytes)</div>
+                    <div class="mem-block mem-1" data-address="1004">b (1 byte)</div>
+                    <div class="mem-block mem-4" data-address="1005">c (4 bytes)</div>
+                </div>
+            </div>
+
+            <h3>Memory in a Union</h3>
+            <ul>
+                <li><strong>Rule:</strong> All members <em>share a single, common memory block</em>.</li>
+                <li><strong>Calculation:</strong> Total memory = size of the <strong>largest</strong> member in the union.</li>
+                <li>Since <code>float</code> and <code>int</code> require 4 bytes, the Union just reserves the max required: <strong>4 Bytes Total</strong>.</li>
+            </ul>
+
+            <div class="visualization-box">
+                <p><strong>Union Memory Layout (4 Bytes)</strong></p>
+                <div class="union-wrapper">
+                    <div class="union-block">Shared 4-Byte Block</div>
+                    <div class="union-pointers">
+                        <span>↑ u.a</span>
+                        <span>↑ u.b</span>
+                        <span>↑ u.c</span>
+                    </div>
+                </div>
+                <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted);">All variables point to this exact same physical location in RAM.</p>
+            </div>
+        </section>
+
+        <!-- Section 4 -->
+        <section class="topic-card">
+            <h2>4. The Drawback: Overwriting Data</h2>
+            <p>Because all variables share the exact same 4 bytes of memory, <strong>a Union can only hold one value at a time.</strong> If you try to update a new member, the previous member's data gets destroyed/overwritten.</p>
+
+<pre><code><span class="comment">// Instructor's Whiteboard Example:</span>
+u.a = <span class="string">1</span>;        <span class="comment">// 1 is stored in the 4-byte block.</span>
+u.b = <span class="string">97</span>;       <span class="comment">// The 1 is erased. 97 is now stored in the block.</span>
+u.c = <span class="string">9.2</span>;      <span class="comment">// The 97 is erased. 9.2 is now stored in the block.</span></code></pre>
+
+            <p><strong>What happens if you print them now?</strong></p>
+
+<pre><code><span class="type">printf</span>(<span class="string">"a = %d"</span>, u.a); <span class="comment">// Output: Garbage value (1 was overwritten)</span>
+<span class="type">printf</span>(<span class="string">"b = %c"</span>, u.b); <span class="comment">// Output: Garbage value (97 was overwritten)</span>
+<span class="type">printf</span>(<span class="string">"c = %f"</span>, u.c); <span class="comment">// Output: 9.200000 (Correct, it was the last thing written)</span></code></pre>
+        </section>
+
+        <!-- Section 5 -->
+        <section class="topic-card">
+            <h2>5. Why Use Unions? (Advantages)</h2>
+            <p>If data keeps getting overwritten, why would we ever use a Union instead of a Structure?</p>
+            
+            <div class="callout">
+                <strong>Memory Conservation:</strong> In scenarios where you have many variables inside a data structure, but you <em>guarantee</em> that the program will only ever need to use <strong>one variable at any given time</strong>, a union saves a massive amount of memory.
+            </div>
+
+            <p><strong>Example:</strong> If a structure has ten 4-byte integers, it uses 40 bytes. If a union has ten 4-byte integers, it only uses 4 bytes. In the early days of programming, memory was very expensive, making unions incredibly useful. Today, they are mostly used in embedded systems with strict memory limits.</p>
+        </section>
+
+        <!-- Section 6 -->
+        <section class="topic-card">
+            <h2>6. Using Pointers with Unions</h2>
+            <p>Just like structures, you can use pointers to access union members. The instructor demonstrated this syntax on the whiteboard:</p>
+
+<pre><code><span class="keyword">union</span> <span class="type">abc</span> *ptr;      <span class="comment">// Declare a pointer of type union abc</span>
+ptr = &amp;u;            <span class="comment">// Pointer stores the memory address of union variable 'u'</span>
+
+<span class="comment">// Accessing members using the Arrow (-&gt;) operator:</span>
+ptr-&gt;a = <span class="string">1</span>;
+ptr-&gt;b = <span class="string">97</span>;
+ptr-&gt;c = <span class="string">78.90</span>;</code></pre>
+
+            <p>The pointer <code>ptr</code> sits in memory, holding the base address of the union <code>u</code>, allowing you to point directly to that shared memory block to overwrite data.</p>
+        </section>
+
+        <!-- Section 7 -->
+        <section class="topic-card">
+            <h2>7. Practical VS Code Demonstration</h2>
+            <p>To prove the concept, the instructor ran the exact pointer code from above in VS Code.</p>
+
+<pre><code><span class="comment">// The Code Run:</span>
+u.a = <span class="string">1</span>;
+u.b = <span class="string">97</span>;
+u.c = <span class="string">78.90</span>;
+
+<span class="type">printf</span>(<span class="string">"a value is: %d\n"</span>, ptr-&gt;a);
+<span class="type">printf</span>(<span class="string">"b value is: %c\n"</span>, ptr-&gt;b);
+<span class="type">printf</span>(<span class="string">"c value is: %f\n"</span>, ptr-&gt;c);</code></pre>
+
+            <div class="callout" style="background-color: #1e1e1e; color: #d4d4d4; border-left-color: #4ec9b0;">
+                <span style="color: #6a9955;">// Terminal Output:</span><br>
+                a value is: 1117837837 <span style="color: #6a9955;">(Garbage value)</span><br>
+                b value is: <span style="color: #6a9955;">(Nothing/Garbage character)</span><br>
+                c value is: 78.900002 <span style="color: #6a9955;">(Correct value, because it was the last one entered)</span>
+            </div>
+        </section>
+
+        <!-- Section 8 -->
+        <section class="topic-card assignment">
+            <h2>8. Homework / Student Assignment</h2>
+            <p>At the very end of the video, the instructor commented out the <code>float</code> initialization to test the students.</p>
+
+<pre><code><span class="comment">// The Assignment Code:</span>
+u.a = <span class="string">1</span>;
+u.b = <span class="string">97</span>;
+<span class="comment">// u.c = 78.90;  &lt;-- This is now commented out/deleted</span>
+
+<span class="type">printf</span>(<span class="string">"a value is: %d\n"</span>, ptr-&gt;a);
+<span class="type">printf</span>(<span class="string">"b value is: %c\n"</span>, ptr-&gt;b);</code></pre>
+
+            <div class="callout">
+                <strong>The Question:</strong> What will be printed for <code>a</code> and <code>b</code> in the terminal now?<br><br>
+                <strong>The Answer:</strong> Because <code>u.b = 97</code> was the last value stored in the shared memory block, <code>b</code> will print correctly. Because 97 is the ASCII value for the lowercase letter 'a', <strong><code>b value is: a</code></strong> will be printed. The value of <code>a</code> will likely print a seemingly random/garbage integer based on how the system translates the byte containing <code>97</code> into a 4-byte integer.
+            </div>
+        </section>
+
+    </div>
+
+</body>
+</html>

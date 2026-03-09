@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: Writing to Files</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        :root {
+            --bg-color: #f3f4f6;
+            --feed-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --accent-blue: #3b82f6;
+            --accent-red: #ef4444;
+            --accent-green: #10b981;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --border-radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Continuous Feed Container */
+        .feed-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Feed Header */
+        .feed-header {
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            padding: 40px 30px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .feed-header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .feed-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Feed Item / Card */
+        .feed-item {
+            background-color: var(--feed-bg);
+            border-radius: var(--border-radius);
+            padding: 35px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border-top: 5px solid var(--accent-blue);
+        }
+
+        .feed-item.warning {
+            border-top: 5px solid var(--accent-red);
+        }
+
+        .feed-item h2 {
+            font-size: 1.8rem;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feed-item h3 {
+            font-size: 1.3rem;
+            margin: 25px 0 10px 0;
+            color: var(--accent-blue);
+        }
+
+        .feed-item p {
+            margin-bottom: 15px;
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        ul {
+            margin-left: 25px;
+            margin-bottom: 15px;
+            color: var(--text-muted);
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            margin: 20px 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        code.inline {
+            background-color: #e5e7eb;
+            color: #b91c1c;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9em;
+        }
+
+        /* Visualizations (CSS Art) */
+        .diagram-container {
+            background-color: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin: 25px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .diagram-box {
+            background-color: white;
+            border: 3px solid var(--text-main);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            font-weight: bold;
+            min-width: 150px;
+            position: relative;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+        }
+
+        .diagram-box.ram { border-color: var(--accent-blue); color: var(--accent-blue); }
+        .diagram-box.hdd { border-color: var(--text-muted); color: var(--text-muted); }
+        .diagram-box.buffer { 
+            border: 2px dashed var(--accent-green); 
+            background: #ecfdf5; 
+            margin-top: 15px; 
+            padding: 10px;
+            font-size: 0.9rem;
+            color: var(--accent-green);
+        }
+
+        .arrow {
+            font-size: 2rem;
+            color: var(--text-muted);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); color: var(--accent-blue); }
+            100% { transform: scale(1); }
+        }
+
+        .warning-box {
+            background-color: #fef2f2;
+            border-left: 5px solid var(--accent-red);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .warning-box strong { color: var(--accent-red); }
+
+        /* Highlight Pills */
+        .badge {
+            background: var(--accent-blue);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header -->
+        <header class="feed-header">
+            <h1>C Programming: Writing to Files</h1>
+            <p>In-depth study notes based on Jenny's Lectures</p>
+        </header>
+
+        <!-- Section 1: Memory Architecture -->
+        <article class="feed-item">
+            <h2>1. The Core Concept: Hard Disk vs. RAM</h2>
+            <p>When you run a C program, it executes inside the <strong>RAM (Main Memory)</strong> because it is fast. However, RAM is volatile. To save data permanently, we use files stored on the <strong>Hard Disk</strong>.</p>
+            <p>We cannot write directly from our C program to the Hard Disk. Instead, a copy (or <strong>buffer</strong>) is created in the RAM. We write to this buffer, and the system handles transferring that data to the actual file on the Hard Disk.</p>
+            
+            <!-- Visualization 1 -->
+            <div class="diagram-container">
+                <div class="diagram-box hdd">
+                    Hard Disk
+                    <div class="buffer" style="border-color: #94a3b8; color:#94a3b8; background: #f1f5f9;">abc.txt (File)</div>
+                </div>
+                <div class="arrow">⟷</div>
+                <div class="diagram-box ram">
+                    RAM (Main Memory)
+                    <div class="buffer">Buffer (We write here)</div>
+                </div>
+            </div>
+
+            <h3>The Two Scenarios of Writing</h3>
+            <ul>
+                <li><strong>Scenario 1: File Already Exists:</strong> A copy of the file is loaded into the RAM buffer. You write to the buffer, and it updates the Hard Disk.</li>
+                <li><strong>Scenario 2: File Does NOT Exist:</strong> The system first creates a brand new file on the Hard Disk, then opens it in the RAM buffer so you can write to it.</li>
+            </ul>
+        </article>
+
+        <!-- Section 2: Setting up the File Pointer -->
+        <article class="feed-item">
+            <h2>2. Setting Up: File Pointers & fopen()</h2>
+            <p>To interact with a file, you must declare a pointer of type <code>FILE</code>. This pointer holds the address of the file object loaded into memory.</p>
+            
+            <pre>
+#include &lt;stdio.h&gt;
+
+void main() {
+    FILE *fp = NULL; // Best practice: Initialize to NULL
+    
+    // Open the file
+    fp = fopen("abc.txt", "w");
+}</pre>
+
+            <p>The <code>fopen</code> function takes two arguments:</p>
+            <ul>
+                <li><strong>File Name/Path:</strong> <code class="inline">"abc.txt"</code>. If no path is provided, it assumes the file is in the same directory as your <code>.c</code> file.</li>
+                <li><strong>Mode:</strong> <code class="inline">"w"</code> (Write Mode).</li>
+            </ul>
+
+            <!-- Visualization 2 -->
+            <div class="diagram-container">
+                <div class="diagram-box" style="border-color: #8b5cf6; color: #8b5cf6;">
+                    FILE *fp
+                </div>
+                <div class="arrow" style="color:#8b5cf6;">⟶</div>
+                <div class="diagram-box">
+                    File Object
+                    <div class="buffer" style="border-color: #ccc; color: #333; background: #f9f9f9;">Address of Buffer</div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Section 3: The Danger of Write Mode -->
+        <article class="feed-item warning">
+            <h2>🚨 The Danger of "w" (Write) Mode</h2>
+            <div class="warning-box">
+                <strong>CRITICAL BEHAVIOR:</strong><br>
+                When you open an existing file in <code class="inline">"w"</code> mode, <strong>C instantly erases (overwrites) all previous content</strong> in that file. It opens it completely blank. If you want to keep the old data and add to the end, you must use Append mode (<code class="inline">"a"</code>), not Write mode.
+            </div>
+        </article>
+
+        <!-- Section 4: Safety Checks -->
+        <article class="feed-item">
+            <h2>3. The Safety Check (Error Handling)</h2>
+            <p>Sometimes, a file cannot be opened (e.g., insufficient permissions, disk full). If <code>fopen</code> fails, it returns <code>NULL</code>. <strong>Always check for this before writing!</strong></p>
+            <p><em>Note: You must include <code class="inline">&lt;stdlib.h&gt;</code> to use the <code>exit()</code> function.</em></p>
+
+            <pre>
+#include &lt;stdlib.h&gt;
+
+if (fp == NULL) {
+    printf("Error: File could not be opened.\n");
+    exit(1); // Terminates the program
+}</pre>
+        </article>
+
+        <!-- Section 5: Writing Functions - fputc -->
+        <article class="feed-item">
+            <h2>4. Writing Data <span class="badge">Function 1: fputc</span></h2>
+            <p><code>fputc</code> stands for "file put character". It is used to write exactly <strong>one single character</strong> into the file.</p>
+            
+            <pre>
+char ch = 'a';
+fputc(ch, fp); // Writes the letter 'a' to the file</pre>
+
+            <h3>Pro Tip: Looping fputc for Strings</h3>
+            <p>Though <code>fputc</code> writes one character, you can use a loop to write a whole string, character by character. <em>(Requires <code class="inline">&lt;string.h&gt;</code> for <code>strlen</code>).</em></p>
+            <pre>
+char str[50] = "Jenny Khatri";
+
+for (int i = 0; i < strlen(str); i++) {
+    fputc(str[i], fp);
+}</pre>
+        </article>
+
+        <!-- Section 6: Writing Functions - fputs -->
+        <article class="feed-item">
+            <h2>5. Writing Data <span class="badge">Function 2: fputs</span></h2>
+            <p>If you don't want to use a loop, you can use <code>fputs</code> ("file put string"). This function writes an entire string (character array) to the file at once.</p>
+
+            <pre>
+char str[50] = "Jenny's Lectures";
+
+// Syntax: fputs(string_variable, file_pointer);
+fputs(str, fp);
+
+// OR pass the string directly:
+fputs("Jenny Khatri", fp);</pre>
+            
+            <p>In her live coding, Jenny paired this with <code>gets(str)</code> to take a string from the user at runtime and write it directly to the file!</p>
+        </article>
+
+        <!-- Section 7: Writing Functions - fprintf -->
+        <article class="feed-item">
+            <h2>6. Writing Data <span class="badge">Function 3: fprintf</span></h2>
+            <p>What if you want to write a mix of numbers, strings, and floats? You use <strong>Formatted Output</strong> via <code>fprintf</code>.</p>
+            <p>It works exactly like the standard <code>printf</code> you already know, but you pass the file pointer (<code>fp</code>) as the very first argument.</p>
+
+            <pre>
+int a = 10;
+char str[50] = "Jenny Khatri";
+
+// Syntax: fprintf(pointer, "format specifiers", variables);
+fprintf(fp, "%d %s", a, str);</pre>
+
+            <p>This will write the exact text <code class="inline">"10 Jenny Khatri"</code> into <code>abc.txt</code>.</p>
+        </article>
+
+        <!-- Section 8: Closing the File -->
+        <article class="feed-item">
+            <h2>7. The Final Step: fclose()</h2>
+            <p>You must <strong>always</strong> close your file when you are done. Why?</p>
+            <ul>
+                <li>It frees up the RAM being used by the file buffer.</li>
+                <li>It acts as a "Save" button—ensuring all the data lingering in the RAM buffer is officially flushed and written to the Hard Disk.</li>
+            </ul>
+
+            <pre>
+fclose(fp);</pre>
+        </article>
+
+        <!-- Section 9: Complete Summary Code -->
+        <article class="feed-item">
+            <h2>💻 Complete Live Coding Example</h2>
+            <p>Here is the final, complete code putting all the pieces together (similar to her VS Code demonstration):</p>
+
+            <pre>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;string.h&gt;
+
+void main() {
+    FILE *fp = NULL;
+    char str[50];
+    int age = 25;
+
+    // 1. Open File
+    fp = fopen("abc.txt", "w");
+
+    // 2. Safety Check
+    if (fp == NULL) {
+        printf("Error opening file!");
+        exit(1);
+    }
+
+    // 3. Get input and Write (Using fprintf for mixed data)
+    printf("Enter your name: ");
+    gets(str);
+    
+    fprintf(fp, "Name: %s, Age: %d", str, age);
+
+    // 4. Close File
+    fclose(fp);
+    
+    printf("Data successfully written to abc.txt");
+}</pre>
+        </article>
+
+    </div>
+
+</body>
+</html>

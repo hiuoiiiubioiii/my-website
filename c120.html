@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Handling in C - Study Notes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-yellow: #fbbf24;
+            --accent-red: #f87171;
+            --code-bg: #020617;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Continuous Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px; /* Space between topics */
+        }
+
+        /* Feed Header */
+        .feed-header {
+            text-align: center;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--card-bg);
+        }
+
+        .feed-header h1 {
+            font-size: 2.5rem;
+            color: var(--accent-blue);
+            margin-bottom: 10px;
+        }
+
+        .feed-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Topic Cards */
+        .topic-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .topic-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .topic-number {
+            background-color: var(--accent-blue);
+            color: var(--bg-color);
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .topic-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        /* Typography inside cards */
+        h3 {
+            color: var(--accent-yellow);
+            margin: 20px 0 10px 0;
+            font-size: 1.2rem;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
+            color: #cbd5e1;
+        }
+
+        strong {
+            color: var(--accent-blue);
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            border: 1px solid #1e293b;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            color: #e2e8f0;
+            font-size: 0.95rem;
+        }
+
+        .keyword { color: #c678dd; }
+        .type { color: #e5c07b; }
+        .string { color: #98c379; }
+        .comment { color: #5c6370; font-style: italic; }
+
+        /* Visualizations */
+        .visualization-box {
+            background-color: var(--code-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: auto;
+            border: 1px dashed var(--text-muted);
+        }
+
+        svg text {
+            font-family: 'Fira Code', monospace;
+        }
+
+        /* Modes Grid */
+        .modes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .mode-badge {
+            background-color: var(--code-bg);
+            border: 1px solid var(--accent-blue);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-family: 'Fira Code', monospace;
+            font-weight: bold;
+            color: var(--accent-green);
+        }
+
+        .mode-desc {
+            display: block;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+            font-weight: normal;
+        }
+
+        /* TL;DR Checklist */
+        .checklist {
+            list-style: none;
+            margin-left: 0;
+        }
+        .checklist li {
+            background: rgba(56, 189, 248, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--accent-blue);
+            color: var(--text-main);
+            font-family: 'Fira Code', monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <header class="feed-header">
+            <h1>File Handling in C</h1>
+            <p>Scroll to learn the core concepts, architecture, and terminology.</p>
+        </header>
+
+        <!-- Topic 1 -->
+        <article class="topic-card">
+            <div class="topic-header">
+                <div class="topic-number">1</div>
+                <h2 class="topic-title">The Basics: RAM vs. Hard Disk</h2>
+            </div>
+            <p>Before writing code, we must understand how a computer stores data. The instructor draws two memory blocks on the board to illustrate where programs live versus where files live.</p>
+            
+            <div class="visualization-box">
+                <!-- SVG Visualization of RAM vs HDD -->
+                <svg width="500" height="250" viewBox="0 0 500 250">
+                    <!-- RAM Box -->
+                    <rect x="20" y="20" width="200" height="200" rx="10" fill="none" stroke="#38bdf8" stroke-width="3"/>
+                    <text x="120" y="45" fill="#38bdf8" text-anchor="middle" font-weight="bold">RAM (Main Memory)</text>
+                    <rect x="50" y="70" width="140" height="120" rx="5" fill="#38bdf8" fill-opacity="0.2" stroke="#38bdf8" stroke-width="1"/>
+                    <text x="120" y="125" fill="#f8fafc" text-anchor="middle" font-size="12">Running C Program</text>
+                    <text x="120" y="145" fill="#94a3b8" text-anchor="middle" font-size="10">(Volatile Data)</text>
+
+                    <!-- HDD Box -->
+                    <rect x="300" y="20" width="150" height="200" rx="10" fill="none" stroke="#34d399" stroke-width="3"/>
+                    <text x="375" y="45" fill="#34d399" text-anchor="middle" font-weight="bold">Hard Disk</text>
+                    <rect x="325" y="70" width="100" height="60" rx="5" fill="#34d399" fill-opacity="0.2" stroke="#34d399" stroke-width="1"/>
+                    <text x="375" y="105" fill="#f8fafc" text-anchor="middle" font-size="12">abc.txt</text>
+                    <text x="375" y="170" fill="#94a3b8" text-anchor="middle" font-size="10">(Non-Volatile)</text>
+                </svg>
+            </div>
+
+            <h3>Key Takeaways:</h3>
+            <ul>
+                <li><strong>RAM (Volatile):</strong> When you run your C program, variables are stored here. They disappear when the program ends.</li>
+                <li><strong>Hard Disk (Non-Volatile):</strong> To store data permanently (like output or logs), we must save it here.</li>
+                <li><strong>What is a File?</strong> Simply a sequence of memory bytes stored permanently on the hard disk.</li>
+            </ul>
+        </article>
+
+        <!-- Topic 2 -->
+        <article class="topic-card">
+            <div class="topic-header">
+                <div class="topic-number">2</div>
+                <h2 class="topic-title">The Problem: Accessing the File</h2>
+            </div>
+            <p>Your C program runs in RAM. It <strong>cannot</strong> directly reach into the Hard Disk to manipulate `abc.txt`. It needs a special pointer to track the file once it is loaded into memory.</p>
+            
+            <pre><code><span class="type">int</span> *ptr;
+<span class="type">int</span> a;
+ptr = &a; <span class="comment">// Valid: int pointer points to int</span>
+
+<span class="type">float</span> *fptr;
+fptr = &a; <span class="comment">// INVALID! A float pointer cannot point to an int.</span></code></pre>
+
+            <p><strong>The Pointer Rule:</strong> Pointers are strictly typed. Since files are not integers or floats, we cannot use standard pointers to access them. <strong>We need a File Pointer.</strong></p>
+        </article>
+
+        <!-- Topic 3 -->
+        <article class="topic-card">
+            <div class="topic-header">
+                <div class="topic-number">3</div>
+                <h2 class="topic-title">The FILE Data Type</h2>
+            </div>
+            <p>C provides a predefined data type just for this problem, called <code>FILE</code> (always written in all caps). It is defined inside the standard input/output header file.</p>
+
+            <pre><code><span class="keyword">#include</span> <span class="string">&lt;stdio.h&gt;</span>
+
+<span class="comment">// Inside stdio.h, FILE is defined like this:</span>
+<span class="keyword">typedef struct</span> {
+    <span class="comment">// Memory Pointer</span>
+    <span class="comment">// Buffer size</span>
+    <span class="comment">// End of file indicator</span>
+    <span class="comment">// etc...</span>
+} <span class="type">FILE</span>;</code></pre>
+
+            <p>Because it's already a `struct` defined in <code>&lt;stdio.h&gt;</code>, you don't write the struct yourself. You just include the header and use the <code>FILE</code> type directly.</p>
+        </article>
+
+        <!-- Topic 4 -->
+        <article class="topic-card">
+            <div class="topic-header">
+                <div class="topic-number">4</div>
+                <h2 class="topic-title">Behind the Scenes: The Architecture</h2>
+            </div>
+            <p>This is the most critical concept. When we create a <code>FILE *fp;</code> pointer, <strong>it does not point directly to the hard disk.</strong></p>
+
+            <div class="visualization-box">
+                <!-- SVG Visualization of The Architecture -->
+                <svg width="650" height="300" viewBox="0 0 650 300">
+                    <defs>
+                        <marker id="arrowhead-yellow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#fbbf24"/>
+                        </marker>
+                        <marker id="arrowhead-green" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#34d399"/>
+                        </marker>
+                    </defs>
+
+                    <!-- RAM Box -->
+                    <rect x="10" y="10" width="400" height="280" rx="10" fill="none" stroke="#38bdf8" stroke-width="2"/>
+                    <text x="210" y="30" fill="#38bdf8" text-anchor="middle" font-weight="bold">RAM (Main Memory)</text>
+
+                    <!-- C Program Box inside RAM -->
+                    <rect x="30" y="80" width="120" height="150" rx="5" fill="#1e293b" stroke="#f8fafc" stroke-width="1"/>
+                    <text x="90" y="105" fill="#f8fafc" text-anchor="middle" font-size="12">C Program</text>
+                    <rect x="40" y="140" width="100" height="30" rx="3" fill="#020617"/>
+                    <text x="90" y="160" fill="#fbbf24" text-anchor="middle" font-size="12">FILE *fp</text>
+
+                    <!-- RAM Buffer Box inside RAM -->
+                    <rect x="250" y="80" width="140" height="150" rx="5" fill="#1e293b" stroke="#f8fafc" stroke-width="1" stroke-dasharray="4"/>
+                    <text x="320" y="105" fill="#f8fafc" text-anchor="middle" font-size="12">RAM Buffer</text>
+                    <text x="320" y="125" fill="#94a3b8" text-anchor="middle" font-size="10">(FILE struct)</text>
+                    <rect x="270" y="140" width="100" height="70" rx="3" fill="#020617"/>
+                    <text x="320" y="160" fill="#94a3b8" text-anchor="middle" font-size="10">Copy of Data</text>
+                    <text x="320" y="180" fill="#f8fafc" text-anchor="middle" font-size="12">"Jenny..."</text>
+
+                    <!-- HDD Box -->
+                    <rect x="500" y="10" width="130" height="280" rx="10" fill="none" stroke="#34d399" stroke-width="2"/>
+                    <text x="565" y="30" fill="#34d399" text-anchor="middle" font-weight="bold">Hard Disk</text>
+
+                    <!-- Actual File inside HDD -->
+                    <rect x="520" y="80" width="90" height="150" rx="5" fill="#1e293b" stroke="#34d399" stroke-width="1"/>
+                    <text x="565" y="105" fill="#f8fafc" text-anchor="middle" font-size="12">abc.txt</text>
+                    <text x="565" y="155" fill="#94a3b8" text-anchor="middle" font-size="10">Permanent</text>
+                    <text x="565" y="170" fill="#94a3b8" text-anchor="middle" font-size="10">Data</text>
+
+                    <!-- Arrow from fp to Buffer -->
+                    <path d="M 140 155 L 235 155" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrowhead-yellow)"/>
+                    <text x="190" y="145" fill="#fbbf24" text-anchor="middle" font-size="10">Points to</text>
+
+                    <!-- Arrow from Buffer to HDD -->
+                    <path d="M 390 155 L 505 155" fill="none" stroke="#34d399" stroke-width="2" marker-end="url(#arrowhead-green)"/>
+                    <text x="450" y="145" fill="#34d399" text-anchor="middle" font-size="10">Syncs with</text>
+                </svg>
+            </div>
+
+            <p><strong>How it actually works:</strong></p>
+            <ul>
+                <li>Your pointer <code>fp</code> points to a <strong>buffer</strong> (the <code>FILE</code> structure) created inside the RAM.</li>
+                <li>When you read a file, a copy of the hard disk file is pulled into this RAM buffer.</li>
+                <li>When you write to a file, you write to this RAM buffer, which the OS later syncs to the physical Hard Disk.</li>
+            </ul>
+        </article>
+
+        <!-- Topic 5 -->
+        <article class="topic-card">
+            <div class="topic-header">
+                <div class="topic-number">5</div>
+                <h2 class="topic-title">Opening a File: fopen()</h2>
+            </div>
+            <p>To create the RAM buffer and link it to the hard disk, we use the <code>fopen()</code> function.</p>
+
+            <pre><code><span class="type">FILE</span> *fp;
+fp = <span class="keyword">fopen</span>(<span class="string">"abc.txt"</span>, <span class="string">"r"</span>);</code></pre>
+
+            <h3>What does fopen() do?</h3>
+            <ol style="margin-left: 20px; margin-bottom: 20px; color: #cbd5e1;">
+                <li>It creates the <code>FILE</code> structure buffer in RAM.</li>
+                <li>It links that buffer to the file (e.g., "abc.txt") on the hard disk.</li>
+                <li>It <strong>returns the memory address</strong> of the RAM buffer, which we store in <code>fp</code>.</li>
+            </ol>
+
+            <h3>The 6 File Modes</h3>
+            <p>The second argument in double-quotes is the mode. It tells the OS what you intend to do with the file.</p>
+            <div class="modes-grid">
+                <div class="mode-badge">"r"<span class="mode-desc">Read</span></div>
+                <div class="mode-badge">"w"<span class="mode-desc">Write</span></div>
+                <div class="mode-badge">"a"<span class="mode-desc">Append</span></div>
+                <div class="mode-badge">"r+"<span class="mode-desc">Read + Write</span></div>
+                <div class="mode-badge">"w+"<span class="mode-desc">Write + Read</span></div>
+                <div class="mode-badge">"a+"<span class="mode-desc">Append + Read</span></div>
+            </div>
+        </article>
+
+        <!-- Topic 6 -->
+        <article class="topic-card">
+            <div class="topic-header">
+                <div class="topic-number">6</div>
+                <h2 class="topic-title">Closing a File: fclose()</h2>
+            </div>
+            <p>When your program is finished reading or writing, it is <strong>your responsibility</strong> to close the file.</p>
+
+            <pre><code><span class="keyword">fclose</span>(fp);</code></pre>
+
+            <p><strong>Why is this important?</strong></p>
+            <ul>
+                <li>It releases/frees the memory used by the buffer in RAM.</li>
+                <li>It breaks the link between your program and the physical file.</li>
+                <li>It ensures any pending data in the buffer is completely written to the hard disk, and makes the file available for other programs to use.</li>
+            </ul>
+        </article>
+
+        <!-- Topic 7 -->
+        <article class="topic-card">
+            <div class="topic-header">
+                <div class="topic-number">7</div>
+                <h2 class="topic-title">Preview: Data Operations</h2>
+            </div>
+            <p>Once <code>fp</code> is successfully pointing to the opened file buffer, you can use these functions (covered in future lectures) to manipulate the data:</p>
+
+            <ul class="checklist" style="margin-top: 20px;">
+                <li><code>fprintf() / fscanf()</code> - Read/Write formatted data</li>
+                <li><code>fputc() / fgetc()</code> - Read/Write single characters</li>
+                <li><code>fputs() / fgets()</code> - Read/Write entire strings</li>
+            </ul>
+        </article>
+
+        <!-- Topic 8 -->
+        <article class="topic-card" style="border-color: var(--accent-green);">
+            <div class="topic-header">
+                <div class="topic-number" style="background-color: var(--accent-green);">✓</div>
+                <h2 class="topic-title" style="color: var(--accent-green);">Summary: The 4 Golden Steps</h2>
+            </div>
+            <p>To successfully handle files in C, you must always perform these four steps in exact order:</p>
+            
+            <ol class="checklist">
+                <li>1. Declare a file pointer: <code>FILE *fp;</code></li>
+                <li>2. Open the file: <code>fp = fopen("filename.txt", "mode");</code></li>
+                <li>3. Perform operations: <code>fscanf()</code>, <code>fprintf()</code>, etc.</li>
+                <li>4. Close the file: <code>fclose(fp);</code></li>
+            </ol>
+        </article>
+
+    </div>
+
+</body>
+</html>

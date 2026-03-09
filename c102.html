@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Callback Functions in C - Study Notes</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --primary: #0078D7;
+            --secondary: #005A9E;
+            --accent: #E1DFDD;
+            --code-bg: #1E1E1E;
+            --code-text: #D4D4D4;
+            --card-bg: #FFFFFF;
+            --success: #107C10;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 3rem 1rem;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .feed-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .note-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--primary);
+        }
+
+        .note-card h2 {
+            color: var(--secondary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 0.5rem;
+        }
+
+        .note-card h3 {
+            margin: 1.5rem 0 0.5rem 0;
+            color: var(--text-main);
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        ul {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        .highlight {
+            background-color: #FFF4CE;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        /* Code Styling */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+        }
+
+        code .keyword { color: #569CD6; }
+        code .type { color: #4EC9B0; }
+        code .string { color: #CE9178; }
+        code .comment { color: #6A9955; }
+        code .function { color: #DCDCAA; }
+
+        /* Memory Visualization CSS */
+        .visualization-box {
+            background-color: var(--bg-color);
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .memory-state {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .memory-block {
+            background-color: white;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            min-width: 150px;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .memory-block.pointer {
+            border-color: #E81123;
+        }
+
+        .block-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-main);
+        }
+
+        .block-address {
+            background-color: var(--accent);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            display: inline-block;
+        }
+
+        .block-value {
+            font-family: monospace;
+            font-size: 1.2rem;
+            color: #E81123;
+            font-weight: bold;
+        }
+
+        .arrow {
+            font-size: 2rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+        }
+
+        .call-label {
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            color: var(--secondary);
+            margin-bottom: -1rem;
+        }
+
+        .warning-box {
+            background-color: #FDE7E9;
+            border-left: 5px solid #E81123;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Callback Functions in C</h1>
+        <p>In-Depth Study Notes & Memory Visualizations</p>
+    </header>
+
+    <main class="feed-container">
+
+        <!-- Section 1: Introduction -->
+        <article class="note-card">
+            <h2>📘 1. Prerequisite & Introduction</h2>
+            <p>Before diving into callback functions, you must understand the basics of <strong>Pointers</strong> in C:</p>
+            <ul>
+                <li><strong>Normal Pointer:</strong> Contains the memory address of data/variables (e.g., an <code>int</code> or <code>char</code>).</li>
+                <li><strong>Function Pointer:</strong> Contains the base address of a <em>function's code</em> in memory.</li>
+            </ul>
+            <h3>What is a Callback Function?</h3>
+            <p>A callback function is an application of function pointers. Simply put, it is <strong>a function passed into another function as an argument</strong>, which is then invoked inside the outer function to complete some kind of routine or action.</p>
+        </article>
+
+        <!-- Section 2: The Core Concept -->
+        <article class="note-card">
+            <h2>💡 2. The Core Concept (The "Why")</h2>
+            <p>The instructor sets up a scenario to explain why we use this mechanism:</p>
+            <ul>
+                <li>Imagine two simple functions: <span class="highlight">Sum()</span> and <span class="highlight">Sub()</span>.</li>
+                <li>You have a third function called <span class="highlight">display()</span>.</li>
+                <li>Usually, you pass variables to functions. But here, we want <code>display()</code> to execute <em>either</em> <code>Sum</code> or <code>Sub</code> dynamically at runtime.</li>
+                <li>To do this, we pass the <strong>address</strong> of the <code>Sum</code> or <code>Sub</code> function to <code>display()</code>.</li>
+                <li><code>display()</code> receives this address using a <strong>Function Pointer</strong>, and then "calls back" the function passed to it.</li>
+            </ul>
+        </article>
+
+        <!-- Section 3: Whiteboard Code Breakdown -->
+        <article class="note-card">
+            <h2>✍️ 3. Whiteboard Code Breakdown</h2>
+            <p>Here is the step-by-step code the instructor wrote on the whiteboard.</p>
+
+            <h3>Step 1: Defining the Callback Functions</h3>
+            <p>First, define two standard functions. Note that their signatures (return types and parameter types) are identical.</p>
+<pre><code><span class="type">void</span> <span class="function">Sum</span>(<span class="type">int</span> a, <span class="type">int</span> b) {
+    <span class="function">printf</span>(<span class="string">"sum=%d\n"</span>, a+b);
+}
+
+<span class="type">void</span> <span class="function">Sub</span>(<span class="type">int</span> a, <span class="type">int</span> b) {
+    <span class="function">printf</span>(<span class="string">"sub=%d\n"</span>, a-b);
+}</code></pre>
+
+            <h3>Step 2: Defining the Receiving Function</h3>
+            <p>The <code>display</code> function needs to accept the address of another function. Its parameter must be a function pointer that perfectly matches the signature of <code>Sum</code> and <code>Sub</code>.</p>
+<pre><code><span class="comment">// The parameter: void (*fptr)(int, int) 
+// This reads as: fptr is a pointer to a function that takes two ints and returns void.</span>
+
+<span class="type">void</span> <span class="function">display</span>(<span class="type">void</span> (*fptr)(<span class="type">int</span>, <span class="type">int</span>)) {
+    <span class="comment">// Dereferencing the pointer to call the function</span>
+    <span class="comment">// Passing hardcoded arguments 5 and 1</span>
+    (*fptr)(5, 1); 
+    
+    <span class="comment">// Note: The instructor mentions you can also just write: fptr(5, 1);</span>
+}</code></pre>
+
+            <h3>Step 3: The Main Function</h3>
+<pre><code><span class="type">void</span> <span class="function">main</span>() {
+    <span class="comment">// Pass the base address of the Sum function</span>
+    <span class="function">display</span>(&Sum);  <span class="comment">// or simply display(Sum);</span>
+
+    <span class="comment">// Pass the base address of the Sub function</span>
+    <span class="function">display</span>(Sub);
+}</code></pre>
+        </article>
+
+        <!-- Section 4: Memory Visualization -->
+        <article class="note-card">
+            <h2>🧠 4. Visualizing Memory Execution</h2>
+            <p>To truly understand what is happening, the instructor draws a memory map. Let's assume <code>Sum</code> is stored at base address <strong>1000</strong> and <code>Sub</code> is stored at <strong>1046</strong>.</p>
+            
+            <div class="visualization-box">
+                <!-- State 1 -->
+                <div class="call-label">Execution 1: display(Sum);</div>
+                <div class="memory-state">
+                    <div class="memory-block pointer">
+                        <div class="block-title">fptr (Inside display)</div>
+                        <div class="block-value">1000</div>
+                        <div class="block-address">Holds address</div>
+                    </div>
+                    <div class="arrow">⟶</div>
+                    <div class="memory-block">
+                        <div class="block-title">Sum(int, int)</div>
+                        <div>Code: printf("sum=%d", a+b);</div>
+                        <div class="block-address">Base Address: 1000</div>
+                    </div>
+                </div>
+
+                <!-- State 2 -->
+                <div class="call-label" style="margin-top: 1rem;">Execution 2: display(Sub);</div>
+                <div class="memory-state">
+                    <div class="memory-block pointer">
+                        <div class="block-title">fptr (Inside display)</div>
+                        <div class="block-value">1046</div>
+                        <div class="block-address">Holds address</div>
+                    </div>
+                    <div class="arrow">⟶</div>
+                    <div class="memory-block">
+                        <div class="block-title">Sub(int, int)</div>
+                        <div>Code: printf("sub=%d", a-b);</div>
+                        <div class="block-address">Base Address: 1046</div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Execution Trace:</h3>
+            <ol>
+                <li><code>main</code> calls <code>display(Sum)</code>. The base address <strong>1000</strong> is passed.</li>
+                <li>Inside <code>display</code>, the pointer <code>fptr</code> receives the value 1000.</li>
+                <li>The code runs <code>(*fptr)(5, 1)</code>. Because <code>fptr</code> points to 1000, it executes the code for <code>Sum(5, 1)</code>. It prints <strong>6</strong>.</li>
+                <li>Control returns to <code>main</code>. <code>main</code> calls <code>display(Sub)</code>. The base address <strong>1046</strong> is passed.</li>
+                <li><code>fptr</code> is overwritten with 1046.</li>
+                <li>The code runs <code>(*fptr)(5, 1)</code>, which executes <code>Sub(5, 1)</code>. It prints <strong>4</strong>.</li>
+            </ol>
+        </article>
+
+        <!-- Section 5: Rules and Pitfalls -->
+        <article class="note-card">
+            <h2>⚠️ 5. Crucial Rules & Pitfalls</h2>
+            <div class="warning-box">
+                <strong>Signature Matching is Mandatory!</strong><br>
+                The instructor stressed that if you change the return type of <code>Sum</code> to <code>float</code>, it will no longer match the function pointer parameter <code>void (*fptr)(int, int)</code>. 
+            </div>
+            <p>If the signatures (return type and number/type of arguments) do not match perfectly, the function pointer cannot safely point to your callback function. This will result in compiler warnings, errors, or unpredictable runtime behavior (segmentation faults).</p>
+        </article>
+
+        <!-- Section 6: Final Practical Code -->
+        <article class="note-card">
+            <h2>💻 6. Final VS Code Implementation</h2>
+            <p>Here is the exact code the instructor ran in VS Code at the end of the video to prove the output:</p>
+
+<pre><code><span class="keyword">#include</span> <span class="string">&lt;stdio.h&gt;</span>
+
+<span class="type">void</span> <span class="function">sum</span>(<span class="type">int</span> a, <span class="type">int</span> b)
+{
+    <span class="function">printf</span>(<span class="string">"sum=%d\n"</span>, a+b);
+}
+
+<span class="type">void</span> <span class="function">sub</span>(<span class="type">int</span> a, <span class="type">int</span> b)
+{
+    <span class="function">printf</span>(<span class="string">"sub=%d\n"</span>, a-b);
+}
+
+<span class="type">void</span> <span class="function">display</span>(<span class="type">void</span> (*fptr)(<span class="type">int</span>, <span class="type">int</span>))
+{
+    <span class="comment">// Instructor uses the simplified syntax here</span>
+    <span class="function">fptr</span>(5,1); 
+}
+
+<span class="type">void</span> <span class="function">main</span>()
+{
+    <span class="comment">// Passing the functions as arguments</span>
+    <span class="function">display</span>(sum);
+    <span class="function">display</span>(sub);
+}</code></pre>
+
+            <h3>Terminal Output:</h3>
+<pre style="background-color: #000; color: #fff; padding: 1rem; border-radius: 4px; font-family: monospace;">
+sum=6
+sub=4
+</pre>
+        </article>
+
+    </main>
+
+</body>
+</html>
