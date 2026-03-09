@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: String Concatenation Notes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --primary: #4299e1;
+            --secondary: #ecc94b;
+            --danger: #fc8181;
+            --danger-bg: #fff5f5;
+            --success: #68d391;
+            --code-bg: #1a202c;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        /* Post/Card Style */
+        .note-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border-top: 4px solid var(--primary);
+        }
+
+        .note-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .note-card h3 {
+            font-size: 1.3rem;
+            margin: 20px 0 10px 0;
+            color: #2b6cb0;
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        ul, ol {
+            margin-bottom: 15px;
+            padding-left: 20px;
+            font-size: 1.1rem;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            margin: 15px 0;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background-color: #edf2f7;
+            color: #c53030;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        /* Keyword Highlighting */
+        .keyword { color: #c678dd; }
+        .type { color: #e5c07b; }
+        .string { color: #98c379; }
+        .comment { color: #5c6370; font-style: italic; }
+
+        /* Memory Visualization CSS */
+        .memory-wrapper {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .string-label {
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .memory-array {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+        }
+
+        .memory-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 2px;
+        }
+
+        .cell-index {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .cell-data {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid var(--text-main);
+            font-family: 'Fira Code', monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background-color: white;
+        }
+
+        .cell-data.highlight {
+            background-color: #feebc8;
+            border-color: #dd6b20;
+            color: #c05621;
+        }
+
+        .cell-address {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        /* Alert Box */
+        .alert-box {
+            background-color: var(--danger-bg);
+            border-left: 4px solid var(--danger);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .alert-box strong {
+            color: #c53030;
+        }
+
+        /* Dry Run Table */
+        .dry-run-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background-color: white;
+        }
+        .dry-run-table th, .dry-run-table td {
+            border: 1px solid #cbd5e0;
+            padding: 12px;
+            text-align: left;
+            font-family: 'Fira Code', monospace;
+        }
+        .dry-run-table th {
+            background-color: #edf2f7;
+        }
+
+        /* Separator */
+        .feed-end {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+
+    <!-- Header Section -->
+    <div style="text-align: center; padding-bottom: 20px;">
+        <h1 style="font-size: 2.5rem; color: var(--text-main);">C Programming Notes</h1>
+        <p style="font-size: 1.2rem; color: var(--text-muted);">Topic: Concatenating Two Strings (In-Depth)</p>
+    </div>
+
+    <!-- Section 1: Intro -->
+    <div class="note-card">
+        <h2>🔗 What is String Concatenation?</h2>
+        <p>Concatenation means taking one string (the <strong>Source</strong>) and appending it to the end of another string (the <strong>Destination</strong>).</p>
+        <p><strong>Goal:</strong> We want to take <code>S2</code> ("khatri") and paste it at the end of <code>S1</code> ("Jenny") so the final output becomes <strong>"Jennykhatri"</strong>.</p>
+    </div>
+
+    <!-- Section 2: Visualizing Memory -->
+    <div class="note-card">
+        <h2>🧠 Visualizing Strings in Memory</h2>
+        <p>Before writing code, look at how the compiler stores these strings based on the instructor's whiteboard drawing.</p>
+        
+        <div class="memory-wrapper">
+            <div class="string-label">Destination (S1) : char S1[6] = "Jenny";</div>
+            <div class="memory-array">
+                <div class="memory-cell"><span class="cell-index">0</span><span class="cell-data">J</span><span class="cell-address">1000</span></div>
+                <div class="memory-cell"><span class="cell-index">1</span><span class="cell-data">e</span><span class="cell-address">1001</span></div>
+                <div class="memory-cell"><span class="cell-index">2</span><span class="cell-data">n</span><span class="cell-address">1002</span></div>
+                <div class="memory-cell"><span class="cell-index">3</span><span class="cell-data">n</span><span class="cell-address">1003</span></div>
+                <div class="memory-cell"><span class="cell-index">4</span><span class="cell-data">y</span><span class="cell-address">1004</span></div>
+                <div class="memory-cell"><span class="cell-index">5</span><span class="cell-data highlight">\0</span><span class="cell-address">1005</span></div>
+            </div>
+            <p style="font-size: 0.9rem; color: #718096;">*Notice the Null Character <code>\0</code> at index 5. This marks the end of S1.</p>
+        </div>
+
+        <div class="memory-wrapper">
+            <div class="string-label">Source (S2) : char S2[7] = "khatri";</div>
+            <div class="memory-array">
+                <div class="memory-cell"><span class="cell-index">0</span><span class="cell-data">k</span><span class="cell-address">1046</span></div>
+                <div class="memory-cell"><span class="cell-index">1</span><span class="cell-data">h</span><span class="cell-address">1047</span></div>
+                <div class="memory-cell"><span class="cell-index">2</span><span class="cell-data">a</span><span class="cell-address">1048</span></div>
+                <div class="memory-cell"><span class="cell-index">3</span><span class="cell-data">t</span><span class="cell-address">1049</span></div>
+                <div class="memory-cell"><span class="cell-index">4</span><span class="cell-data">r</span><span class="cell-address">1050</span></div>
+                <div class="memory-cell"><span class="cell-index">5</span><span class="cell-data">i</span><span class="cell-address">1051</span></div>
+                <div class="memory-cell"><span class="cell-index">6</span><span class="cell-data">\0</span><span class="cell-address">1052</span></div>
+            </div>
+        </div>
+        <p>To concatenate, we must overwrite S1's <code>\0</code> (at index 5) with the first character of S2 (<code>'k'</code>), and continue copying until S2's <code>\0</code> is copied.</p>
+    </div>
+
+    <!-- Section 3: Buffer Overflow -->
+    <div class="note-card" style="border-top-color: var(--danger);">
+        <h2 style="color: var(--danger);">⚠️ The Golden Rule: Array Size</h2>
+        <p>Look at <code>S1</code> above. It only has 6 blocks of memory. If we try to shove "khatri" into it, where does it go? It overwrites random memory next to the array!</p>
+        
+        <div class="alert-box">
+            <strong>Buffer Overflow:</strong> This happens when you try to put more data into an array than it was built to hold. It causes severe program crashes and security vulnerabilities.
+        </div>
+
+        <p><strong>The Fix:</strong> The Destination array MUST be declared large enough to hold <em>both</em> strings plus the final <code>\0</code>.</p>
+        <pre><span class="comment">// WRONG</span>
+<span class="type">char</span> S1[<span class="string">6</span>] = <span class="string">"Jenny"</span>; 
+
+<span class="comment">// CORRECT (Make S1 large enough, e.g., 30)</span>
+<span class="type">char</span> S1[<span class="string">30</span>] = <span class="string">"Jenny"</span>; </pre>
+    </div>
+
+    <!-- Section 4: Built in Function -->
+    <div class="note-card">
+        <h2>🛠️ Method 1: Using built-in `strcat()`</h2>
+        <p>C provides a library function to do this automatically.</p>
+        <ul>
+            <li><strong>Header required:</strong> <code>#include &lt;string.h&gt;</code></li>
+            <li><strong>Syntax:</strong> <code>strcat(destination, source);</code></li>
+            <li><strong>Return value:</strong> It returns a pointer to the destination string.</li>
+        </ul>
+        
+        <pre><span class="type">char</span> S1[<span class="string">30</span>] = <span class="string">"Jenny"</span>;
+<span class="type">char</span> S2[] = <span class="string">"khatri"</span>;
+
+<span class="comment">// S2 is appended to S1</span>
+strcat(S1, S2); 
+
+printf(<span class="string">"%s"</span>, S1); <span class="comment">// Output: Jennykhatri</span></pre>
+        
+        <h3>The `strncat` variant</h3>
+        <p>If you only want to append a specific number of characters, use <code>strncat</code>.</p>
+        <pre>strncat(S1, S2, <span class="string">4</span>); <span class="comment">// Appends only the first 4 chars ("khat")</span></pre>
+    </div>
+
+    <!-- Section 5: Custom Logic -->
+    <div class="note-card">
+        <h2>⚙️ Method 2: Custom Logic (Without strcat)</h2>
+        <p>To truly understand C, we must write the logic manually using a <code>for</code> loop.</p>
+        
+        <h3>The Algorithm:</h3>
+        <ol>
+            <li>Find the length of S1 (Where does S1 end? Index 5).</li>
+            <li>Find the length of S2 (How many characters do we copy? 6).</li>
+            <li>Loop through S2 and place characters into S1, starting at S1's end.</li>
+        </ol>
+
+        <pre><span class="type">int</span> len1 = strlen(S1); <span class="comment">// len1 = 5</span>
+<span class="type">int</span> len2 = strlen(S2); <span class="comment">// len2 = 6</span>
+
+<span class="comment">// Important: Loop runs <= len2 so the \0 is copied!</span>
+<span class="keyword">for</span>(<span class="type">int</span> i = <span class="string">0</span>; i <= len2; i++) {
+    S1[len1 + i] = S2[i];
+}</pre>
+
+        <h3>Dry Run Visualization</h3>
+        <p>Let's step through the loop to see exactly how memory changes.</p>
+        <table class="dry-run-table">
+            <thead>
+                <tr>
+                    <th>Step (i)</th>
+                    <th>Action: <code>S1[5 + i] = S2[i]</code></th>
+                    <th>Result in S1</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>i = 0</td>
+                    <td><code>S1[5] = S2[0]</code> ('k')</td>
+                    <td>Overwrites '\0' with 'k'</td>
+                </tr>
+                <tr>
+                    <td>i = 1</td>
+                    <td><code>S1[6] = S2[1]</code> ('h')</td>
+                    <td>Adds 'h'</td>
+                </tr>
+                <tr>
+                    <td>i = 2</td>
+                    <td><code>S1[7] = S2[2]</code> ('a')</td>
+                    <td>Adds 'a'</td>
+                </tr>
+                <tr>
+                    <td>...</td>
+                    <td>...</td>
+                    <td>...</td>
+                </tr>
+                <tr>
+                    <td>i = 6</td>
+                    <td><code>S1[11] = S2[6]</code> ('\0')</td>
+                    <td>Safely closes the new string with '\0'</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Section 6: Full VS Code Program -->
+    <div class="note-card">
+        <h2>💻 Full Practical Code</h2>
+        <p>Here is the complete program written by the instructor in VS Code, combining everything discussed.</p>
+        <pre><span class="keyword">#include</span> &lt;stdio.h&gt;
+<span class="keyword">#include</span> &lt;string.h&gt;
+
+<span class="type">int</span> main() {
+    <span class="comment">// 1. Declaration (Ensure S1 has enough space!)</span>
+    <span class="type">char</span> S1[<span class="string">30</span>] = <span class="string">"Jenny"</span>;
+    <span class="type">char</span> S2[] = <span class="string">"khatri"</span>;
+    
+    <span class="type">int</span> len1, len2, i;
+    
+    <span class="comment">// 2. Calculate Lengths</span>
+    len1 = strlen(S1);
+    len2 = strlen(S2);
+    
+    <span class="comment">// 3. Custom Concatenation Loop</span>
+    <span class="keyword">for</span>(i = <span class="string">0</span>; i <= len2; i++) {
+        S1[len1 + i] = S2[i];
+    }
+    
+    <span class="comment">// Alternative: built-in function (Comment out the loop to test)</span>
+    <span class="comment">// strcat(S1, S2);</span>
+    
+    <span class="comment">// 4. Print Result</span>
+    printf(<span class="string">"String after concatenation is: %s\n"</span>, S1);
+    
+    <span class="keyword">return</span> <span class="string">0</span>;
+}</pre>
+    </div>
+
+    <div class="feed-end">
+        End of Notes • Proceed to next topic
+    </div>
+
+</div>
+
+</body>
+</html>

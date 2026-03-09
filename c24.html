@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming Notes: printf() Function</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700&display=swap');
+
+        :root {
+            --bg-color: #f4f7f9;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #f72585;
+            --code-bg: #1e1e24;
+            --code-text: #a9b7c6;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            letter-spacing: -1px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: -30px auto 50px auto;
+            padding: 0 20px;
+            position: relative;
+        }
+
+        section {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            font-size: 1.8rem;
+        }
+
+        h3 {
+            color: var(--text-main);
+            margin-top: 30px;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background-color: #eef1f5;
+            color: var(--accent);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        .code-block {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            font-family: 'Fira Code', monospace;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-size: 0.95em;
+            line-height: 1.5;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .highlight-c { color: #c678dd; } /* keyword */
+        .highlight-f { color: #61afef; } /* function */
+        .highlight-s { color: #98c379; } /* string */
+        .highlight-v { color: #e06c75; } /* variable/format */
+
+        .callout {
+            background-color: #e0e8ff;
+            border-left: 5px solid var(--primary);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+
+        /* --- VISUALIZATIONS --- */
+        
+        .visual-container {
+            background: #fafafa;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .visual-title {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+
+        /* Memory Map */
+        .memory-map {
+            display: inline-flex;
+            flex-direction: column;
+            border: 2px solid #333;
+            border-radius: 4px;
+            width: 300px;
+            background: white;
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.1);
+        }
+
+        .memory-header {
+            background: #333;
+            color: white;
+            padding: 10px;
+            font-weight: bold;
+        }
+
+        .memory-row {
+            display: flex;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .memory-row:last-child {
+            border-bottom: none;
+        }
+
+        .mem-addr {
+            background: #f0f0f0;
+            padding: 15px;
+            width: 80px;
+            font-family: 'Fira Code', monospace;
+            color: var(--text-muted);
+            font-size: 0.85em;
+            border-right: 1px solid #ccc;
+        }
+
+        .mem-data {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .var-name {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .var-val {
+            font-family: 'Fira Code', monospace;
+            background: #eef1f5;
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Format Blocks Grid */
+        .format-grid {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .block {
+            width: 40px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.2rem;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .block.empty {
+            border: 2px dashed #bbb;
+            background: #f9f9f9;
+            color: transparent;
+        }
+        
+        .block.empty::after {
+            content: "•";
+            color: #ddd;
+        }
+
+        .block.filled {
+            border: 2px solid var(--primary);
+            background: #e0e8ff;
+            color: var(--primary);
+        }
+
+        .block.zero {
+            border: 2px solid var(--accent);
+            background: #ffe0f0;
+            color: var(--accent);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container { margin-top: -20px; }
+            section { padding: 25px; }
+            .block { width: 30px; height: 40px; font-size: 1rem; }
+            .memory-map { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Formatted Output in C</h1>
+        <p>Mastering the <code>printf()</code> Function | Visual Study Notes</p>
+    </header>
+
+    <div class="container">
+        
+        <!-- SECTION 1 -->
+        <section>
+            <h2>1. Introduction to Output in C</h2>
+            <p>In C programming, input and output statements can be classified into two types:</p>
+            <ul>
+                <li><strong>Unformatted Functions:</strong> Deal with raw characters and strings (to be discussed later).</li>
+                <li><strong>Formatted Functions:</strong> Allow you to arrange the output in a specific layout, format, and structure.</li>
+            </ul>
+            <p>When we talk about <strong>Standard Output</strong>, we are referring to the default output device, which is your <strong>monitor/screen</strong>. (Standard Input refers to the keyboard).</p>
+            <div class="callout">
+                <strong>Key Takeaway:</strong> <code>printf()</code> is the standard formatted output function in C. It prints data directly to your monitor in exactly the format you specify.
+            </div>
+        </section>
+
+        <!-- SECTION 2 -->
+        <section>
+            <h2>2. General Syntax: printf() vs scanf()</h2>
+            <p>The syntax for <code>printf()</code> looks very similar to <code>scanf()</code>, but there is one massive difference regarding memory allocation.</p>
+            
+            <div class="code-block">
+                <span class="highlight-f">printf</span>(<span class="highlight-s">"Control string"</span>, arg1, arg2, ... argn);
+            </div>
+
+            <ul>
+                <li><strong>Control String:</strong> Enclosed in double quotes <code>" "</code>. It can contain plain text, format specifiers (like <code>%d</code>, <code>%f</code>), and escape sequences (like <code>\n</code>).</li>
+                <li><strong>Arguments:</strong> The variables whose values you want to print.</li>
+            </ul>
+
+            <div class="callout" style="border-left-color: var(--accent); background-color: #fff0f5;">
+                <strong>🚨 The Golden Rule: NO Ampersands (&)</strong><br>
+                In <code>scanf()</code>, you write <code>&a</code> because you are passing the <em>memory address</em> of the variable to store keyboard input. <br><br>
+                In <code>printf()</code>, you simply write <code>a</code>. You don't need the address; you are passing the <em>actual value</em> (Pass by Value) stored inside the variable to be printed on the screen.
+            </div>
+        </section>
+
+        <!-- SECTION 3 -->
+        <section>
+            <h2>3. Memory Visualization: How it Executes</h2>
+            <p>Let's look at a simple program that adds two numbers, and visualize exactly what happens in the computer's memory when <code>printf()</code> is called.</p>
+
+            <div class="code-block">
+<span class="highlight-c">int</span> a, b, sum;
+<span class="highlight-f">printf</span>(<span class="highlight-s">"Enter two numbers: "</span>);
+<span class="highlight-f">scanf</span>(<span class="highlight-s">"%d %d"</span>, &amp;a, &amp;b); <span class="highlight-text"> // User enters 5 and 4</span>
+sum = a + b;
+<span class="highlight-f">printf</span>(<span class="highlight-s">"Sum = %d"</span>, sum);
+            </div>
+
+            <div class="visual-container">
+                <div class="visual-title">RAM (Memory Stack Map)</div>
+                <div class="memory-map">
+                    <div class="memory-header">main() Function Memory</div>
+                    <div class="memory-row">
+                        <div class="mem-addr">1000</div>
+                        <div class="mem-data">
+                            <span class="var-name">a</span>
+                            <span class="var-val">5</span>
+                        </div>
+                    </div>
+                    <div class="memory-row">
+                        <div class="mem-addr">2000</div>
+                        <div class="mem-data">
+                            <span class="var-name">b</span>
+                            <span class="var-val">4</span>
+                        </div>
+                    </div>
+                    <div class="memory-row">
+                        <div class="mem-addr">3000</div>
+                        <div class="mem-data">
+                            <span class="var-name">sum</span>
+                            <span class="var-val">9</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p>When the compiler hits <code>printf("Sum = %d", sum);</code>, it sees the <code>%d</code> format specifier. It looks at the first argument after the comma (<code>sum</code>). It goes to memory, grabs the value <strong>9</strong> from address 3000, and replaces the <code>%d</code> with that 9 on the screen.</p>
+        </section>
+
+        <!-- SECTION 4 -->
+        <section>
+            <h2>4. Printing Multiple Variables & Text</h2>
+            <p>You can mix plain text and multiple format specifiers freely. The compiler maps the specifiers to the arguments in sequential order.</p>
+
+            <div class="code-block">
+<span class="highlight-f">printf</span>(<span class="highlight-s">"a = <span class="highlight-v">%d</span>, b = <span class="highlight-v">%d</span>, sum = <span class="highlight-v">%d</span>"</span>, a, b, sum);
+            </div>
+            
+            <p><strong>Screen Output:</strong></p>
+            <div class="code-block" style="background: #eef1f5; color: #333; box-shadow: none;">
+a = 5, b = 4, sum = 9
+            </div>
+
+            <h3>Using Escape Sequences</h3>
+            <p>To print outputs on different lines, use the newline character <code>\n</code> inside the control string.</p>
+            <div class="code-block">
+<span class="highlight-f">printf</span>(<span class="highlight-s">"a = <span class="highlight-v">%d</span> <span class="highlight-v">\n</span> b = <span class="highlight-v">%d</span> <span class="highlight-v">\n</span> sum = <span class="highlight-v">%d</span>"</span>, a, b, sum);
+            </div>
+            <p><strong>Screen Output:</strong></p>
+            <div class="code-block" style="background: #eef1f5; color: #333; box-shadow: none; padding-top: 10px; padding-bottom:10px;">
+a = 5 <br> b = 4 <br> sum = 9
+            </div>
+        </section>
+
+        <!-- SECTION 5 -->
+        <section>
+            <h2>5. Advanced Integer Formatting (Width & Justification)</h2>
+            <p>This is where <code>printf</code> gets powerful. You can specify exact field widths to make your output align perfectly like a table or a receipt.</p>
+            <p>Let's declare an integer: <code>int a = 1234;</code></p>
+
+            <h3>Right Justified (Default)</h3>
+            <div class="code-block">
+<span class="highlight-f">printf</span>(<span class="highlight-s">"<span class="highlight-v">%6d</span>"</span>, a);
+            </div>
+            <p>The <code>6</code> tells the compiler to reserve a minimum of 6 character blocks. Since 1234 is only 4 digits, it leaves 2 blank spaces on the left. By default, output pushes to the right.</p>
+            <div class="visual-container">
+                <div class="visual-title">Output Grid (Screen)</div>
+                <div class="format-grid">
+                    <div class="block empty"></div>
+                    <div class="block empty"></div>
+                    <div class="block filled">1</div>
+                    <div class="block filled">2</div>
+                    <div class="block filled">3</div>
+                    <div class="block filled">4</div>
+                </div>
+            </div>
+
+            <h3>Left Justified</h3>
+            <div class="code-block">
+<span class="highlight-f">printf</span>(<span class="highlight-s">"<span class="highlight-v">%-6d</span>"</span>, a);
+            </div>
+            <p>Adding a minus sign (<code>-</code>) forces the text to align to the left side of the reserved blocks. The blank spaces are placed on the right.</p>
+            <div class="visual-container">
+                <div class="visual-title">Output Grid (Screen)</div>
+                <div class="format-grid">
+                    <div class="block filled">1</div>
+                    <div class="block filled">2</div>
+                    <div class="block filled">3</div>
+                    <div class="block filled">4</div>
+                    <div class="block empty"></div>
+                    <div class="block empty"></div>
+                </div>
+            </div>
+
+            <h3>Zero Padding</h3>
+            <div class="code-block">
+<span class="highlight-f">printf</span>(<span class="highlight-s">"<span class="highlight-v">%06d</span>"</span>, a);
+            </div>
+            <p>Putting a <code>0</code> before the width number tells the compiler to fill any empty left-side space with zeros instead of blanks.</p>
+            <div class="visual-container">
+                <div class="visual-title">Output Grid (Screen)</div>
+                <div class="format-grid">
+                    <div class="block zero">0</div>
+                    <div class="block zero">0</div>
+                    <div class="block filled">1</div>
+                    <div class="block filled">2</div>
+                    <div class="block filled">3</div>
+                    <div class="block filled">4</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 6 -->
+        <section>
+            <h2>6. Float Precision Formatting</h2>
+            <p>By default, the <code>%f</code> specifier prints up to 6 decimal places. We use the syntax <code>%[width].[precision]f</code> to control it.</p>
+            <p>Let's declare a float: <code>float a = 1234.3456;</code></p>
+
+            <div class="code-block">
+<span class="highlight-f">printf</span>(<span class="highlight-s">"<span class="highlight-v">%10.2f</span>"</span>, a);
+            </div>
+            <ul>
+                <li><strong>.2 (Precision):</strong> Print exactly 2 numbers after the decimal. The compiler rounds the number. <code>.345</code> rounds up to <code>.35</code>.</li>
+                <li><strong>10 (Total Width):</strong> Reserve exactly 10 blocks. <code>1234.35</code> takes up 7 blocks (the decimal point counts as a block!). This leaves 3 blank spaces on the left.</li>
+            </ul>
+
+            <div class="visual-container">
+                <div class="visual-title">Output Grid (Screen)</div>
+                <div class="format-grid">
+                    <div class="block empty"></div>
+                    <div class="block empty"></div>
+                    <div class="block empty"></div>
+                    <div class="block filled">1</div>
+                    <div class="block filled">2</div>
+                    <div class="block filled">3</div>
+                    <div class="block filled">4</div>
+                    <div class="block filled">.</div>
+                    <div class="block filled">3</div>
+                    <div class="block filled">5</div>
+                </div>
+            </div>
+
+            <div class="callout">
+                <strong>Other Variable Types:</strong><br>
+                You can apply these exact same width rules to characters using <code>%c</code> (e.g., <code>%5c</code> will print a right-justified character in a 5-block space). <br><br>
+                You can also print scientific/exponential numbers using the <code>%e</code> format specifier!
+            </div>
+        </section>
+
+        <!-- SECTION 7 -->
+        <section>
+            <h2>7. Homework / Self-Test Challenges 🧠</h2>
+            <p>At the end of the lecture, the instructor leaves two tasks for you to compile and test on your own machine.</p>
+            
+            <h3>Challenge 1</h3>
+            <p>What happens if your specified width is <em>smaller</em> than your number?</p>
+            <div class="code-block">
+<span class="highlight-c">float</span> a = 1234.3456;
+<span class="highlight-f">printf</span>(<span class="highlight-s">"<span class="highlight-v">%5.2f</span>"</span>, a);
+            </div>
+            <p><em>Hint: Think about what is more important to the compiler—following the width rule, or preserving your actual data?</em></p>
+
+            <h3>Challenge 2</h3>
+            <p>What is the exact output on your screen when you print the same float using exponential notation?</p>
+            <div class="code-block">
+<span class="highlight-c">float</span> a = 1234.3456;
+<span class="highlight-f">printf</span>(<span class="highlight-s">"<span class="highlight-v">%e</span>"</span>, a);
+            </div>
+            
+            <p style="text-align: center; margin-top: 30px; font-weight: bold; color: var(--primary);">Code these up, run them, and verify your knowledge!</p>
+        </section>
+
+    </div>
+
+</body>
+</html>

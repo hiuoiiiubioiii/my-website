@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loops in C - Study Notes Feed</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --primary: #4A90E2;
+            --secondary: #F5A623;
+            --success: #27AE60;
+            --danger: #E74C3C;
+            --code-bg: #282a36;
+            --code-text: #f8f8f2;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 40px; /* spacing between vertical feed items */
+            padding-bottom: 60px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0 20px 0;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+
+        /* Card Styles */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--primary);
+        }
+
+        .card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .card h3 {
+            font-size: 1.3rem;
+            margin: 20px 0 10px 0;
+            color: var(--primary);
+        }
+
+        .card p {
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+        }
+
+        .highlight {
+            background-color: #eef5ff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Whiteboard Visualizations */
+        .whiteboard {
+            background-color: #fdfdfd;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .whiteboard::before {
+            content: 'Whiteboard Visualization';
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: #fdfdfd;
+            padding: 0 10px;
+            font-size: 0.8rem;
+            color: #999;
+            font-weight: bold;
+        }
+
+        .analogy-container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .analogy-box {
+            flex: 1;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .analogy-bad { background-color: #fdedec; border: 1px solid #fadbd8; }
+        .analogy-good { background-color: #eaeded; border: 1px solid #d5dbdb; }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            margin: 15px 0;
+        }
+
+        /* The 3 Components Graphic */
+        .loop-components {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .component-row {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--secondary);
+        }
+
+        .component-code {
+            font-family: 'Fira Code', monospace;
+            font-weight: bold;
+            font-size: 1.2rem;
+            width: 150px;
+            color: var(--primary);
+        }
+
+        .component-desc {
+            flex: 1;
+        }
+
+        /* Flowcharts */
+        .flowchart-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 30px 0;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .node {
+            background: #fff;
+            border: 2px solid var(--primary);
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-align: center;
+            min-width: 180px;
+            font-weight: 600;
+        }
+
+        .node.condition {
+            transform: rotate(45deg);
+            padding: 20px;
+            border-radius: 0;
+            margin: 20px 0;
+            border-color: var(--secondary);
+        }
+
+        .node.condition > span {
+            display: inline-block;
+            transform: rotate(-45deg);
+        }
+
+        .arrow {
+            width: 2px;
+            height: 30px;
+            background-color: var(--text-muted);
+            position: relative;
+            margin: 5px 0;
+        }
+
+        .arrow::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -4px;
+            border-width: 5px 5px 0;
+            border-style: solid;
+            border-color: var(--text-muted) transparent transparent transparent;
+        }
+
+        .arrow-text {
+            position: absolute;
+            right: 10px;
+            top: 5px;
+            font-size: 0.8rem;
+            color: var(--danger);
+            font-weight: bold;
+        }
+
+        .arrow-text.true { color: var(--success); }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .analogy-container { flex-direction: column; }
+            .component-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Loops in C</h1>
+        <p>Complete Vertical Study Notes - Scroll to Learn</p>
+    </header>
+
+    <main class="feed-container">
+
+        <!-- Section 1: Introduction & Analogy -->
+        <article class="card">
+            <h2>1. What are Loops & Why do we need them?</h2>
+            <p>Loops are fundamental programming constructs built for <span class="highlight">Iteration</span>. They are used when you want to execute a specific statement (or a block of statements) repeatedly, multiple times in your program.</p>
+            
+            <h3>The Supermarket Analogy</h3>
+            <p>To understand why iteration is necessary, the instructor used a real-life analogy about grocery shopping.</p>
+            
+            <div class="whiteboard analogy-container">
+                <div class="analogy-box analogy-bad">
+                    <strong>The Bad Way (No Loops)</strong><br><br>
+                    Go to market -> Buy Mango -> Come home.<br>
+                    Mom says "Buy Apples" -> Go to market -> Buy Apples -> Come home.<br>
+                    Mom says "Buy Ladyfingers" -> Go to market...<br><br>
+                    <em>Exhausting and repetitive!</em>
+                </div>
+                <div class="analogy-box analogy-good">
+                    <strong>The Good Way (With Loops)</strong><br><br>
+                    Make a list of 15 items.<br>
+                    Go to market <strong>ONCE</strong>.<br>
+                    Iterate (loop) through the list, pick up items 1 through 15.<br>
+                    Come home when list is complete.<br><br>
+                    <em>Efficient and saves time!</em>
+                </div>
+            </div>
+        </article>
+
+        <!-- Section 2: Programming Problem -->
+        <article class="card">
+            <h2>2. Translating to C Programming</h2>
+            <p>Let's say you want to print the instructor's name, "Jenny", to the screen.</p>
+            
+            <h3>Printing it 1 time:</h3>
+<pre><code>#include &lt;stdio.h&gt;
+int main() {
+    printf("Jenny\n");
+    return 0;
+}</code></pre>
+
+            <h3>The Problem: Printing it 100 times</h3>
+            <p>Without loops, you would have to manually type the `printf` statement 100 times. Not only is this tedious, but it makes the code massive, hard to read, and prone to errors.</p>
+            
+            <div class="whiteboard">
+                <span style="color: red; font-family: monospace;">
+                    1. printf("Jenny\n");<br>
+                    2. printf("Jenny\n");<br>
+                    3. printf("Jenny\n");<br>
+                    ...<br>
+                    100. printf("Jenny\n");
+                </span>
+                <p style="margin-top:10px; font-weight:bold;">❌ We NEVER code like this!</p>
+            </div>
+            
+            <p><strong>The Solution:</strong> We write the `printf` statement exactly ONE time inside a loop body, and tell the loop to run 100 times.</p>
+        </article>
+
+        <!-- Section 3: The Three Components of a Loop -->
+        <article class="card">
+            <h2>3. The Anatomy of a Loop</h2>
+            <p>For a loop to function properly, the computer needs rules. It needs to know exactly where to begin, what to execute, and exactly when to stop.</p>
+            
+            <p>Every loop in C is built on <strong>Three Main Components</strong>:</p>
+
+            <div class="loop-components">
+                <div class="component-row">
+                    <div class="component-code">i = 1</div>
+                    <div class="component-desc">
+                        <strong>1. Initialization</strong><br>
+                        You need a starting point. We create a counter variable (commonly <code>i</code>). You can start at 1, 0, or any number required by your logic.
+                    </div>
+                </div>
+                <div class="component-row">
+                    <div class="component-code">i <= 100</div>
+                    <div class="component-desc">
+                        <strong>2. Termination Condition</strong><br>
+                        You must tell the loop when to stop. If you don't provide a condition, the loop will run forever (an Infinite Loop). Here, the loop stops as soon as <code>i</code> becomes 101.
+                    </div>
+                </div>
+                <div class="component-row">
+                    <div class="component-code">i = i + 1</div>
+                    <div class="component-desc">
+                        <strong>3. Update Expression</strong><br>
+                        You must update the counter so it progresses toward the termination condition. You can increment (<code>i++</code>), decrement (<code>i--</code>), or use formulas like <code>i = i + 2</code> or <code>i = i * 2</code>.
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Section 4: Types of Loops -->
+        <article class="card">
+            <h2>4. Types of Loops (Based on Condition Checking)</h2>
+            <p>Loops are classified based on <em>where</em> the condition is checked in the process.</p>
+            
+            <h3>Type A: Entry-Controlled Loops</h3>
+            <p>The condition is checked <strong>right at the beginning</strong>. If the condition is False initially, the loop body is never executed, not even once.</p>
+            <p><em>Analogy:</em> Security checking you at the entry gate of MGF Mall. If you fail the check, you cannot enter.</p>
+
+            <div class="whiteboard">
+                <div class="flowchart-wrapper">
+                    <div class="node">Initialization (i = 1)</div>
+                    <div class="arrow"></div>
+                    <div class="node condition"><span>Condition Check</span></div>
+                    <div class="arrow"><span class="arrow-text true">True</span></div>
+                    <div class="node">Body of Loop: printf("Jenny")</div>
+                    <div class="arrow"></div>
+                    <div class="node">Update (i++)</div>
+                    <div style="border-left: 2px solid #666; border-top: 2px solid #666; width: 150px; height: 160px; position: absolute; left: 10%; top: 35%; border-radius: 10px 0 0 10px;"></div>
+                    <!-- Visual representation of loop back -->
+                    <p style="margin-top: 20px; font-weight: bold; color: var(--danger);">If Condition is FALSE initially -> Exits immediately</p>
+                </div>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+
+            <h3>Type B: Exit-Controlled Loops</h3>
+            <p>The loop body executes <strong>first</strong>, without checking any conditions. The condition is checked at the very end of the loop.</p>
+            <p>Because of this structure, the loop body is <strong>guaranteed to run at least ONE time</strong>, even if the condition is completely False from the start.</p>
+            <p><em>Analogy:</em> Shopping at "More" supermarket. You enter, put items in your basket, and your bill/items are checked at the exit counter.</p>
+
+            <div class="whiteboard">
+                <div class="flowchart-wrapper">
+                    <div class="node">Initialization (i = 1)</div>
+                    <div class="arrow"></div>
+                    <div class="node">Body of Loop: printf("Jenny")</div>
+                    <div class="arrow"></div>
+                    <div class="node">Update (i++)</div>
+                    <div class="arrow"></div>
+                    <div class="node condition"><span>Condition Check</span></div>
+                    <div style="border-right: 2px solid #666; border-top: 2px solid #666; width: 150px; height: 160px; position: absolute; right: 10%; top: 35%; border-radius: 0 10px 10px 0;"></div>
+                    <p style="margin-top: 40px; font-weight: bold; color: var(--success);">Body executes AT LEAST ONCE before checking True/False</p>
+                </div>
+            </div>
+        </article>
+
+        <!-- Section 5: Conclusion -->
+        <article class="card">
+            <h2>5. Advantages & Summary</h2>
+            <p>By using loops in your C programs, you achieve:</p>
+            <ul style="margin-left: 20px; margin-bottom: 20px;">
+                <li><strong>Time Saving:</strong> Less code to write for repetitive tasks.</li>
+                <li><strong>Code Readability:</strong> Your codebase remains small, clean, and professional.</li>
+                <li><strong>Execution Speed:</strong> Compilers execute loops extremely efficiently.</li>
+            </ul>
+            <p style="color: var(--text-muted); font-style: italic;">Next Up: We will dive into writing actual code using the <strong>for loop</strong> in C.</p>
+        </article>
+
+    </main>
+
+</body>
+</html>

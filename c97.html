@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passing Strings in C | Deep Dive Notes</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --code-bg: #1e1e1e;
+            --danger: #ef4444;
+            --danger-light: #fef2f2;
+            --success: #10b981;
+            --success-light: #ecfdf5;
+            --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --font-code: 'Fira Code', Consolas, Monaco, monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Top Header */
+        header {
+            width: 100%;
+            background: var(--card-bg);
+            padding: 20px 0;
+            text-align: center;
+            border-bottom: 2px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: 800;
+        }
+        header p { font-size: 0.9rem; color: var(--text-muted); }
+
+        /* Feed Container */
+        .feed-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px; /* Space between cards in the feed */
+        }
+
+        /* Individual Topic Cards */
+        .feed-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+            border: 1px solid #e2e8f0;
+        }
+
+        .feed-card h2 {
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tag {
+            font-size: 0.8rem;
+            background: var(--primary);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        p { margin-bottom: 15px; }
+        
+        ul { margin-left: 20px; margin-bottom: 15px; }
+        li { margin-bottom: 8px; }
+
+        /* Code Blocks */
+        pre {
+            background: var(--code-bg);
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: var(--font-code);
+            font-size: 0.95rem;
+            overflow-x: auto;
+            margin: 20px 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .keyword { color: #569cd6; }
+        .string { color: #ce9178; }
+        .function { color: #dcdcaa; }
+        .comment { color: #6a9955; font-style: italic; }
+
+        /* --- VISUALIZATIONS CSS --- */
+        .vis-container {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .vis-title {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        /* RAM Memory Cells */
+        .memory-block {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        .mem-cell {
+            background: white;
+            border: 2px solid var(--primary);
+            border-radius: 6px;
+            min-width: 45px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .mem-val {
+            font-family: var(--font-code);
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+        .mem-addr {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-family: var(--font-code);
+            margin-top: 4px;
+        }
+        .mem-cell.highlight {
+            background: var(--success-light);
+            border-color: var(--success);
+        }
+        .mem-cell.highlight .mem-val { color: var(--success); }
+
+        /* Pointers */
+        .pointer-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .ptr-box {
+            background: #fef08a;
+            border: 2px solid #ca8a04;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: var(--font-code);
+            font-weight: bold;
+            text-align: center;
+        }
+        .ptr-label { font-size: 0.75rem; color: #854d0e; }
+        .arrow { color: #ca8a04; font-size: 1.5rem; font-weight: bold; }
+
+        /* Callouts / Warnings */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 5px solid;
+        }
+        .alert-danger {
+            background: var(--danger-light);
+            border-color: var(--danger);
+            color: #991b1b;
+        }
+        .alert-success {
+            background: var(--success-light);
+            border-color: var(--success);
+            color: #065f46;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>C Programming Notes</h1>
+        <p>Topic: Passing Strings as Arguments to Functions</p>
+    </header>
+
+    <main class="feed-container">
+
+        <!-- CARD 1 -->
+        <article class="feed-card">
+            <h2><span class="tag">1</span> The Golden Rule of Strings</h2>
+            <p>Before writing any functions, you must remember one absolute rule in C:</p>
+            <p><strong>A string is simply a character array ending with a Null Character (<code>\0</code>).</strong></p>
+            <p>Therefore, all the rules we learned about passing arrays to functions apply exactly the same way to strings. When you pass a string to a function, you are <strong>not</strong> passing a copy of the text. You are passing the <strong>Base Address</strong> (Call by Reference).</p>
+        </article>
+
+        <!-- CARD 2 -->
+        <article class="feed-card">
+            <h2><span class="tag">2</span> Example 1: The Simple Display Function</h2>
+            <p>Let's write a function that takes a string from <code>main</code> and prints it to the screen.</p>
+            
+            <pre><code><span class="keyword">void</span> <span class="function">display</span>(<span class="keyword">char</span> str[]); <span class="comment">// Prototype</span>
+
+<span class="keyword">void</span> <span class="function">main</span>() {
+    <span class="keyword">char</span> str[] = <span class="string">"Jenny"</span>;
+    <span class="function">display</span>(str);         <span class="comment">// Function Call</span>
+}
+
+<span class="keyword">void</span> <span class="function">display</span>(<span class="keyword">char</span> str[]) {
+    <span class="function">printf</span>(<span class="string">"String is %s"</span>, str);
+}</code></pre>
+
+            <div class="vis-container">
+                <div class="vis-title">Visualization: How this looks in RAM</div>
+                
+                <div class="pointer-wrapper">
+                    <div class="ptr-box">
+                        <div class="ptr-label">display() receives:</div>
+                        char str[] = 100
+                    </div>
+                    <div class="arrow">⟶</div>
+                    <div class="ptr-box">
+                        <div class="ptr-label">main() array base:</div>
+                        Address 100
+                    </div>
+                </div>
+
+                <div class="memory-block">
+                    <div class="mem-cell"><div class="mem-val">'J'</div><div class="mem-addr">100</div></div>
+                    <div class="mem-cell"><div class="mem-val">'e'</div><div class="mem-addr">101</div></div>
+                    <div class="mem-cell"><div class="mem-val">'n'</div><div class="mem-addr">102</div></div>
+                    <div class="mem-cell"><div class="mem-val">'n'</div><div class="mem-addr">103</div></div>
+                    <div class="mem-cell"><div class="mem-val">'y'</div><div class="mem-addr">104</div></div>
+                    <div class="mem-cell"><div class="mem-val">'\0'</div><div class="mem-addr">105</div></div>
+                </div>
+                <p style="text-align:center; font-size:0.9rem; color:var(--text-muted); margin-top:10px;">
+                    <em>Both the <code>main</code> function and <code>display</code> function are pointing to the exact same memory cells.</em>
+                </p>
+            </div>
+        </article>
+
+        <!-- CARD 3 -->
+        <article class="feed-card">
+            <h2><span class="tag">3</span> Example 2: Finding Length & Modifying</h2>
+            <p>Now we will pass <strong>two</strong> strings. We will calculate the length of the first string, and modify a character in the second string.</p>
+            
+            <pre><code><span class="keyword">void</span> <span class="function">modify</span>(<span class="keyword">char</span> str1[], <span class="keyword">char</span> str2[]) {
+    <span class="keyword">int</span> i, length = <span class="string">0</span>;
+    
+    <span class="comment">// Logic 1: Find length of str1 ("Jenny")</span>
+    <span class="keyword">for</span>(i = <span class="string">0</span>; str1[i] != <span class="string">'\0'</span>; i++) {
+        length = length + <span class="string">1</span>;
+    }
+    
+    <span class="comment">// Logic 2: Modify str2 ("khatri")</span>
+    str2[1] = <span class="string">'z'</span>; 
+    
+    <span class="function">printf</span>(<span class="string">"%s, %s"</span>, str1, str2);
+}</code></pre>
+
+            <ul>
+                <li><strong>Finding Length:</strong> We loop through <code>str1</code> until we hit the Null Character <code>\0</code>. That signals the end of the string.</li>
+                <li><strong>Modifying:</strong> Because we passed by reference, <code>str2[1] = 'z'</code> permanently alters the string in the <code>main</code> function's memory.</li>
+            </ul>
+
+            <div class="vis-container">
+                <div class="vis-title">Visualization: Modifying str2[1]</div>
+                <p style="text-align: center; font-family:var(--font-code); margin-bottom: 10px;">Original: "khatri" | Base Addr: 200</p>
+                <div class="memory-block">
+                    <div class="mem-cell"><div class="mem-val">'k'</div><div class="mem-addr">200</div></div>
+                    <div class="mem-cell highlight">
+                        <div class="mem-val">'z'</div><div class="mem-addr">201</div>
+                        <div style="font-size:0.6rem; color:var(--danger); text-decoration:line-through;">'h'</div>
+                    </div>
+                    <div class="mem-cell"><div class="mem-val">'a'</div><div class="mem-addr">202</div></div>
+                    <div class="mem-cell"><div class="mem-val">'t'</div><div class="mem-addr">203</div></div>
+                    <div class="mem-cell"><div class="mem-val">'r'</div><div class="mem-addr">204</div></div>
+                    <div class="mem-cell"><div class="mem-val">'i'</div><div class="mem-addr">205</div></div>
+                    <div class="mem-cell"><div class="mem-val">'\0'</div><div class="mem-addr">206</div></div>
+                </div>
+            </div>
+        </article>
+
+        <!-- CARD 4 -->
+        <article class="feed-card">
+            <h2><span class="tag">4</span> Alternate Pointer Syntax</h2>
+            <p>During the practical IDE coding, the instructor showed that the compiler treats arrays and pointers synonymously in function arguments.</p>
+            <p>These two function headers mean the <strong>exact same thing</strong> to the compiler:</p>
+            
+            <pre><code><span class="comment">// Syntax 1: Array Notation</span>
+<span class="keyword">void</span> <span class="function">modify</span>(<span class="keyword">char</span> str1[], <span class="keyword">char</span> str2[]) { ... }
+
+<span class="comment">// Syntax 2: Pointer Notation</span>
+<span class="keyword">void</span> <span class="function">modify</span>(<span class="keyword">char</span> *str1, <span class="keyword">char</span> *str2) { ... }</code></pre>
+            <p>You can use whichever you feel more comfortable reading, but know that under the hood, C is converting the array notation into a pointer anyway.</p>
+        </article>
+
+        <!-- CARD 5 -->
+        <article class="feed-card">
+            <h2><span class="tag">5</span> ⚠️ The Segmentation Fault Bug</h2>
+            <p>When typing the code in VS Code, the instructor demonstrated a critical, common error that crashes the program. If you initialize your strings in `main` like this:</p>
+
+            <pre><code><span class="keyword">char</span> *str1 = <span class="string">"Jenny"</span>;
+<span class="keyword">char</span> *str2 = <span class="string">"khatri"</span>;</code></pre>
+
+            <div class="alert alert-danger">
+                <strong>Program Crashes! (Segmentation Fault)</strong><br>
+                When you declare a string using a pointer like <code>char *str = "Text"</code>, C stores that string literal in a <strong>Read-Only</strong> section of memory. 
+                <br><br>
+                When our <code>modify</code> function tries to do <code>str2[1] = 'z'</code>, the OS blocks it and kills the program because you aren't allowed to write to read-only memory.
+            </div>
+
+            <div class="alert alert-success">
+                <strong>The Fix: Use Array Notation</strong><br>
+                Change the initialization to: <code>char str2[] = "khatri";</code><br>
+                This forces the compiler to create a fully modifiable copy of the string on the <strong>Stack memory</strong>, which our function is allowed to alter safely.
+            </div>
+        </article>
+
+        <!-- CARD 6 -->
+        <article class="feed-card" style="background-color: var(--primary-light); border-color: var(--primary);">
+            <h2>📝 Lecture Cheat Sheet</h2>
+            <ul>
+                <li><strong>Passing:</strong> Just pass the name of the string (e.g., <code>display(str)</code>). It passes the base address.</li>
+                <li><strong>Receiving:</strong> Catch it with <code>char str[]</code> or <code>char *str</code>.</li>
+                <li><strong>Modification:</strong> Any changes made inside the function apply directly to the original string.</li>
+                <li><strong>End of String:</strong> Always loop until <code>\0</code>.</li>
+                <li><strong>Safety:</strong> Never try to modify a string declared as <code>char *str = "literal"</code>. Always use <code>char str[] = "literal"</code> if you intend to change its contents.</li>
+            </ul>
+        </article>
+
+    </main>
+
+</body>
+</html>

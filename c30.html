@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes: else if Ladder in C</title>
+    <style>
+        /* Base Styles & Typography */
+        :root {
+            --bg-color: #f3f4f6;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --primary: #4f46e5;
+            --primary-light: #e0e7ff;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --card-bg: #ffffff;
+            --code-bg: #1e1e1e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 40px; /* Space between cards in the feed */
+            padding-bottom: 60px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-top: 5px solid var(--primary);
+        }
+
+        .card h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card p {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        /* Callout Boxes */
+        .callout {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 1.05rem;
+        }
+        .callout.analogy { background-color: #fffbeb; border-left: 4px solid var(--warning); }
+        .callout.pro-tip { background-color: var(--primary-light); border-left: 4px solid var(--primary); }
+        .callout.concept { background-color: #ecfdf5; border-left: 4px solid var(--success); }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.05rem;
+            line-height: 1.5;
+            margin: 15px 0;
+        }
+        code .keyword { color: #569cd6; }
+        code .function { color: #dcdcaa; }
+        code .string { color: #ce9178; }
+        code .comment { color: #6a9955; }
+        code .operator { color: #d4d4d4; }
+
+        /* Visual Flowchart */
+        .flowchart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 30px 0;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .fc-node {
+            background: var(--primary);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px; /* Diamond simulation */
+            font-weight: bold;
+            text-align: center;
+            width: 250px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .fc-arrow-down {
+            color: var(--danger);
+            font-weight: bold;
+            margin: 10px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .fc-arrow-down::before {
+            content: "False";
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .fc-branch {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .fc-branch .arrow-right {
+            color: var(--success);
+            font-weight: bold;
+            padding: 0 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .fc-action {
+            background: #f3f4f6;
+            border: 2px solid var(--primary);
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: var(--text-main);
+        }
+
+        /* Dry Run Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: var(--primary);
+            color: white;
+        }
+        tr:nth-child(even) { background-color: #f9fafb; }
+
+        /* Header Area */
+        header {
+            text-align: center;
+            padding: 40px 0;
+        }
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        header p {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+        }
+
+        @media(max-width: 600px) {
+            .fc-branch { flex-direction: column; align-items: center; }
+            .fc-branch .arrow-right { flex-direction: column; padding: 10px 0; }
+            .fc-branch .arrow-right::after { content: "↓"; }
+            .fc-branch .arrow-right::before { display: none; }
+            .right-arr { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>📚 Control Statements in C</h1>
+        <p>In-Depth Breakdown: The <b>else if</b> Ladder</p>
+        <p style="font-size: 0.9rem; margin-top: 5px;">Instructor: Jayanti Khatri Lamba</p>
+    </header>
+
+    <div class="feed-container">
+
+        <!-- Section 1 -->
+        <div class="card">
+            <h2>1. What is the 'else if' Ladder?</h2>
+            <p>Also known as the <code>else if</code> statement, it is a control statement used to test <b>multiple cases</b> sequentially. It allows for "multi-path decision making."</p>
+            <p>Instead of just a simple True/False split (like a basic `if-else`), the program can choose between many different paths based on various conditions.</p>
+            
+            <div class="callout analogy">
+                <strong>🍿 Real-Life Analogy: The Outing</strong><br><br>
+                Imagine asking someone out. You ask questions in a specific order. Once they say "Yes", you stop asking the other questions!<br><br>
+                1. <b>Condition 1:</b> Whole day free? ➔ <i>Action: Movie, Lunch, & Dinner.</i><br>
+                2. <b>Condition 2:</b> Only 4-5 hours free? ➔ <i>Action: Movie & Lunch.</i><br>
+                3. <b>Condition 3:</b> Only 2 hours free? ➔ <i>Action: Just Coffee.</i><br>
+                4. <b>Default (else):</b> No time at all? ➔ <i>Action: Just meet for 10 minutes.</i>
+            </div>
+        </div>
+
+        <!-- Section 2 -->
+        <div class="card">
+            <h2>2. Visualizing the Flowchart</h2>
+            <p>The conditions are evaluated strictly from <b>top to bottom</b>. As soon as one condition evaluates to True, its block runs, and the program <b>jumps completely out</b> of the ladder.</p>
+            
+            <div class="flowchart">
+                <div class="fc-branch">
+                    <div class="fc-node">if (Condition 1)</div>
+                    <div class="arrow-right">True <span class="right-arr">→</span></div>
+                    <div class="fc-action">Statement 1 (Then Exit)</div>
+                </div>
+                <div class="fc-arrow-down">↓</div>
+                
+                <div class="fc-branch">
+                    <div class="fc-node">else if (Condition 2)</div>
+                    <div class="arrow-right">True <span class="right-arr">→</span></div>
+                    <div class="fc-action">Statement 2 (Then Exit)</div>
+                </div>
+                <div class="fc-arrow-down">↓</div>
+
+                <div class="fc-branch">
+                    <div class="fc-node">else if (Condition 3)</div>
+                    <div class="arrow-right">True <span class="right-arr">→</span></div>
+                    <div class="fc-action">Statement 3 (Then Exit)</div>
+                </div>
+                <div class="fc-arrow-down">↓</div>
+
+                <div class="fc-branch">
+                    <div class="fc-node" style="background: var(--text-muted)">else (Default)</div>
+                    <div class="arrow-right" style="color: var(--text-muted)">Run <span class="right-arr">→</span></div>
+                    <div class="fc-action">Default Statement</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 3 -->
+        <div class="card">
+            <h2>3. Syntax & Instructor Pro-Tips</h2>
+            <p>Here is how the structure above translates into actual C code:</p>
+            
+<pre><code><span class="keyword">if</span> (Condition 1)
+    Statement 1;
+<span class="keyword">else if</span> (Condition 2)
+    Statement 2;
+<span class="keyword">else if</span> (Condition 3)
+    Statement 3;
+<span class="keyword">else</span>
+    Default Statement;
+
+Statement x; <span class="comment">// This code runs after the ladder finishes</span></code></pre>
+
+            <div class="callout pro-tip">
+                <strong>💡 Instructor's Rule on Curly Braces <code>{}</code></strong><br>
+                Notice there are no curly braces in the code above. 
+                <ul>
+                    <li>If you have <b>one</b> line of code under a condition, braces are optional.</li>
+                    <li>If you have <b>multiple</b> lines of code (a block) under a condition, you <b>must</b> use curly braces <code>{}</code>, or you will get a syntax error!</li>
+                </ul>
+            </div>
+            
+            <div class="callout pro-tip">
+                <strong>💡 The Default <code>else</code> is Optional</strong><br>
+                You don't <i>have</i> to include the final <code>else</code>. If you leave it out and all conditions are False, the program just silently skips the whole ladder and moves to <code>Statement x</code>.
+            </div>
+        </div>
+
+        <!-- Section 4 -->
+        <div class="card">
+            <h2>4. Live Code Example: Grading System</h2>
+            <p>Let's look at the program the instructor wrote on the whiteboard.</p>
+
+<pre><code><span class="keyword">void</span> <span class="function">main</span>() {
+    <span class="keyword">int</span> marks;
+    <span class="function">printf</span>(<span class="string">"Enter marks: "</span>);
+    <span class="function">scanf</span>(<span class="string">"%d"</span>, &marks);
+
+    <span class="keyword">if</span> (marks > <span class="operator">80</span>)
+        <span class="function">printf</span>(<span class="string">"Grade is A"</span>);
+    <span class="keyword">else if</span> (marks > <span class="operator">70</span>)
+        <span class="function">printf</span>(<span class="string">"B grade"</span>);
+    <span class="keyword">else if</span> (marks > <span class="operator">60</span>)
+        <span class="function">printf</span>(<span class="string">"C grade"</span>);
+    <span class="keyword">else</span>
+        <span class="function">printf</span>(<span class="string">"D grade"</span>);
+        
+    <span class="function">printf</span>(<span class="string">"\nEnd of Program"</span>);
+    <span class="function">getch</span>();
+}</code></pre>
+
+            <div class="callout concept">
+                <strong>🧠 The "Aha!" Moment: Why no <code>&&</code> operator?</strong><br>
+                You might wonder: <i>"For the B grade, why didn't she write <code>else if (marks > 70 && marks <= 80)</code>?"</i><br><br>
+                Because of the <b>top-to-bottom flow!</b> If the marks were 85, the very first <code>if (marks > 80)</code> would catch it. The program would print "Grade is A" and skip the rest. <br><br>
+                Therefore, if the program actually makes it down to the <code>> 70</code> check, <b>it is already mathematically guaranteed that the marks are 80 or below.</b> You don't need to write the upper limit!
+            </div>
+        </div>
+
+        <!-- Section 5 -->
+        <div class="card">
+            <h2>5. Dry Running the Code</h2>
+            <p>Let's trace what the computer does based on different user inputs.</p>
+            
+            <table>
+                <tr>
+                    <th>User Input</th>
+                    <th>Evaluation Flow</th>
+                    <th>Final Output</th>
+                </tr>
+                <tr>
+                    <td><b>80</b></td>
+                    <td><code>>80</code> (False) ➔ Moves down.<br><code>>70</code> (True) ➔ Executes block.</td>
+                    <td>B grade<br>End of Program</td>
+                </tr>
+                <tr>
+                    <td><b>81</b></td>
+                    <td><code>>80</code> (True) ➔ Executes block.<br>Skips all other conditions.</td>
+                    <td>Grade is A<br>End of Program</td>
+                </tr>
+                <tr>
+                    <td><b>45</b></td>
+                    <td><code>>80</code> (False)<br><code>>70</code> (False)<br><code>>60</code> (False)<br>Triggers default <code>else</code>.</td>
+                    <td>D grade<br>End of Program</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Section 6 -->
+        <div class="card">
+            <h2>6. Deep Dive: Why is there a space in <code>else if</code>?</h2>
+            <p>In some languages (like Python), it is written as <code>elif</code>. In C, it is two separate words. The instructor explains that this is actually because it is a <b>nested if statement hiding inside an else block!</b></p>
+            
+            <p>These two pieces of code do the exact same thing in C. The compiler treats the single <code>if</code> as one statement, allowing you to drop the curly braces of the <code>else</code>, bringing the words together!</p>
+
+            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 300px;">
+                    <p><b>How it literally works:</b></p>
+<pre><code><span class="keyword">else</span> {
+    <span class="keyword">if</span> (marks > <span class="operator">70</span>) {
+        <span class="function">printf</span>(<span class="string">"B grade"</span>);
+    }
+}</code></pre>
+                </div>
+                <div style="flex: 1; min-width: 300px;">
+                    <p><b>How we format it (The Ladder):</b></p>
+<pre><code><span class="keyword">else if</span> (marks > <span class="operator">70</span>) {
+    <span class="function">printf</span>(<span class="string">"B grade"</span>);
+}</code></pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 7 -->
+        <div class="card" style="border-top: 5px solid var(--warning);">
+            <h2>7. Homework Assignment 📝</h2>
+            <p>The instructor left you with a challenge to practice your new skills.</p>
+            
+            <p><b>The Prompt:</b> Write a C program that takes a single character input from the user. Using an <code>else if</code> ladder, determine and print out whether the entered character is:</p>
+            <ol style="margin-left: 20px; margin-bottom: 20px;">
+                <li>An uppercase letter (A - Z)</li>
+                <li>A lowercase letter (a - z)</li>
+                <li>A number digit (0 - 9)</li>
+                <li>A special character (anything else)</li>
+            </ol>
+
+            <div class="callout pro-tip">
+                <b>Hint:</b> You will need to use the logical AND <code>&&</code> operator inside your <code>if</code> conditions and rely on ASCII ranges (e.g., <code>if (ch >= 'A' && ch <= 'Z')</code>).
+            </div>
+            
+            <p style="margin-top: 20px; color: var(--text-muted); font-style: italic;">Next Topic Teaser: If you don't want to use an else-if ladder, you can use the <b>Switch Statement</b> to handle multiple paths. (Covered in the next lesson!)</p>
+        </div>
+
+    </div>
+
+</body>
+</html>

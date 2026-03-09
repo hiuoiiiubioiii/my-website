@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: scanf() In-Depth Study Notes</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.4);
+            --success: #4ade80;
+            --warning: #facc15;
+            --danger: #ef4444;
+            --code-bg: #000000;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            width: 100%;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        header {
+            text-align: center;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--card-bg);
+            position: sticky;
+            top: 0;
+            background: var(--bg-color);
+            z-index: 100;
+            padding-top: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2::before {
+            content: "•";
+            color: var(--accent);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        strong {
+            color: var(--text-main);
+        }
+
+        /* Topic Cards */
+        .topic-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-left: 4px solid var(--accent);
+            transition: transform 0.3s ease;
+        }
+
+        .topic-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 15px var(--accent-glow);
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border: 1px solid #334155;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            color: var(--accent);
+            font-size: 0.95rem;
+        }
+
+        .highlight { color: var(--warning); }
+        .comment { color: #64748b; }
+        .string { color: var(--success); }
+
+        /* Format Specifier Grid */
+        .spec-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .spec-box {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #334155;
+        }
+
+        .spec-box span {
+            display: block;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        /* INTERACTIVE VISUALISATION: Memory Map */
+        .visualisation {
+            background: #000;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            text-align: center;
+            border: 1px solid var(--accent);
+        }
+
+        .ram-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 2rem;
+            padding: 2rem;
+            background: #1e293b;
+            border-radius: 8px;
+            border: 2px dashed #475569;
+            position: relative;
+        }
+
+        .ram-label {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: var(--accent);
+            color: #000;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        .memory-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .address {
+            font-family: 'Fira Code', monospace;
+            color: var(--warning);
+            font-size: 0.9rem;
+        }
+
+        .box {
+            width: 80px;
+            height: 80px;
+            border: 3px solid var(--accent);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+            background: rgba(56, 189, 248, 0.1);
+            border-radius: 8px;
+            transition: all 0.5s ease;
+        }
+
+        .var-name {
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        .vis-controls {
+            margin-top: 1.5rem;
+        }
+
+        button {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        button:hover {
+            background: #0ea5e9;
+        }
+
+        /* Input Flow Animation */
+        .input-flow {
+            height: 30px;
+            margin-bottom: 1rem;
+            color: var(--success);
+            font-family: 'Fira Code', monospace;
+            font-size: 1.2rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        /* Callouts / Warnings */
+        .callout {
+            padding: 1.5rem;
+            border-radius: 8px;
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid var(--danger);
+            margin-top: 1.5rem;
+        }
+
+        .callout h3 {
+            color: var(--danger);
+            margin-bottom: 0.5rem;
+        }
+
+        .feed-end {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 2rem 0;
+            font-size: 0.9rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <header>
+            <h1>scanf() In-Depth</h1>
+            <p>Formatted Input & Memory Management in C</p>
+        </header>
+
+        <!-- Topic 1 -->
+        <article class="topic-card">
+            <h2>1. Introduction: What is scanf()?</h2>
+            <p><strong>Definition:</strong> <code>scanf()</code> is the built-in "formatted input function" in C.</p>
+            <p><strong>Purpose:</strong> It allows your program to read data entered by the user via the keyboard (runtime input) and store that data into variables.</p>
+            <p><strong>Library:</strong> It lives in the Standard Input/Output library. You must tell the compiler to load it.</p>
+<pre><code><span class="highlight">#include</span> &lt;stdio.h&gt;
+
+<span class="highlight">int</span> main() {
+    <span class="comment">// scanf is now ready to use!</span>
+    <span class="highlight">return</span> 0;
+}</code></pre>
+        </article>
+
+        <!-- Topic 2 -->
+        <article class="topic-card">
+            <h2>2. Static vs. Dynamic Input</h2>
+            <p>Why use <code>scanf</code>? If we hardcode values (Static), our program does the exact same thing every time it runs. Dynamic input makes programs interactive.</p>
+            
+            <p><strong>Static (Hardcoded):</strong></p>
+<pre><code><span class="highlight">int</span> a = 5, b = 4; <span class="comment">// The program will only ever add 5 and 4.</span></code></pre>
+
+            <p><strong>Dynamic (Runtime via scanf):</strong></p>
+<pre><code><span class="highlight">int</span> a, b;
+printf(<span class="string">"Enter two numbers: "</span>);
+scanf(<span class="string">"%d %d"</span>, &a, &b); <span class="comment">// Waits for user to type!</span></code></pre>
+        </article>
+
+        <!-- Topic 3 -->
+        <article class="topic-card">
+            <h2>3. The Syntax & Format Specifiers</h2>
+            <p>The term <strong>"formatted"</strong> means the input data must be read in a specific format dictated by you, the programmer. You do this using a <strong>Control String</strong>.</p>
+<pre><code>scanf(<span class="string">"Control String"</span>, arg1, arg2);</code></pre>
+            
+            <p>Instructor's Cheat Sheet for Format Specifiers:</p>
+            <div class="spec-grid">
+                <div class="spec-box"><span>%d</span>Integer<br>(e.g., 5, -10)</div>
+                <div class="spec-box"><span>%f</span>Float<br>(e.g., 12.53)</div>
+                <div class="spec-box"><span>%c</span>Character<br>(e.g., 'C')</div>
+                <div class="spec-box"><span>%lf</span>Double<br>(Large decimals)</div>
+            </div>
+        </article>
+
+        <!-- Topic 4 : THE BIG VISUALISATION -->
+        <article class="topic-card">
+            <h2>4. The Memory Map & The Address-of (&) Operator</h2>
+            <p>This is the most crucial concept. When the compiler sees <code>%d</code>, it knows it needs an integer. But where does it put it? That is why we use <strong>& (The Address-of Operator)</strong>.</p>
+            <p><code>&a</code> does NOT mean "variable a". It means <strong>"the physical memory address of variable a"</strong>.</p>
+
+<pre><code><span class="highlight">int</span> a, b;
+scanf(<span class="string">"%d %d"</span>, <span class="highlight">&a</span>, <span class="highlight">&b</span>);</code></pre>
+
+            <!-- Visualisation Component -->
+            <div class="visualisation">
+                <h3 style="color: white; margin-bottom: 1rem;">Interactive Visualisation: How RAM works with scanf</h3>
+                <div class="input-flow" id="mem-flow-text">Waiting for user input...</div>
+                
+                <div class="ram-container">
+                    <div class="ram-label">Main Memory (RAM)</div>
+                    
+                    <div class="memory-block">
+                        <div class="address">Addr: 1000</div>
+                        <div class="box" id="mem-a">?</div>
+                        <div class="var-name">a</div>
+                    </div>
+
+                    <div class="memory-block">
+                        <div class="address">Addr: 2000</div>
+                        <div class="box" id="mem-b">?</div>
+                        <div class="var-name">b</div>
+                    </div>
+
+                    <div class="memory-block">
+                        <div class="address">Addr: 1024</div>
+                        <div class="box" id="mem-sum">?</div>
+                        <div class="var-name">sum</div>
+                    </div>
+                </div>
+
+                <div class="vis-controls">
+                    <button onclick="simulateMemoryInput()">Simulate: User types "5 4"</button>
+                    <button onclick="resetMemory()" style="background: #475569; color: white; margin-left: 10px;">Reset</button>
+                </div>
+            </div>
+            <p><em>Notice how the data travels directly to address 1000 and 2000 because of the <code>&</code> symbol!</em></p>
+        </article>
+
+        <!-- Topic 5 -->
+        <article class="topic-card">
+            <h2>5. Advanced Feature: Assigning Width Limits</h2>
+            <p>You can limit how many digits <code>scanf</code> is allowed to read by putting a number between the <code>%</code> and the letter. The instructor warns this causes <strong>abnormal behavior</strong>.</p>
+
+<pre><code>scanf(<span class="string">"%4d %d"</span>, &a, &b);</code></pre>
+            
+            <div class="visualisation" style="margin-top: 1rem; padding: 1.5rem;">
+                <p style="margin-bottom: 1rem;">If user types: <strong style="color:var(--success); font-size: 1.5rem; letter-spacing: 5px;">12345</strong></p>
+                
+                <div style="display: flex; justify-content: space-around; gap: 1rem;">
+                    <div class="spec-box" style="border-color: var(--accent);">
+                        <span style="font-size: 1rem; color: #fff;">Variable 'a' gets %4d</span>
+                        <div id="width-a" style="font-size: 2rem; color: var(--accent); font-weight: bold; margin-top: 10px;">?</div>
+                    </div>
+                    <div class="spec-box" style="border-color: var(--warning);">
+                        <span style="font-size: 1rem; color: #fff;">Variable 'b' grabs leftovers</span>
+                        <div id="width-b" style="font-size: 2rem; color: var(--warning); font-weight: bold; margin-top: 10px;">?</div>
+                    </div>
+                </div>
+                <div class="vis-controls">
+                    <button onclick="simulateWidth()">Simulate Width Split</button>
+                </div>
+            </div>
+            <p>The leftover <code>5</code> is still sitting in the input buffer. The second <code>%d</code> immediately grabs that <code>5</code> and puts it into <code>b</code> without waiting for the user!</p>
+        </article>
+
+        <!-- Topic 6 -->
+        <article class="topic-card">
+            <h2>6. The Secret Return Value</h2>
+            <p>An interesting fact generally unknown to many students: <code>scanf</code> is a function, and like a math function, it evaluates to a specific value.</p>
+            <p><strong>Fact:</strong> <code>scanf</code> returns an integer representing the <strong>number of items it successfully read.</strong></p>
+<pre><code><span class="highlight">int</span> x;
+x = scanf(<span class="string">"%d %d"</span>, &a, &b);
+<span class="comment">// If the user successfully enters two valid numbers, </span>
+<span class="comment">// x will be assigned the value 2.</span></code></pre>
+        </article>
+
+        <!-- Golden Rules -->
+        <article class="topic-card callout">
+            <h3>⚠️ Instructor's Golden Rules</h3>
+            <p><strong>1. NO Commas Inside Quotes:</strong> When asking for multiple inputs, write <code>"%d %d"</code>. Do NOT write <code>"%d, %d"</code>. It causes the compiler to look for literal commas.</p>
+            <p><strong>2. Always use the ampersand (&):</strong> If you write <code>scanf("%d", a);</code> the program will crash. It needs the address (<code>&a</code>), not the variable value.</p>
+            <p><strong>3. Don't forget the semicolon:</strong> Always end your statements with <code>;</code> or your code won't compile!</p>
+        </article>
+
+        <div class="feed-end">
+            <p>End of Notes • Formatted Input Function in C</p>
+        </div>
+
+    </div>
+
+    <!-- JavaScript for Interactive Visualisations -->
+    <script>
+        // Memory Map Visualisation Logic
+        function simulateMemoryInput() {
+            const flowText = document.getElementById('mem-flow-text');
+            const boxA = document.getElementById('mem-a');
+            const boxB = document.getElementById('mem-b');
+
+            flowText.style.opacity = 1;
+            flowText.innerHTML = "Reading '%d'... evaluating &a... storing '5' at Addr 1000";
+            
+            // Step 1: Fill a
+            setTimeout(() => {
+                boxA.style.background = "var(--success)";
+                boxA.style.color = "#000";
+                boxA.innerText = "5";
+                
+                // Step 2: Fill b
+                setTimeout(() => {
+                    flowText.innerHTML = "Reading second '%d'... evaluating &b... storing '4' at Addr 2000";
+                    boxB.style.background = "var(--success)";
+                    boxB.style.color = "#000";
+                    boxB.innerText = "4";
+                    
+                    setTimeout(() => {
+                        flowText.innerHTML = "Success! scanf() returns 2.";
+                        flowText.style.color = "var(--accent)";
+                    }, 1500);
+
+                }, 1500);
+            }, 800);
+        }
+
+        function resetMemory() {
+            document.getElementById('mem-flow-text').style.opacity = 0;
+            const boxes = [document.getElementById('mem-a'), document.getElementById('mem-b')];
+            boxes.forEach(box => {
+                box.innerText = "?";
+                box.style.background = "rgba(56, 189, 248, 0.1)";
+                box.style.color = "var(--text-main)";
+            });
+            document.getElementById('mem-flow-text').color = "var(--success)";
+        }
+
+        // Width Specifier Visualisation Logic
+        function simulateWidth() {
+            const widthA = document.getElementById('width-a');
+            const widthB = document.getElementById('width-b');
+            
+            widthA.innerText = "";
+            widthB.innerText = "";
+            
+            setTimeout(() => {
+                widthA.innerText = "1234";
+                widthA.style.transform = "scale(1.2)";
+                setTimeout(() => widthA.style.transform = "scale(1)", 200);
+                
+                setTimeout(() => {
+                    widthB.innerText = "5";
+                    widthB.style.transform = "scale(1.2)";
+                    setTimeout(() => widthB.style.transform = "scale(1)", 200);
+                }, 800);
+            }, 400);
+        }
+    </script>
+</body>
+</html>

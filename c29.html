@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: Nested IF Statements</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --surface: #1e293b;
+            --surface-light: #334155;
+            --primary: #38bdf8;
+            --secondary: #a78bfa;
+            --success: #34d399;
+            --danger: #f87171;
+            --text-main: #f8fafc;
+            --text-muted: #cbd5e1;
+            --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --font-code: 'Courier New', Courier, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            line-height: 1.6;
+            padding: 0 1rem;
+        }
+
+        /* Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 4rem 0;
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+        }
+
+        /* Sections */
+        .section-card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .section-card:hover {
+            transform: translateY(-2px);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Code Blocks */
+        pre {
+            background: #020617;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            border-left: 4px solid var(--primary);
+            margin: 1.5rem 0;
+        }
+
+        code {
+            font-family: var(--font-code);
+            color: #e2e8f0;
+            font-size: 1.05rem;
+        }
+
+        .comment { color: #64748b; font-style: italic; }
+        .keyword { color: #c678dd; }
+        .string { color: #98c379; }
+        .function { color: #61afef; }
+
+        /* Supermarket Analogy Visualization */
+        .nested-box {
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 2px dashed;
+            margin-top: 1rem;
+        }
+        .box-1 { border-color: var(--primary); background: rgba(56, 189, 248, 0.05); }
+        .box-2 { border-color: var(--secondary); background: rgba(167, 139, 250, 0.05); }
+        .box-3 { border-color: var(--success); background: rgba(52, 211, 153, 0.05); }
+
+        /* Flowchart Visualization */
+        .flow-diagram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            font-family: var(--font-code);
+        }
+        .flow-node {
+            background: var(--surface-light);
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            border: 2px solid var(--primary);
+            text-align: center;
+            width: 80%;
+        }
+        .flow-diamond {
+            background: rgba(167, 139, 250, 0.1);
+            border-color: var(--secondary);
+            border-radius: 0;
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            padding: 2rem;
+            font-weight: bold;
+        }
+        .flow-arrow {
+            width: 2px;
+            height: 30px;
+            background: var(--text-muted);
+            position: relative;
+        }
+        .flow-arrow::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -4px;
+            border-width: 5px 5px 0;
+            border-style: solid;
+            border-color: var(--text-muted) transparent transparent transparent;
+        }
+
+        /* Test Cases */
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .test-card {
+            background: #020617;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-top: 4px solid var(--secondary);
+        }
+        .test-title { color: var(--text-main); font-weight: bold; margin-bottom: 0.5rem; }
+        .test-calc { font-family: var(--font-code); color: var(--primary); font-size: 0.9rem; margin-bottom: 0.5rem;}
+        .test-out { color: var(--success); font-family: var(--font-code); }
+
+        /* Warning Box */
+        .warning-box {
+            background: rgba(248, 113, 113, 0.1);
+            border-left: 4px solid var(--danger);
+            padding: 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1.5rem 0;
+        }
+        .warning-box h3 { color: var(--danger); margin-bottom: 0.5rem; }
+
+        /* Highlight text */
+        .hl { color: var(--primary); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- INTRO -->
+        <div class="section-card">
+            <h1>Control Statements in C:<br>Nested <code>if</code></h1>
+            <p><strong>Nesting</strong> means placing one thing completely inside another. A nested <code>if</code> statement is simply an <code>if</code> statement placed <em>inside</em> another <code>if</code> statement.</p>
+            <p>We use this when we need to check a secondary condition, but <span class="hl">only if a primary condition has already been met</span>. You can nest <code>if</code> statements as many times as you want.</p>
+        </div>
+
+        <!-- ANALOGY -->
+        <div class="section-card">
+            <h2>🛒 The Supermarket Analogy</h2>
+            <p>To understand <em>why</em> the inner condition is only checked if the outer is true, think about buying oranges. You cannot check if oranges are available unless you first go to the supermarket!</p>
+            
+            <div class="nested-box box-1">
+                <strong>Outer:</strong> <code>if (go to supermarket)</code>
+                <div class="nested-box box-2">
+                    <strong>Inner 1:</strong> <code>if (oranges are available)</code>
+                    <div class="nested-box box-3">
+                        <strong>Inner 2:</strong> <code>if (good oranges) { BUY }</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SYNTAX -->
+        <div class="section-card">
+            <h2>💻 General Syntax</h2>
+            <p>Always ensure every opening curly brace <code>{</code> has a matching closing curly brace <code>}</code>. This is a common beginner mistake!</p>
+            <pre><code><span class="keyword">if</span> (Condition 1) 
+{
+    <span class="comment">// If Cond 1 is TRUE, control enters this block.</span>
+    
+    <span class="keyword">if</span> (Condition 2) 
+    {
+        <span class="comment">// If Cond 1 AND Cond 2 are TRUE</span>
+        Inner if block statements;
+    }
+    <span class="keyword">else</span> 
+    {
+        <span class="comment">// If Cond 1 is TRUE, but Cond 2 is FALSE</span>
+        Inner else block statements;
+    }
+}
+<span class="keyword">else</span> 
+{
+    <span class="comment">// If Cond 1 is FALSE, jump straight here.</span>
+    <span class="comment">// Condition 2 is NEVER checked.</span>
+    Outer else block statements;
+}
+
+Statement X; <span class="comment">// Executes no matter what</span></code></pre>
+        </div>
+
+        <!-- FLOWCHART -->
+        <div class="section-card">
+            <h2>🗺️ Logic Flowchart</h2>
+            <p>Here is how the computer's logic flows through a nested statement:</p>
+            
+            <div class="flow-diagram">
+                <div class="flow-node flow-diamond">Condition 1</div>
+                
+                <!-- Path if True -->
+                <div class="flow-arrow"></div>
+                <div class="flow-node" style="border-color: var(--success);">If TRUE: Enter Block</div>
+                
+                <div class="flow-arrow"></div>
+                <div class="flow-node flow-diamond">Condition 2</div>
+                
+                <!-- Nested Paths -->
+                <div style="display: flex; gap: 2rem; width: 100%; justify-content: center;">
+                    <div style="display: flex; flex-direction: column; align-items: center; width: 45%;">
+                        <div class="flow-arrow"></div>
+                        <div class="flow-node" style="border-color: var(--success); width: 100%;">If TRUE: Inner IF Block</div>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: center; width: 45%;">
+                        <div class="flow-arrow"></div>
+                        <div class="flow-node" style="border-color: var(--danger); width: 100%;">If FALSE: Inner ELSE Block</div>
+                    </div>
+                </div>
+
+                <!-- Path if Cond 1 is False -->
+                <div style="width: 100%; text-align: center; margin-top: 2rem; padding-top: 1rem; border-top: 2px dashed #475569;">
+                    <p style="color: var(--danger); margin-bottom: 0.5rem;">If Condition 1 is FALSE initially:</p>
+                    <div class="flow-node" style="border-color: var(--danger); margin: 0 auto;">Skip entirely to Outer ELSE Block</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PRACTICAL PROGRAM -->
+        <div class="section-card">
+            <h2>⚙️ Practical Program: Salary Bonus</h2>
+            <p>Let's calculate an employee's bonus based on two factors: <strong>Age</strong> and <strong>Salary</strong>.</p>
+            <ul>
+                <li style="color: var(--text-muted); margin-left: 1.5rem;">Age > 50 & Salary < 60k ➔ Bonus is ₹10,000</li>
+                <li style="color: var(--text-muted); margin-left: 1.5rem;">Age > 50 & Salary ≥ 60k ➔ Bonus is ₹5,000</li>
+                <li style="color: var(--text-muted); margin-left: 1.5rem;">Age ≤ 50 (Any salary) ➔ Bonus is ₹3,000</li>
+            </ul>
+
+            <pre><code><span class="keyword">void</span> <span class="function">main</span>() 
+{
+    <span class="keyword">int</span> age, salary;
+    
+    <span class="function">printf</span>(<span class="string">"Enter age & salary: "</span>);
+    <span class="function">scanf</span>(<span class="string">"%d %d"</span>, &age, &salary);
+    
+    <span class="keyword">if</span> (age > <span class="string">50</span>) 
+    {
+        <span class="keyword">if</span> (salary < <span class="string">60000</span>) 
+        {
+            salary = salary + <span class="string">10000</span>;
+        }
+        <span class="keyword">else</span> 
+        {
+            salary = salary + <span class="string">5000</span>;
+        }
+    }
+    <span class="keyword">else</span> 
+    {
+        salary = salary + <span class="string">3000</span>;
+    }
+    
+    <span class="function">printf</span>(<span class="string">"Salary = %d\n"</span>, salary);
+    <span class="function">printf</span>(<span class="string">"End of Program"</span>);
+    <span class="function">getch</span>();
+}</code></pre>
+        </div>
+
+        <!-- DRY RUN -->
+        <div class="section-card">
+            <h2>🧠 Dry Run (Tracing the Code)</h2>
+            <p>Let's act as the computer and test our program with three different user inputs.</p>
+            
+            <div class="test-grid">
+                <div class="test-card">
+                    <div class="test-title">Test Case 1</div>
+                    <p>Input: <code>53, 45000</code></p>
+                    <div class="test-calc">1. age > 50 (TRUE)</div>
+                    <div class="test-calc">2. salary < 60k (TRUE)</div>
+                    <div class="test-calc">3. 45k + 10k</div>
+                    <div class="test-out">> Salary = 55000</div>
+                </div>
+
+                <div class="test-card">
+                    <div class="test-title">Test Case 2</div>
+                    <p>Input: <code>53, 70000</code></p>
+                    <div class="test-calc">1. age > 50 (TRUE)</div>
+                    <div class="test-calc">2. salary < 60k (FALSE)</div>
+                    <div class="test-calc">3. 70k + 5k (Inner Else)</div>
+                    <div class="test-out">> Salary = 75000</div>
+                </div>
+
+                <div class="test-card">
+                    <div class="test-title">Test Case 3</div>
+                    <p>Input: <code>45, 70000</code></p>
+                    <div class="test-calc">1. age > 50 (FALSE)</div>
+                    <div class="test-calc">2. Skip outer IF</div>
+                    <div class="test-calc">3. 70k + 3k (Outer Else)</div>
+                    <div class="test-out">> Salary = 73000</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- OPTIMIZATION -->
+        <div class="section-card">
+            <h2>⚡ Pro-Tip: Logical AND (&&)</h2>
+            <p>Sometimes you don't need a nested <code>if</code>. If you just want an action to happen when <em>both</em> conditions are true, you can combine them using the Logical AND operator (<code>&&</code>).</p>
+            <pre><code><span class="comment">// Instead of nesting:</span>
+<span class="keyword">if</span> (age > <span class="string">50</span> && salary < <span class="string">60000</span>)
+{
+    salary = salary + <span class="string">10000</span>;
+}</code></pre>
+            <p><em>Note:</em> This is great for shortening code, but if you need to perform different actions for different combinations of True/False (like giving a 5k bonus vs a 10k bonus), nested <code>if-else</code> blocks are still required.</p>
+        </div>
+
+        <!-- WARNING -->
+        <div class="section-card">
+            <div class="warning-box">
+                <h3>⚠️ Common Beginner Mistake</h3>
+                <p>Do NOT place a semicolon immediately after the <code>if()</code> condition.</p>
+                <pre style="background: rgba(0,0,0,0.3); margin: 1rem 0 0 0;"><code style="color: var(--text-muted);"><span class="keyword">if</span> (age > <span class="string">50</span>)<span style="color: var(--danger); font-weight: bold; font-size: 1.5rem;">;</span> <span class="comment"><-- FATAL ERROR</span>
+{
+    <span class="comment">// some code</span>
+}
+<span class="keyword">else</span>
+{
+    <span class="comment">// some code</span>
+}</code></pre>
+                <p style="margin-top: 1rem; color: #fca5a5;"><strong>Why it fails:</strong> The semicolon terminates the statement. The computer thinks the <code>if</code> statement is finished right there. When it reaches the <code>else</code>, it crashes with an <em>"Else without a previous if"</em> error.</p>
+            </div>
+        </div>
+
+        <!-- ASSIGNMENT -->
+        <div class="section-card" style="border-left: 4px solid var(--success);">
+            <h2 style="color: var(--success);">📝 Student Assignment</h2>
+            <p>Write a C program that takes <strong>3 numbers</strong> as input and finds the <strong>maximum</strong> among them.</p>
+            <p><strong>The Constraint:</strong> You <em>must</em> solve this using nested <code>if</code> statements. You are <em>not</em> allowed to use logical operators like <code>&&</code>.</p>
+            <p><em>Tip: Try drawing a flowchart or doing a dry run on paper before typing it into your IDE!</em></p>
+        </div>
+
+    </div>
+
+</body>
+</html>

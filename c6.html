@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Execution Process of a C Program - Study Feed</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --primary-light: #dbeafe;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --code-bg: #1e293b;
+            --code-text: #e2e8f0;
+            --accent: #10b981;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Feed Layout Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        /* Header Styling */
+        header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            border-radius: 0 0 30px 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Card Styling (The Feed Items) */
+        .feed-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            opacity: 0; /* For scroll animation */
+            transform: translateY(30px); /* For scroll animation */
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .feed-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--bg-color);
+        }
+
+        .step-badge {
+            background-color: var(--primary);
+            color: white;
+            font-weight: bold;
+            height: 40px;
+            width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: 15px;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .feed-card h2 {
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .content-grid.has-visual {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Typography & Content */
+        h3 {
+            color: var(--text-main);
+            margin: 15px 0 10px;
+            font-size: 1.3rem;
+        }
+
+        ul {
+            padding-left: 20px;
+            margin-bottom: 15px;
+            color: var(--text-muted);
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .highlight {
+            background-color: #fef08a;
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: #854d0e;
+            font-weight: bold;
+        }
+
+        .file-ext {
+            font-family: monospace;
+            background-color: var(--primary-light);
+            color: var(--primary);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 15px 0;
+        }
+
+        /* Visualizations (CSS Flowcharts) */
+        .visual-container {
+            background-color: var(--bg-color);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .flow-node {
+            background-color: white;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            padding: 12px 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 250px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .flow-node.file {
+            border-color: var(--accent);
+            background-color: #ecfdf5;
+            border-style: dashed;
+        }
+
+        .flow-node.error {
+            border-color: var(--danger);
+            background-color: #fef2f2;
+        }
+
+        .flow-arrow {
+            color: var(--primary);
+            font-size: 24px;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .flow-arrow-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: var(--bg-color);
+            padding: 0 5px;
+            margin-top: -10px;
+        }
+
+        /* Custom linker layout */
+        .linker-flex {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .linker-flex .flow-node {
+            font-size: 0.9rem;
+            padding: 10px;
+        }
+
+        /* Cheat Sheet Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>C Program Execution Process</h1>
+        <p>Instructor: Jayanti Khatri Lamba | Model: Translation, Linking, & Loading</p>
+    </header>
+
+    <main class="feed-container">
+
+        <!-- Feed Item 1 -->
+        <article class="feed-card">
+            <div class="card-header">
+                <div class="step-badge">1</div>
+                <h2>Writing the Code</h2>
+            </div>
+            <div class="content-grid has-visual">
+                <div class="text-content">
+                    <h3>The Source File</h3>
+                    <p>The journey begins when you write your program using an IDE (like VS Code) or a text editor (like Notepad).</p>
+                    <ul>
+                        <li>This code is written in a <strong>High-Level Language</strong> (English-like).</li>
+                        <li>You must save the file with the <span class="file-ext">.c</span> extension.</li>
+                        <li>This original file is known as your <strong>Source Code</strong>.</li>
+                    </ul>
+                </div>
+                <div class="visual-container">
+                    <div class="flow-node file">Source Code<br><small>first.c</small></div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Feed Item 2 -->
+        <article class="feed-card">
+            <div class="card-header">
+                <div class="step-badge">2</div>
+                <h2>Preprocessing</h2>
+            </div>
+            <div class="content-grid has-visual">
+                <div class="text-content">
+                    <h3>Handling the <span class="highlight">#</span> directives</h3>
+                    <p>The compiler doesn't understand lines that start with a hashtag (<code>#</code>). The <strong>Preprocessor</strong> runs first to handle these.</p>
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;conio.h&gt;
+#define max 100</code></pre>
+                    <ul>
+                        <li><strong>Expansion:</strong> It takes the declarations from header files (like <code>stdio.h</code>) and replaces the <code>#include</code> line with the actual code.</li>
+                        <li><strong>Macro Replacement:</strong> It finds every instance of words like <code>max</code> and replaces them with the value (<code>100</code>).</li>
+                        <li><strong>Cleanup:</strong> It removes all <code>#</code> lines and strips away all comments.</li>
+                    </ul>
+                </div>
+                <div class="visual-container">
+                    <div class="flow-node file">first.c</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-node">Preprocessor</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-node file">Expanded Code<br><small>first.i</small></div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Feed Item 3 -->
+        <article class="feed-card">
+            <div class="card-header">
+                <div class="step-badge">3</div>
+                <h2>Compilation</h2>
+            </div>
+            <div class="content-grid has-visual">
+                <div class="text-content">
+                    <h3>Checking Syntax & Translating</h3>
+                    <p>The Compiler takes the expanded <code>.i</code> file and checks it for grammar and syntax rules.</p>
+                    <ul>
+                        <li><strong>Syntax Error Loop:</strong> If there is an error (e.g., missing semicolon), execution stops here. You must go back to Step 1 and edit your source code.</li>
+                        <li><strong>Translation:</strong> If no errors are found, the compiler translates the high-level C code into <strong>Assembly Language</strong>.</li>
+                        <li>Assembly uses low-level mnemonics (like ADD, MOV) but is still text-based.</li>
+                    </ul>
+                </div>
+                <div class="visual-container">
+                    <div class="flow-node file">first.i</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-node">Compiler</div>
+                    <div class="flow-arrow">↓<span class="flow-arrow-label">Syntax Error? (If yes, stop)</span></div>
+                    <div class="flow-node file">Assembly File<br><small>first.asm</small></div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Feed Item 4 -->
+        <article class="feed-card">
+            <div class="card-header">
+                <div class="step-badge">4</div>
+                <h2>Assembly</h2>
+            </div>
+            <div class="content-grid has-visual">
+                <div class="text-content">
+                    <h3>Converting to Machine Code</h3>
+                    <p>Computers only understand binary (0s and 1s). The <strong>Assembler</strong> bridges the final gap between text and machine language.</p>
+                    <ul>
+                        <li>It translates the <code>.asm</code> file into an <strong>Object File</strong>.</li>
+                        <li>This file contains binary machine code.</li>
+                        <li><span class="highlight">Crucial Note:</span> You cannot execute this file yet! It is incomplete because it doesn't know the definitions of built-in functions.</li>
+                    </ul>
+                </div>
+                <div class="visual-container">
+                    <div class="flow-node file">first.asm</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-node">Assembler</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-node file">Object File<br><small>first.obj (or .o)</small></div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Feed Item 5 -->
+        <article class="feed-card">
+            <div class="card-header">
+                <div class="step-badge">5</div>
+                <h2>Linking</h2>
+            </div>
+            <div class="content-grid has-visual">
+                <div class="text-content">
+                    <h3>The Missing Piece: Libraries</h3>
+                    <p>Your object file knows you called functions like <code>printf()</code> or <code>scanf()</code>, but it doesn't have the code defining <em>how</em> they work. The definitions live in C's System Libraries.</p>
+                    <ul>
+                        <li>The <strong>Linker</strong> combines your <code>first.obj</code> file with the necessary System Libraries.</li>
+                        <li>If you wrote a large program across multiple files, the Linker merges all those object files together.</li>
+                        <li><strong>Result:</strong> A fully complete, ready-to-run <strong>Executable File</strong>.</li>
+                    </ul>
+                </div>
+                <div class="visual-container">
+                    <div class="linker-flex">
+                        <div class="flow-node file">first.obj</div>
+                        <div class="flow-node file">System Libraries</div>
+                    </div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-node">Linker</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-node file" style="background-color: #dbeafe; border-color: #3b82f6;">Executable<br><small>first.exe</small></div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Feed Item 6 -->
+        <article class="feed-card">
+            <div class="card-header">
+                <div class="step-badge">6</div>
+                <h2>Loading & Execution</h2>
+            </div>
+            <div class="content-grid has-visual">
+                <div class="text-content">
+                    <h3>From Hard Drive to CPU</h3>
+                    <p>Your <code>.exe</code> file is saved on your hard disk. However, the CPU can only execute programs that are in Main Memory (RAM).</p>
+                    <ul>
+                        <li><strong>Loader:</strong> A program that takes the <code>.exe</code> from your hard disk and loads it into the RAM.</li>
+                        <li><strong>Execution:</strong> The CPU begins processing the instructions starting exactly at the <code>main()</code> function.</li>
+                        <li>During execution, you might provide <strong>Input Data</strong>.</li>
+                        <li>If a <em>Runtime/Logic Error</em> occurs here, the program crashes, and you must debug your source code. If all is well, you get your <strong>Output</strong>!</li>
+                    </ul>
+                </div>
+                <div class="visual-container">
+                    <div class="flow-node file">first.exe (Hard Disk)</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-node">Loader</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-node" style="background-color: #f3f4f6;">RAM (Main Memory)</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-node" style="border-color: #10b981; background-color: #ecfdf5;">CPU executes main() → OUTPUT</div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Feed Item 7 (Summary) -->
+        <article class="feed-card">
+            <div class="card-header">
+                <div class="step-badge">📋</div>
+                <h2>Summary Cheat Sheet</h2>
+            </div>
+            <p>Save this quick-reference table outlining the entire file lifecycle:</p>
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Step</th>
+                            <th>Tool/Process</th>
+                            <th>Input File</th>
+                            <th>Output File</th>
+                            <th>Key Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><strong>Text Editor</strong></td>
+                            <td>-</td>
+                            <td><span class="file-ext">.c</span></td>
+                            <td>Writing Source Code</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><strong>Preprocessor</strong></td>
+                            <td><span class="file-ext">.c</span></td>
+                            <td><span class="file-ext">.i</span></td>
+                            <td>Expands macros, includes headers, removes comments</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><strong>Compiler</strong></td>
+                            <td><span class="file-ext">.i</span></td>
+                            <td><span class="file-ext">.asm</span></td>
+                            <td>Checks syntax, translates to Assembly language</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><strong>Assembler</strong></td>
+                            <td><span class="file-ext">.asm</span></td>
+                            <td><span class="file-ext">.obj</span></td>
+                            <td>Converts Assembly to Binary Machine Code</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td><strong>Linker</strong></td>
+                            <td><span class="file-ext">.obj</span></td>
+                            <td><span class="file-ext">.exe</span></td>
+                            <td>Joins object code with System Library definitions</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td><strong>Loader</strong></td>
+                            <td><span class="file-ext">.exe</span></td>
+                            <td><strong>RAM</strong></td>
+                            <td>Moves file from Hard Disk to Memory for the CPU</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p style="text-align: center; color: var(--text-muted); margin-top: 20px;">
+                <em>End of Lecture Notes.</em>
+            </p>
+        </article>
+
+    </main>
+
+    <script>
+        // JavaScript for smooth scroll-reveal animation
+        document.addEventListener("DOMContentLoaded", function() {
+            const cards = document.querySelectorAll('.feed-card');
+
+            // Options for the Intersection Observer
+            const observerOptions = {
+                root: null, // use the viewport
+                rootMargin: '0px',
+                threshold: 0.15 // Trigger when 15% of the card is visible
+            };
+
+            // Observer callback
+            const observerCallback = (entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Add the 'visible' class to trigger CSS transition
+                        entry.target.classList.add('visible');
+                        // Optional: Unobserve if you only want the animation to happen once
+                        // observer.unobserve(entry.target);
+                    }
+                });
+            };
+
+            // Create observer
+            const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+            // Observe all cards
+            cards.forEach(card => {
+                observer.observe(card);
+            });
+            
+            // Immediately reveal the first card so the user isn't staring at a blank screen
+            setTimeout(() => {
+                if(cards[0]) cards[0].classList.add('visible');
+            }, 100);
+        });
+    </script>
+</body>
+</html>

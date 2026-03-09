@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Translators in C - Study Notes</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --text-main: #333;
+            --text-muted: #555;
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --compiler-color: #e74c3c;
+            --interpreter-color: #27ae60;
+            --card-bg: #ffffff;
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 100px;
+        }
+
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Header Styles */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        /* Feed Sections */
+        .section-block {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            border-left: 5px solid var(--secondary);
+        }
+
+        .section-block h2 {
+            color: var(--primary);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .highlight {
+            background-color: #e8f4fd;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        /* Flowchart Visualizations */
+        .flowchart {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .flow-vertical {
+            flex-direction: column;
+        }
+
+        .box {
+            background: var(--card-bg);
+            border: 2px solid var(--primary);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            min-width: 150px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .box.process {
+            background: var(--primary);
+            color: white;
+        }
+
+        .box.compiler { background: var(--compiler-color); color: white; border-color: var(--compiler-color); }
+        .box.interpreter { background: var(--interpreter-color); color: white; border-color: var(--interpreter-color); }
+
+        .arrow {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-muted);
+        }
+
+        /* Comparison Grid */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .comp-card {
+            background: #fdfdfd;
+            border: 1px solid #eee;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .comp-card h3 {
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .comp-card.compiler h3 { color: var(--compiler-color); border-bottom: 2px solid var(--compiler-color); padding-bottom: 0.5rem;}
+        .comp-card.interpreter h3 { color: var(--interpreter-color); border-bottom: 2px solid var(--interpreter-color); padding-bottom: 0.5rem;}
+
+        ul {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Analogy Box */
+        .analogy-box {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 1.5rem;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+            margin: 2rem 0;
+        }
+
+        .analogy-box h3 {
+            color: #856404;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Responsive */
+        @media(max-width: 600px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+            .flowchart {
+                flex-direction: column;
+            }
+            .arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+
+    <!-- Header -->
+    <header>
+        <h1>Language Translators</h1>
+        <div class="subtitle">Programming in C • In-depth Lecture Notes</div>
+    </header>
+
+    <!-- Section 1: Introduction -->
+    <section class="section-block">
+        <h2>1. Why do we need translators?</h2>
+        <p>Computers process information in <span class="highlight">Binary Language (Machine Code)</span>, which consists entirely of 0s and 1s. However, as humans, we write programs in High-Level Languages (like C, Java) or Assembly Language, which use English-like words and syntax.</p>
+        <br>
+        <p><strong>The Solution:</strong> A middleman software is required to translate our human-readable source code into computer-readable machine code. These are called <strong>Language Translators</strong>.</p>
+    </section>
+
+    <!-- Section 2: The Assembler -->
+    <section class="section-block">
+        <h2>2. The Assembler</h2>
+        <p>An Assembler is a highly specific translator designed for <strong>Assembly Language</strong>. In Assembly, programmers write code using "mnemonics" (e.g., <code>ADD</code>, <code>SUB</code>). The computer cannot understand mnemonics natively.</p>
+        
+        <div class="flowchart">
+            <div class="box">Assembly Lang.<br><small>(Mnemonics)</small></div>
+            <div class="arrow">&rarr;</div>
+            <div class="box process">Assembler</div>
+            <div class="arrow">&rarr;</div>
+            <div class="box">Machine Code<br><small>(0s and 1s)</small></div>
+        </div>
+    </section>
+
+    <!-- Section 3: High Level Translators -->
+    <section class="section-block">
+        <h2>3. High-Level Translators: Compiler vs. Interpreter</h2>
+        <p>To convert High-Level Languages (HLL) into machine code, we use either a Compiler or an Interpreter. While they serve the same ultimate purpose, <strong>how and when</strong> they perform the translation is entirely different.</p>
+
+        <div class="comparison-grid">
+            <!-- Compiler Column -->
+            <div class="comp-card compiler">
+                <h3>Compiler</h3>
+                <p><strong>Execution Model:</strong> Takes the <em>entire program</em> at once. Translates everything into a permanent object file before execution begins.</p>
+                <br>
+                <p><strong>Object Code:</strong> Generates a separate Object Code file (e.g., an <code>.exe</code> file). You can run this file multiple times without recompiling.</p>
+                <br>
+                <p><strong>Execution Speed:</strong> <strong>Faster</strong>. Because the code is fully translated beforehand, the CPU just runs the machine code directly.</p>
+                <br>
+                <p><strong>Debugging:</strong> <strong>Difficult</strong>. It scans the whole code and gives you a massive list of errors at the very end. You must fix all errors before an executable is created.</p>
+                <br>
+                <p><strong>Memory:</strong> Requires <strong>more memory</strong> because it has to store the newly created Object Code file on your disk.</p>
+                <br>
+                <p><strong>Source Code:</strong> Once compiled, you do not need the original source code to run the program. (e.g., You can share the .exe file).</p>
+            </div>
+
+            <!-- Interpreter Column -->
+            <div class="comp-card interpreter">
+                <h3>Interpreter</h3>
+                <p><strong>Execution Model:</strong> Takes the program <em>line-by-line</em>. Translates one line and executes it immediately before moving to the next.</p>
+                <br>
+                <p><strong>Object Code:</strong> Does <strong>not</strong> generate an intermediate Object Code file. Translation and execution happen directly.</p>
+                <br>
+                <p><strong>Execution Speed:</strong> <strong>Slower</strong>. The CPU must pause execution to translate every single line, every time the program is run.</p>
+                <br>
+                <p><strong>Debugging:</strong> <strong>Easy</strong>. If it finds an error on line 3, it stops execution immediately and points it out. You fix it, and it moves on.</p>
+                <br>
+                <p><strong>Memory:</strong> Requires <strong>less memory</strong> as it translates on-the-fly without saving an intermediate file to the hard drive.</p>
+                <br>
+                <p><strong>Source Code:</strong> You <strong>always need</strong> the original source code in memory every time you want to run the program.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4: Real-Life Analogy -->
+    <section class="section-block">
+        <h2>4. The Real-Life Analogy (Visualized)</h2>
+        <p>To truly understand the difference, consider the instructor's analogy of translating Russian to English:</p>
+
+        <div class="analogy-box">
+            <h3>🗣️ The Interpreter (Line-by-Line)</h3>
+            <p>Imagine the Russian Prime Minister visiting your country. He speaks Russian, you speak English. A human translator stands between you. The PM speaks one sentence, stops, and the translator translates it. Then the next sentence. This is slow, continuous work.</p>
+        </div>
+
+        <div class="analogy-box" style="background: #d4edda; border-color: #28a745;">
+            <h3>🎬 The Compiler (Pre-translated)</h3>
+            <p>Imagine watching a Russian movie with English subtitles. The entire movie was translated <em>before</em> you started watching. You don't have to pause the movie for someone to translate it for you. You just hit play and it runs fast and smooth.</p>
+        </div>
+    </section>
+
+    <!-- Section 5: The Final Flowcharts -->
+    <section class="section-block">
+        <h2>5. Summary Process Diagrams</h2>
+        <p>This is exactly how the data flows through both systems, as drawn on the whiteboard at the end of the lecture.</p>
+
+        <h3 style="color: var(--compiler-color); margin-top: 2rem;">The Compiler Process Flow</h3>
+        <p><small><em>Languages: C, C++, C#</em></small></p>
+        <div class="flowchart flow-vertical">
+            <div class="box">Source Code<br><small>(first.c)</small></div>
+            <div class="arrow">&darr;</div>
+            <div class="box compiler">Compiler</div>
+            <div class="arrow">&darr;</div>
+            <div class="box">Object Code / Machine Code<br><small>(.exe file)</small></div>
+            <div class="arrow">&darr; <span style="font-size: 1rem; color: #e74c3c;">&larr; (Input Data enters here)</span></div>
+            <div class="box" style="border-style: dashed;">Output</div>
+        </div>
+
+        <hr style="border: 1px solid #eee; margin: 3rem 0;">
+
+        <h3 style="color: var(--interpreter-color);">The Interpreter Process Flow</h3>
+        <p><small><em>Languages: Python, Ruby, Perl</em></small></p>
+        <div class="flowchart flow-vertical">
+            <div style="display: flex; gap: 2rem; align-items: center;">
+                <div class="box">Source Code</div>
+                <div style="font-weight: bold;">+</div>
+                <div class="box">Input Data</div>
+            </div>
+            <div class="arrow">&darr;</div>
+            <div class="box interpreter">Interpreter</div>
+            <div class="arrow">&darr;</div>
+            <div class="box" style="border-style: dashed;">Output</div>
+        </div>
+    </section>
+
+</div>
+
+</body>
+</html>

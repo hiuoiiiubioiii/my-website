@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: Function Declarations</title>
+    <style>
+        /* CSS Variables for Theming */
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #cbd5e1;
+            --accent-blue: #38bdf8;
+            --accent-green: #34d399;
+            --accent-pink: #f472b6;
+            --accent-yellow: #facc15;
+            --error-red: #ef4444;
+            --code-bg: #000000;
+        }
+
+        /* Reset & Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px 100px 20px;
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            max-width: 600px;
+        }
+
+        .scroll-indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            opacity: 0.7;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-15px); }
+            60% { transform: translateY(-7px); }
+        }
+
+        /* Topic Cards */
+        .topic-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s ease-out;
+            border-left: 4px solid var(--accent-blue);
+        }
+
+        .topic-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .topic-card h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .topic-card p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: var(--text-muted);
+        }
+
+        /* Visualizations & Code Blocks */
+        .code-container {
+            background-color: var(--code-bg);
+            border-radius: 8px;
+            padding: 20px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            border: 1px solid #333;
+        }
+
+        .syntax-hl-keyword { color: #c678dd; }
+        .syntax-hl-type { color: #e5c07b; }
+        .syntax-hl-func { color: #61afef; }
+        .syntax-hl-string { color: #98c379; }
+        .syntax-hl-comment { color: #5c6370; font-style: italic; }
+
+        /* Anatomy Visualizer */
+        .anatomy-legend {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .bg-yellow { background-color: rgba(250, 204, 21, 0.2); border-left: 3px solid var(--accent-yellow); }
+        .bg-blue { background-color: rgba(56, 189, 248, 0.2); border-left: 3px solid var(--accent-blue); }
+        .bg-green { background-color: rgba(52, 211, 153, 0.2); border-left: 3px solid var(--accent-green); }
+
+        .anatomy-block { margin-bottom: 10px; padding: 5px; border-radius: 4px; }
+
+        /* Warning/Terminal Boxes */
+        .terminal {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            font-family: monospace;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .terminal-header {
+            background-color: #333;
+            padding: 10px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .dot.red { background-color: #ff5f56; }
+        .dot.yellow { background-color: #ffbd2e; }
+        .dot.green { background-color: #27c93f; }
+
+        .terminal-body {
+            padding: 20px;
+            color: #d4d4d4;
+        }
+
+        .term-warn { color: var(--accent-yellow); }
+        .term-error { color: var(--error-red); }
+
+        /* Highlight Syntax Formula */
+        .formula-box {
+            background: #282c34;
+            padding: 25px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin: 20px 0;
+            letter-spacing: 1px;
+        }
+        
+        .f-type { color: var(--accent-pink); }
+        .f-name { color: var(--accent-blue); }
+        .f-args { color: var(--accent-yellow); }
+
+        /* Quiz Box */
+        .quiz-box {
+            background: linear-gradient(135deg, rgba(244,114,182,0.1), rgba(56,189,248,0.1));
+            border: 2px dashed var(--accent-pink);
+            border-radius: 12px;
+            padding: 30px;
+            margin-top: 20px;
+        }
+        .quiz-box h3 { color: var(--accent-pink); margin-bottom: 15px; }
+
+        @media(max-width: 600px) {
+            .hero h1 { font-size: 2.5rem; }
+            .topic-card { padding: 25px; }
+            .formula-box { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Intro Hero -->
+        <section class="hero">
+            <h1>Functions in C:<br>The Complete Guide to Declarations</h1>
+            <p>A deep, continuous vertical dive into the anatomy of C functions. Scroll down to master function prototypes, syntax rules, VS Code terminal errors, and scope, exactly as taught by the instructor.</p>
+            <div class="scroll-indicator">
+                <span>Scroll to begin learning</span>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+        </section>
+
+        <!-- Topic 1: The Core Analogy -->
+        <section class="topic-card">
+            <h2>🧠 1. The Core Concept: Why Declare?</h2>
+            <p>Think about how variables work. Before you can use a variable, the compiler needs to know its name and data type.</p>
+            
+            <div class="code-container">
+                <span class="syntax-hl-comment">// If you do this without declaring 'sum' first...</span><br>
+                sum = a + b; <span class="syntax-hl-comment">// ERROR! Compiler asks: "What is sum?"</span><br><br>
+                
+                <span class="syntax-hl-comment">// The fix is declaring variables:</span><br>
+                <span class="syntax-hl-type">int</span> a, b, sum;<br>
+                sum = a + b; <span class="syntax-hl-comment">// Works perfectly.</span>
+            </div>
+
+            <p><strong>The exact same rule applies to functions.</strong> You must introduce (declare) a function to the compiler before you actually use (call) it in your code.</p>
+        </section>
+
+        <!-- Topic 2: The 3 Parts of a Function -->
+        <section class="topic-card">
+            <h2>🧩 2. Anatomy of a C Function</h2>
+            <p>There are typically 3 parts to using a function in C. Look at the color-coded visualizer below to understand where each part lives in your script.</p>
+
+            <div class="anatomy-legend">
+                <div class="legend-item bg-yellow">1. Declaration (Prototype)</div>
+                <div class="legend-item bg-blue">2. Calling (Trigger)</div>
+                <div class="legend-item bg-green">3. Definition (Logic)</div>
+            </div>
+
+            <div class="code-container">
+                <span class="syntax-hl-comment">#include &lt;stdio.h&gt;</span><br><br>
+                
+                <div class="anatomy-block bg-yellow">
+                    <span class="syntax-hl-comment">// 1. Tells compiler: "A function named 'sum' exists"</span><br>
+                    <span class="syntax-hl-type">void</span> <span class="syntax-hl-func">sum</span>(<span class="syntax-hl-type">void</span>);
+                </div><br>
+
+                <span class="syntax-hl-type">void</span> <span class="syntax-hl-func">main</span>() {<br>
+                <div class="anatomy-block bg-blue">
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-hl-comment">// 2. Triggers the function execution</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-hl-func">sum</span>(); 
+                </div>
+                }<br><br>
+
+                <div class="anatomy-block bg-green">
+                    <span class="syntax-hl-comment">// 3. The actual step-by-step logic</span><br>
+                    <span class="syntax-hl-type">void</span> <span class="syntax-hl-func">sum</span>(<span class="syntax-hl-type">void</span>) {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-hl-type">int</span> a, b, s = <span class="syntax-hl-keyword">0</span>;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-hl-func">printf</span>(<span class="syntax-hl-string">"Enter two numbers: "</span>);<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-hl-func">scanf</span>(<span class="syntax-hl-string">"%d %d"</span>, &a, &b);<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;s = a + b;<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-hl-func">printf</span>(<span class="syntax-hl-string">"Sum: %d"</span>, s);<br>
+                    }
+                </div>
+            </div>
+        </section>
+
+        <!-- Topic 3: Syntax Breakdown -->
+        <section class="topic-card">
+            <h2>📝 3. Declaration Syntax Rules</h2>
+            <p>A function declaration is a single line that acts as a blueprint. It tells the compiler 3 things:</p>
+            
+            <div class="formula-box">
+                <span class="f-type">return_type</span> 
+                <span class="f-name">function_name</span> (
+                <span class="f-args">type_of_arguments</span> );
+            </div>
+
+            <ul style="margin-left: 20px; color: var(--text-muted); list-style-type: square;">
+                <li style="margin-bottom: 10px;"><strong>Semicolon is mandatory:</strong> Declarations must end with `;`.</li>
+                <li style="margin-bottom: 10px;"><strong>Variable names are optional:</strong> Writing <code>void sum(int a, int b);</code> is valid, but <code>void sum(int, int);</code> is preferred. The compiler only cares about the <em>data types</em>.</li>
+                <li><strong>Strict Matching:</strong> The return type and arguments in the declaration must exactly match the actual Definition.</li>
+            </ul>
+        </section>
+
+        <!-- Topic 4: The (void) Trap -->
+        <section class="topic-card">
+            <h2>⚠️ 4. The Empty Brackets Trap</h2>
+            <p>If your function takes zero inputs, you might think leaving the brackets empty <code>()</code> is correct. <strong>It is not.</strong></p>
+            
+            <div class="terminal" style="border: 1px solid var(--accent-yellow);">
+                <div class="terminal-body" style="background: rgba(250, 204, 21, 0.1);">
+                    <p><strong style="color: var(--accent-yellow);">THE DANGER:</strong> In older C standards, an empty bracket <code>()</code> in a declaration means <em>"this function can take ANY number of arguments."</em></p><br>
+                    <p>If you declare <code>void sum();</code>, and accidentally call <code>sum(5, 7);</code> later, the compiler won't stop you. This leads to hidden logic errors.</p>
+                </div>
+            </div>
+
+            <p><strong>The Solution:</strong> Always write <code>(void)</code> in the declaration. Example: <code>void sum(void);</code>. This strictly tells the compiler: <em>"This function takes absolutely ZERO arguments."</em> If you try to pass arguments now, it throws a safe, helpful error.</p>
+        </section>
+
+        <!-- Topic 5: VS Code Scenarios -->
+        <section class="topic-card">
+            <h2>💻 5. Practical VS Code Scenarios</h2>
+            <p>What happens if you break the rules? Let's look at the terminal errors you will encounter in VS Code.</p>
+
+            <p style="margin-top: 20px;"><strong>Scenario A: You forget to declare entirely.</strong></p>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+                </div>
+                <div class="terminal-body">
+                    <span class="term-warn">warning: implicit declaration of function 'sum' [-Wimplicit-function-declaration]</span><br>
+                    > sum();
+                </div>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.95rem;"><em>Why?</em> If C encounters a call without seeing a declaration, it <strong>implicitly assumes the function returns an 'int'</strong>. The program might still run, but it's risky.</p>
+
+            <p style="margin-top: 30px;"><strong>Scenario B: You forget to declare, AND the function returns a float.</strong></p>
+            <div class="terminal">
+                <div class="terminal-header">
+                    <div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div>
+                </div>
+                <div class="terminal-body">
+                    <span class="term-warn">warning: implicit declaration of function 'sum'...</span><br>
+                    <span class="term-error">error: conflicting types for 'sum'</span><br>
+                    > float sum(void) { ... }
+                </div>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.95rem;"><em>Why?</em> Because you didn't declare it, the compiler assumed it returned an <code>int</code>. When it finally reads your definition and sees it returns a <code>float</code>, the two types conflict and crash the program. <strong>Takeaway: If returning anything other than int, you MUST declare.</strong></p>
+        </section>
+
+        <!-- Topic 6: Scope -->
+        <section class="topic-card">
+            <h2>🌍 6. Scope: Global vs. Local Declaration</h2>
+            <p>Where you write your declaration matters.</p>
+
+            <div class="code-container">
+                <span class="syntax-hl-type">void</span> <span class="syntax-hl-func">main</span>() {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-hl-comment">// LOCAL DECLARATION</span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-hl-type">char</span> <span class="syntax-hl-func">fun</span>(<span class="syntax-hl-type">void</span>); <br><br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-hl-type">char</span> ch = <span class="syntax-hl-func">fun</span>();<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-hl-func">printf</span>(<span class="syntax-hl-string">"%c"</span>, ch);<br>
+                }
+            </div>
+
+            <p><strong>Local Scope:</strong> The code above is perfectly legal. However, because <code>char fun(void);</code> is declared <em>inside</em> <code>main()</code>, <strong>only</strong> the main function is allowed to use it.</p>
+            <p style="margin-top:10px;"><strong>Best Practice:</strong> Declare functions <strong>Globally</strong> (at the top of the file, above `main`). This allows any function in your entire script to call it.</p>
+        </section>
+
+        <!-- Topic 7: Homework Quiz -->
+        <section class="topic-card">
+            <h2>🎯 7. Instructor's Homework Challenge</h2>
+            <p>At the end of the video, the instructor edits the <code>fun()</code> definition to look like this:</p>
+            
+            <div class="code-container">
+                <span class="syntax-hl-type">char</span> <span class="syntax-hl-func">fun</span>(<span class="syntax-hl-type">void</span>) {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-hl-type">char</span> c;<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-hl-func">printf</span>(<span class="syntax-hl-string">"Enter a character: "</span>);<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-hl-func">scanf</span>(<span class="syntax-hl-string">"%c"</span>, &c);<br>
+                <br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-hl-comment">// Notice the single quotes here!</span><br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="syntax-hl-keyword">return</span> <span class="syntax-hl-string">'c'</span>; <br>
+                }
+            </div>
+
+            <div class="quiz-box">
+                <h3>Question:</h3>
+                <p>If the user runs this program and types the letter <strong>'H'</strong> on their keyboard when prompted, what exactly will print to the screen?</p>
+                
+                <button onclick="revealAnswer()" style="margin-top: 20px; padding: 10px 20px; background: var(--accent-pink); color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; font-weight: bold;">Reveal Answer</button>
+                
+                <div id="answer" style="display: none; margin-top: 20px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px;">
+                    <p><strong>Answer:</strong> It will print the letter <strong>c</strong>.</p>
+                    <p style="margin-top: 10px; font-size: 0.95rem; color: var(--text-muted);"><em>Explanation:</em> Because the return statement is returning <code>'c'</code> (a literal character string enclosed in single quotes) instead of <code>c</code> (the variable without quotes), the function completely ignores the user's input of 'H' and hardcodes the return value to the letter 'c'.</p>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // Intersection Observer for scroll animations (fade in and float up)
+        const cards = document.querySelectorAll('.topic-card');
+        
+        const observerOptions = {
+            threshold: 0.15 // Trigger when 15% of the card is visible
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        cards.forEach(card => {
+            observer.observe(card);
+        });
+
+        // Simple function to reveal homework answer
+        function revealAnswer() {
+            const answerDiv = document.getElementById('answer');
+            if (answerDiv.style.display === 'none') {
+                answerDiv.style.display = 'block';
+                // Trigger a small scroll to ensure the answer is in view
+                answerDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } else {
+                answerDiv.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

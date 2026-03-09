@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Increment & Decrement Operators in C</title>
+    <style>
+        /* Modern Reset and Base Styles */
+        :root {
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-pink: #ec4899;
+            --code-bg: #1e1e1e;
+            --memory-border: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        /* Header Styling */
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Content Cards (The Feed) */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e2e8f0;
+            opacity: 0; /* For scroll animation */
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--accent-blue);
+            margin-bottom: 15px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            margin: 20px 0 10px 0;
+            color: var(--text-main);
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .highlight {
+            background-color: #fef3c7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            margin: 15px 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #f1f5f9;
+            color: var(--accent-pink);
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        /* Visualizations: Memory Boxes */
+        .viz-container {
+            background-color: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 30px 20px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .viz-step {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            width: 100%;
+        }
+
+        .viz-label {
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            color: var(--accent-purple);
+            margin-bottom: -10px;
+        }
+
+        .memory-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .var-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text-main);
+            font-size: 1.2rem;
+        }
+
+        .var-box {
+            width: 70px;
+            height: 70px;
+            border: 3px solid var(--text-main);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            background-color: white;
+            box-shadow: 4px 4px 0px var(--memory-border);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .var-box.updated {
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+            box-shadow: 4px 4px 0px #bfdbfe;
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        .var-box.empty {
+            color: transparent;
+        }
+
+        .var-address {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+            font-family: monospace;
+        }
+
+        .arrow {
+            font-size: 2rem;
+            color: var(--text-muted);
+            margin: 0 10px;
+        }
+
+        .viz-note {
+            background: #e0e7ff;
+            color: #3730a3;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        /* Cheat Sheet Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid var(--memory-border);
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f1f5f9;
+            color: var(--text-main);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .viz-step {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header -->
+        <header class="card visible">
+            <h1>Increment & Decrement Operators in C</h1>
+            <p class="subtitle">Instructor: Jayanti Khatri Lamba | Comprehensive Visual Notes</p>
+        </header>
+
+        <!-- Section 1: The Basics -->
+        <section class="card">
+            <h2>1. Core Concepts</h2>
+            <p>Increment (<code>++</code>) and Decrement (<code>--</code>) are <strong>unary operators</strong>. This means they only require <em>one</em> operand (like <code>x</code>) to function.</p>
+            <ul>
+                <li><strong>Increment (<code>++</code>):</strong> Increases the value of the operand by 1. Equivalent to <code>x = x + 1</code>.</li>
+                <li><strong>Decrement (<code>--</code>):</strong> Decreases the value of the operand by 1. Equivalent to <code>x = x - 1</code>.</li>
+            </ul>
+            <p><em>Instructor Note:</em> While usually used with integers, you <strong>can</strong> use these with float values as well (e.g., <code>10.1++</code>).</p>
+        </section>
+
+        <!-- Section 2: Prefix vs Postfix -->
+        <section class="card">
+            <h2>2. Prefix vs. Postfix Notation</h2>
+            <p>These operators can be placed in two different positions relative to the variable. The position completely changes the order of execution in the computer's memory.</p>
+            <ul>
+                <li><strong>Prefix (Pre):</strong> Operator comes <em>before</em> the operand (<code>++x</code>). Action happens <strong>first</strong>.</li>
+                <li><strong>Postfix (Post):</strong> Operator comes <em>after</em> the operand (<code>x++</code>). Action happens <strong>last</strong> (after the semicolon completes the statement).</li>
+            </ul>
+        </section>
+
+        <!-- Section 3: Prefix Increment Visualized -->
+        <section class="card">
+            <h2>3. Visualizing Prefix Increment (<code>++x</code>)</h2>
+            <p><strong>The Rule:</strong> First <strong>INCREMENT</strong> the value in memory, then <strong>USE</strong> the updated value in the expression.</p>
+            
+<pre>
+int x = 10;
+int y;
+y = ++x;  // Pre-increment
+</pre>
+
+            <div class="viz-container">
+                <div class="viz-label">Step 1: Variables Declared</div>
+                <div class="viz-step">
+                    <div class="memory-wrapper">
+                        <div class="var-name">x</div>
+                        <div class="var-box">10</div>
+                        <div class="var-address">1000</div>
+                    </div>
+                    <div class="memory-wrapper">
+                        <div class="var-name">y</div>
+                        <div class="var-box empty">?</div>
+                        <div class="var-address">2000</div>
+                    </div>
+                </div>
+
+                <div class="viz-label">Step 2: ++x executes FIRST (Value Updates)</div>
+                <div class="viz-step">
+                    <div class="memory-wrapper">
+                        <div class="var-name">x</div>
+                        <div class="var-box updated">11</div>
+                        <div class="var-address">1000</div>
+                    </div>
+                    <div class="memory-wrapper">
+                        <div class="var-name">y</div>
+                        <div class="var-box empty">?</div>
+                        <div class="var-address">2000</div>
+                    </div>
+                </div>
+
+                <div class="viz-label">Step 3: Assignment to y executes SECOND</div>
+                <div class="viz-step">
+                    <div class="memory-wrapper">
+                        <div class="var-name">x</div>
+                        <div class="var-box">11</div>
+                        <div class="var-address">1000</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="memory-wrapper">
+                        <div class="var-name">y</div>
+                        <div class="var-box updated">11</div>
+                        <div class="var-address">2000</div>
+                    </div>
+                </div>
+                <div class="viz-note">Final Output: x is 11, y is 11.</div>
+            </div>
+        </section>
+
+        <!-- Section 4: Postfix Increment Visualized -->
+        <section class="card">
+            <h2>4. Visualizing Postfix Increment (<code>x++</code>)</h2>
+            <p><strong>The Rule:</strong> First <strong>USE</strong> the original value in the expression, then <strong>INCREMENT</strong> the value in memory <em>after</em> the statement (after the semicolon).</p>
+
+<pre>
+int x = 10;
+int y;
+y = x++;  // Post-increment
+</pre>
+
+            <div class="viz-container">
+                <div class="viz-label">Step 1: Assignment to y executes FIRST (Using original x)</div>
+                <div class="viz-step">
+                    <div class="memory-wrapper">
+                        <div class="var-name">x</div>
+                        <div class="var-box">10</div>
+                        <div class="var-address">1000</div>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="memory-wrapper">
+                        <div class="var-name">y</div>
+                        <div class="var-box updated">10</div>
+                        <div class="var-address">2000</div>
+                    </div>
+                </div>
+
+                <div class="viz-label">Step 2: Statement ends (;). Now x++ executes.</div>
+                <div class="viz-step">
+                    <div class="memory-wrapper">
+                        <div class="var-name">x</div>
+                        <div class="var-box updated">11</div>
+                        <div class="var-address">1000</div>
+                    </div>
+                    <div class="memory-wrapper">
+                        <div class="var-name">y</div>
+                        <div class="var-box">10</div>
+                        <div class="var-address">2000</div>
+                    </div>
+                </div>
+                <div class="viz-note">Final Output: x is 11, y is 10.</div>
+            </div>
+        </section>
+
+        <!-- Section 5: The Cheat Sheet Equivalencies -->
+        <section class="card">
+            <h2>5. The Expanded Code Equivalencies</h2>
+            <p>The instructor advises thinking about these single-line expressions as multiple lines of code. This is exactly what the compiler does behind the scenes.</p>
+            
+            <table>
+                <tr>
+                    <th>C Expression</th>
+                    <th>What the Compiler Actually Does</th>
+                </tr>
+                <tr>
+                    <td><code>y = ++x;</code> <br><em>(Prefix Increment)</em></td>
+                    <td><code>x = x + 1;</code> <br><code>y = x;</code></td>
+                </tr>
+                <tr>
+                    <td><code>y = x++;</code> <br><em>(Postfix Increment)</em></td>
+                    <td><code>y = x;</code> <br><code>x = x + 1;</code></td>
+                </tr>
+                <tr>
+                    <td><code>y = --x;</code> <br><em>(Prefix Decrement)</em></td>
+                    <td><code>x = x - 1;</code> <br><code>y = x;</code></td>
+                </tr>
+                <tr>
+                    <td><code>y = x--;</code> <br><em>(Postfix Decrement)</em></td>
+                    <td><code>y = x;</code> <br><code>x = x - 1;</code></td>
+                </tr>
+            </table>
+        </section>
+
+        <!-- Section 6: Full Program Trace -->
+        <section class="card">
+            <h2>6. Full Program Trace (The Master Test)</h2>
+            <p>Let's trace a full program exactly as she wrote it on the board, updating memory step-by-step.</p>
+
+<pre>
+void main() {
+    int a = 5, b, c, d;
+    
+    b = ++a;
+    c = a++;
+    d = ++a;
+    
+    printf("%d, %d, %d, %d", a, b, c, d);
+}
+</pre>
+
+            <div class="viz-container">
+                <div class="viz-label">Initial State: int a = 5, b, c, d;</div>
+                <div class="viz-step">
+                    <div class="memory-wrapper"><div class="var-name">a</div><div class="var-box">5</div></div>
+                    <div class="memory-wrapper"><div class="var-name">b</div><div class="var-box empty">?</div></div>
+                    <div class="memory-wrapper"><div class="var-name">c</div><div class="var-box empty">?</div></div>
+                    <div class="memory-wrapper"><div class="var-name">d</div><div class="var-box empty">?</div></div>
+                </div>
+
+                <div class="viz-label">Line 1: b = ++a; (Pre-increment)</div>
+                <div class="viz-note">Increase 'a' first (becomes 6), then assign to 'b' (becomes 6).</div>
+                <div class="viz-step">
+                    <div class="memory-wrapper"><div class="var-name">a</div><div class="var-box updated">6</div></div>
+                    <div class="memory-wrapper"><div class="var-name">b</div><div class="var-box updated">6</div></div>
+                    <div class="memory-wrapper"><div class="var-name">c</div><div class="var-box empty">?</div></div>
+                    <div class="memory-wrapper"><div class="var-name">d</div><div class="var-box empty">?</div></div>
+                </div>
+
+                <div class="viz-label">Line 2: c = a++; (Post-increment)</div>
+                <div class="viz-note">Assign current 'a' to 'c' first (c becomes 6), THEN increase 'a' (a becomes 7).</div>
+                <div class="viz-step">
+                    <div class="memory-wrapper"><div class="var-name">a</div><div class="var-box updated">7</div></div>
+                    <div class="memory-wrapper"><div class="var-name">b</div><div class="var-box">6</div></div>
+                    <div class="memory-wrapper"><div class="var-name">c</div><div class="var-box updated">6</div></div>
+                    <div class="memory-wrapper"><div class="var-name">d</div><div class="var-box empty">?</div></div>
+                </div>
+
+                <div class="viz-label">Line 3: d = ++a; (Pre-increment)</div>
+                <div class="viz-note">Increase 'a' first (becomes 8), then assign to 'd' (becomes 8).</div>
+                <div class="viz-step">
+                    <div class="memory-wrapper"><div class="var-name">a</div><div class="var-box updated">8</div></div>
+                    <div class="memory-wrapper"><div class="var-name">b</div><div class="var-box">6</div></div>
+                    <div class="memory-wrapper"><div class="var-name">c</div><div class="var-box">6</div></div>
+                    <div class="memory-wrapper"><div class="var-name">d</div><div class="var-box updated">8</div></div>
+                </div>
+            </div>
+            
+            <p><strong>Final Print Output:</strong> <code>8, 6, 6, 8</code></p>
+        </section>
+
+        <!-- Section 7: Next Lecture Preview -->
+        <section class="card">
+            <h2>7. Preview: Precedence & Associativity</h2>
+            <p>What happens when you combine multiple operators in a single line? (e.g., <code>++a + a++ - ++a</code>). The instructor notes two rules that will be covered in depth in the next video:</p>
+            <ul>
+                <li><strong>Precedence:</strong> Increment/Decrement operators have <em>higher precedence</em> than Assignment (<code>=</code>) and standard Arithmetic (<code>+</code>, <code>-</code>) operators. They get evaluated first.</li>
+                <li><strong>Associativity:</strong> When multiple increment/decrement operators appear side by side, the compiler reads them from <strong>Right to Left</strong>.</li>
+            </ul>
+        </section>
+
+    </div>
+
+    <!-- Scroll Interaction Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.card');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.15
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+
+            cards.forEach(card => {
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>

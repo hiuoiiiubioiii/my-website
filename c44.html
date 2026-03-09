@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Feed: Nested While Loops in C</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --primary: #4f46e5;
+            --secondary: #ec4899;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --code-bg: #1e1e1e;
+            --accent: #fcd34d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            padding-bottom: 60px;
+        }
+
+        /* Feed Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeUp 0.6s ease-out forwards;
+        }
+
+        /* Staggered Animation for initial load */
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.3s; }
+        .card:nth-child(3) { animation-delay: 0.5s; }
+        .card:nth-child(4) { animation-delay: 0.7s; }
+        .card:nth-child(5) { animation-delay: 0.9s; }
+
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            border-bottom: 4px solid var(--accent);
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .highlight {
+            background-color: rgba(252, 211, 77, 0.4);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            margin: 15px 0;
+            box-shadow: inset 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        code .keyword { color: #569cd6; }
+        code .type { color: #4ec9b0; }
+        code .string { color: #ce9178; }
+        code .comment { color: #6a9955; font-style: italic; }
+
+        /* Flowchart Visualization */
+        .flowchart-container {
+            background: #fafafa;
+            border: 2px dashed #ccc;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        /* Whiteboard/Memory Trace Visual */
+        .whiteboard {
+            background: #eef2ff;
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .memory-block {
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+        }
+
+        .memory-block h4 {
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .cross-out {
+            text-decoration: line-through;
+            color: #ef4444;
+            margin-right: 8px;
+        }
+
+        .current-val {
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .console-output {
+            background: #000;
+            color: #10b981;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        /* Warning/Homework Box */
+        .warning-box {
+            background-color: #fef2f2;
+            border-left: 6px solid #ef4444;
+            padding: 20px;
+            border-radius: 0 12px 12px 0;
+            margin-top: 20px;
+        }
+
+        /* Scroll Progress Bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 5px;
+            background-color: var(--primary);
+            width: 0%;
+            z-index: 1000;
+            transition: width 0.1s;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="feed-container">
+        
+        <!-- Header / Intro Card -->
+        <div class="card">
+            <h1>Nested <code>while</code> Loops in C</h1>
+            <p style="color: var(--text-muted); font-weight: 600;">Instructor: Jayanti Khatri Lamba (Jenny's Lectures)</p>
+            <p><strong>What is nesting?</strong> Simply put, a nested <code>while</code> loop is a <code>while</code> loop placed <em>inside</em> another <code>while</code> loop.</p>
+            <p><strong>Instructor's Tip:</strong> In C programming, you are not restricted! You can mix and match loops based on your program's needs up to <span class="highlight">n levels deep</span>. For example, you can place a <code>while</code> inside a <code>for</code> loop, or a <code>do-while</code> inside a <code>for</code> inside a <code>while</code>.</p>
+        </div>
+
+        <!-- Syntax Card -->
+        <div class="card">
+            <h2>🧩 General Syntax on the Board</h2>
+            <p>Here is exactly how the instructor mapped out the syntax on the whiteboard. Notice the specific blocks for the inner and outer loops.</p>
+<pre><code><span class="keyword">while</span> (Outer_Condition) 
+{
+    <span class="comment">// Control enters here if Outer_Condition is TRUE</span>
+
+    <span class="keyword">while</span> (Inner_Condition) 
+    {
+        <span class="comment">// I.L.S.B: Inner Loop Statement Block</span>
+        <span class="comment">// Control enters here if Inner_Condition is TRUE</span>
+        <span class="comment">// Usually contains an increment/decrement for inner variable</span>
+    }
+
+    <span class="comment">// O.L.S.B: Outer Loop Statement Block</span>
+    <span class="comment">// Executes AFTER the inner loop finishes (Inner becomes FALSE)</span>
+    <span class="comment">// Usually contains an increment/decrement for outer variable</span>
+}</code></pre>
+        </div>
+
+        <!-- Flowchart Card -->
+        <div class="card">
+            <h2>🗺️ The Visual Flowchart</h2>
+            <p>The instructor drew this logic flow on the board. This is exactly how the computer's "brain" processes the nested loops.</p>
+            
+            <div class="flowchart-container">
+                <svg width="400" height="500" viewBox="0 0 400 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Outer Condition -->
+                    <polygon points="200,20 300,70 200,120 100,70" fill="#f3e8ff" stroke="#4f46e5" stroke-width="2"/>
+                    <text x="200" y="75" text-anchor="middle" fill="#1f2937" font-size="14" font-family="sans-serif">Outer Condition</text>
+                    
+                    <!-- True Arrow to Inner -->
+                    <line x1="200" y1="120" x2="200" y2="170" stroke="#1f2937" stroke-width="2"/>
+                    <polygon points="195,160 205,160 200,170" fill="#1f2937"/>
+                    <text x="210" y="150" fill="#10b981" font-size="12" font-family="sans-serif" font-weight="bold">TRUE</text>
+                    
+                    <!-- False Arrow from Outer -->
+                    <line x1="300" y1="70" x2="360" y2="70" stroke="#1f2937" stroke-width="2"/>
+                    <line x1="360" y1="70" x2="360" y2="460" stroke="#1f2937" stroke-width="2"/>
+                    <line x1="360" y1="460" x2="250" y2="460" stroke="#1f2937" stroke-width="2"/>
+                    <polygon points="260,455 260,465 250,460" fill="#1f2937"/>
+                    <text x="315" y="60" fill="#ef4444" font-size="12" font-family="sans-serif" font-weight="bold">FALSE</text>
+
+                    <!-- Inner Condition -->
+                    <polygon points="200,170 300,220 200,270 100,220" fill="#fce7f3" stroke="#ec4899" stroke-width="2"/>
+                    <text x="200" y="225" text-anchor="middle" fill="#1f2937" font-size="14" font-family="sans-serif">Inner Condition</text>
+
+                    <!-- True Arrow to Inner Block -->
+                    <line x1="200" y1="270" x2="200" y2="310" stroke="#1f2937" stroke-width="2"/>
+                    <polygon points="195,300 205,300 200,310" fill="#1f2937"/>
+                    <text x="210" y="295" fill="#10b981" font-size="12" font-family="sans-serif" font-weight="bold">TRUE</text>
+
+                    <!-- Inner Loop Block -->
+                    <rect x="120" y="310" width="160" height="40" rx="5" fill="#d1fae5" stroke="#10b981" stroke-width="2"/>
+                    <text x="200" y="335" text-anchor="middle" fill="#1f2937" font-size="14" font-family="sans-serif">Inner Statement Block</text>
+
+                    <!-- Loop back arrow for Inner -->
+                    <path d="M 120 330 L 50 330 L 50 220 L 90 220" fill="none" stroke="#1f2937" stroke-width="2"/>
+                    <polygon points="80,215 80,225 90,220" fill="#1f2937"/>
+
+                    <!-- False arrow from Inner to Outer Block -->
+                    <line x1="300" y1="220" x2="340" y2="220" stroke="#1f2937" stroke-width="2"/>
+                    <line x1="340" y1="220" x2="340" y2="380" stroke="#1f2937" stroke-width="2"/>
+                    <line x1="340" y1="380" x2="290" y2="380" stroke="#1f2937" stroke-width="2"/>
+                    <polygon points="300,375 300,385 290,380" fill="#1f2937"/>
+                    <text x="305" y="210" fill="#ef4444" font-size="12" font-family="sans-serif" font-weight="bold">FALSE</text>
+
+                    <!-- Outer Loop Block -->
+                    <rect x="110" y="360" width="180" height="40" rx="5" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+                    <text x="200" y="385" text-anchor="middle" fill="#1f2937" font-size="14" font-family="sans-serif">Outer Statement Block</text>
+
+                    <!-- Loop back arrow for Outer -->
+                    <path d="M 110 380 L 20 380 L 20 70 L 90 70" fill="none" stroke="#1f2937" stroke-width="2"/>
+                    <polygon points="80,65 80,75 90,70" fill="#1f2937"/>
+
+                    <!-- END Block -->
+                    <rect x="150" y="440" width="100" height="40" rx="20" fill="#fee2e2" stroke="#ef4444" stroke-width="2"/>
+                    <text x="200" y="465" text-anchor="middle" fill="#1f2937" font-size="14" font-family="sans-serif">END / EXIT</text>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Dry Run Card -->
+        <div class="card">
+            <h2>✍️ The Program & Dry Run</h2>
+            <p>To prove how this works, the instructor traces variables exactly like a computer's memory. This is the <strong>most critical trap</strong> in nested loops.</p>
+            
+<pre><code><span class="type">int</span> i = <span class="string">0</span>, j = <span class="string">1</span>;
+
+<span class="keyword">while</span> (i < 3) 
+{
+    <span class="keyword">while</span> (j <= 3) 
+    {
+        <span class="comment">// Post-increment: prints original j, then adds 1</span>
+        printf(<span class="string">"%d "</span>, j++); 
+    }
+    <span class="comment">// Post-increment: prints original i, then adds 1</span>
+    printf(<span class="string">"%d "</span>, i++);     
+}</code></pre>
+
+            <p><strong>Watch the variables change:</strong> Notice how <code>j</code> crosses out and increases to 4. <em>Because she never reset <code>j = 1</code> inside the outer loop, the inner loop gets completely skipped on iterations 2 and 3!</em></p>
+
+            <div class="whiteboard">
+                <div class="memory-block">
+                    <h4>Variable 'i' Memory</h4>
+                    <span class="cross-out">0</span>
+                    <span class="cross-out">1</span>
+                    <span class="cross-out">2</span>
+                    <span class="current-val">3</span>
+                </div>
+                <div class="memory-block">
+                    <h4>Variable 'j' Memory</h4>
+                    <span class="cross-out">1</span>
+                    <span class="cross-out">2</span>
+                    <span class="cross-out">3</span>
+                    <span class="current-val">4</span>
+                </div>
+            </div>
+
+            <div class="console-output">
+                > Console Output: <br>
+                > 1 2 3 0 1 2
+            </div>
+        </div>
+
+        <!-- Homework / Infinite Loop Trap Card -->
+        <div class="card">
+            <h2>⚠️ The "Homework" Challenge</h2>
+            <p>At the very end of the video, the instructor erases the inner statements and asks you to figure out the output. Here is the modified code:</p>
+            
+<pre><code><span class="type">int</span> i = <span class="string">0</span>, j = <span class="string">1</span>;
+
+<span class="keyword">while</span> (i < 3) 
+{
+    <span class="keyword">while</span> (j <= 3) 
+    {
+        <span class="comment">// Empty block! Nothing happens here.</span>
+    }
+}
+<span class="comment">// Pre-increment: adds 1 to variables, then prints them</span>
+printf(<span class="string">"%d, %d"</span>, ++i, ++j); </code></pre>
+
+            <div class="warning-box">
+                <h3 style="color: #ef4444; margin-bottom: 10px;">🚨 The Solution: Infinite Loop</h3>
+                <p>If you look closely, <strong>there are no increment statements (<code>i++</code> or <code>j++</code>) inside the loops anymore!</strong></p>
+                <ul style="margin-left: 20px; color: #4b5563;">
+                    <li>The program checks <code>i < 3</code> (0 < 3) ➔ True.</li>
+                    <li>It enters the inner loop and checks <code>j <= 3</code> (1 <= 3) ➔ True.</li>
+                    <li>Because the block is empty, <code>j</code> never changes. It remains 1 forever.</li>
+                    <li><strong>Result:</strong> The program gets stuck in an <strong>Infinite Loop</strong> checking <code>1 <= 3</code> infinitely. It will <em>never</em> reach the <code>printf</code> statement at the bottom.</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript for Feed Progress Bar -->
+    <script>
+        window.onscroll = function() {
+            let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            let scrolled = (winScroll / height) * 100;
+            document.getElementById("progressBar").style.width = scrolled + "%";
+        };
+    </script>
+</body>
+</html>

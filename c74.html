@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Double Pointers in C - Ultimate Study Notes</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        :root {
+            --bg: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-cyan: #22d3ee;
+            --accent-pink: #f472b6;
+            --accent-green: #4ade80;
+            --accent-yellow: #facc15;
+            --code-bg: #0b1120;
+            --border: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            padding-bottom: 100px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--accent-cyan);
+            margin-bottom: 10px;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card h2 {
+            font-size: 1.8rem;
+            color: var(--text-main);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h2::before {
+            content: '';
+            display: block;
+            width: 12px;
+            height: 12px;
+            background-color: var(--accent-pink);
+            border-radius: 50%;
+        }
+
+        .card p, .card ul {
+            margin-bottom: 20px;
+            color: #cbd5e1;
+            font-size: 1.05rem;
+        }
+
+        .card ul {
+            padding-left: 20px;
+        }
+
+        .card li {
+            margin-bottom: 10px;
+        }
+
+        /* Highlights */
+        .hl-cyan { color: var(--accent-cyan); font-weight: 600; }
+        .hl-pink { color: var(--accent-pink); font-weight: 600; }
+        .hl-green { color: var(--accent-green); font-weight: 600; }
+        .hl-yellow { color: var(--accent-yellow); font-weight: 600; }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-green);
+            background: rgba(74, 222, 128, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: var(--text-main);
+        }
+
+        .c-keyword { color: #c678dd; }
+        .c-type { color: #e5c07b; }
+        .c-var { color: #e06c75; }
+        .c-func { color: #61afef; }
+        .c-string { color: #98c379; }
+        .c-comment { color: #5c6370; font-style: italic; }
+
+        /* Visualizations */
+        .vis-container {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 40px 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+        }
+
+        .memory-chain {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            min-width: max-content;
+        }
+
+        .node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+        }
+
+        .node-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            background: var(--card-bg);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+        }
+
+        .node-box {
+            width: 100px;
+            height: 60px;
+            background: var(--card-bg);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            box-shadow: 0 0 15px rgba(34, 211, 238, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .node-box.updated {
+            background: rgba(74, 222, 128, 0.2);
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+            transform: scale(1.1);
+            box-shadow: 0 0 25px rgba(74, 222, 128, 0.4);
+        }
+
+        .node-addr {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-pink);
+        }
+
+        .arrow {
+            display: flex;
+            align-items: center;
+            color: var(--border);
+        }
+
+        .arrow svg {
+            width: 60px;
+            height: 24px;
+        }
+
+        /* Interactive Button */
+        .btn {
+            display: inline-block;
+            background: var(--accent-cyan);
+            color: var(--bg);
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.1s;
+            margin-bottom: 20px;
+        }
+
+        .btn:hover {
+            background: #67e8f9;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Trace Table */
+        .trace-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .trace-table th, .trace-table td {
+            border: 1px solid var(--border);
+            padding: 12px;
+            text-align: left;
+        }
+
+        .trace-table th {
+            background-color: var(--code-bg);
+            color: var(--accent-pink);
+        }
+
+        @media (max-width: 768px) {
+            .feed-container { gap: 20px; }
+            .card { padding: 20px; }
+            .vis-container { justify-content: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+    
+    <header>
+        <h1>Pointer to Pointer (Double Pointer)</h1>
+        <p>Complete visual breakdown & study notes based on the instructor's masterclass.</p>
+    </header>
+
+    <!-- SECTION 1 -->
+    <section class="card">
+        <h2>1. Recap: Single Pointers & Memory</h2>
+        <p>Before jumping to double pointers, we need to establish a rock-solid foundation of how single pointers map to memory.</p>
+        <pre><span class="c-type">int</span> <span class="c-var">a</span> = <span class="c-keyword">10</span>;
+<span class="c-type">int</span> *<span class="c-var">p</span> = &<span class="c-var">a</span>;</pre>
+        <ul>
+            <li><code>int a = 10;</code> reserves memory (e.g., at address <span class="hl-pink">1000</span>) and stores <code>10</code>.</li>
+            <li><code>int *p</code> tells the compiler <code>p</code> is a pointer variable. It gets its own memory (e.g., at address <span class="hl-pink">850</span>).</li>
+            <li><code>p = &a;</code> stores the base address of <code>a</code> inside <code>p</code>.</li>
+            <li><span class="hl-yellow">Crucial Rule:</span> The data type in <code>int *p</code> dictates what type of variable it is allowed to point to (only integers!).</li>
+        </ul>
+
+        <div class="vis-container">
+            <div class="memory-chain">
+                <!-- Variable a -->
+                <div class="node">
+                    <div class="node-label">int a</div>
+                    <div class="node-box">10</div>
+                    <div class="node-addr">Addr: 1000</div>
+                </div>
+                <!-- Arrow -->
+                <div class="arrow">
+                    <svg viewBox="0 0 100 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M100 12 L20 12" stroke="#94a3b8" stroke-width="2"/>
+                        <path d="M20 12 L30 6 M20 12 L30 18" stroke="#94a3b8" stroke-width="2"/>
+                    </svg>
+                </div>
+                <!-- Variable p -->
+                <div class="node">
+                    <div class="node-label">int *p</div>
+                    <div class="node-box hl-cyan">1000</div>
+                    <div class="node-addr">Addr: 850</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 2 -->
+    <section class="card">
+        <h2>2. The Core Concept: Double Pointers</h2>
+        <p>What if we want a pointer to point to variable <code>p</code>? Because <code>p</code> is already a pointer, a normal pointer cannot hold its address. We need a <span class="hl-cyan">Pointer to a Pointer (Double Pointer)</span>.</p>
+        <pre><span class="c-type">int</span> **<span class="c-var">q</span>;
+<span class="c-var">q</span> = &<span class="c-var">p</span>;</pre>
+        <p><strong>Breaking down <code>int **q</code>:</strong></p>
+        <ul>
+            <li>The <code>*</code> closest to <code>q</code> tells the compiler: "Hey, <code>q</code> is a pointer."</li>
+            <li>The remaining part, <code>int *</code>, tells the compiler the <em>data type</em> of the variable <code>q</code> is pointing to. Because <code>p</code> is an <code>int *</code>, <code>q</code> must be an <code>int **</code>.</li>
+            <li><span class="hl-yellow">Warning:</span> <code>int **q = &a;</code> is <strong>illegal</strong>. A double pointer MUST contain the address of a pointer variable.</li>
+        </ul>
+
+        <div class="vis-container">
+            <div class="memory-chain">
+                <div class="node">
+                    <div class="node-label">int a</div>
+                    <div class="node-box">10</div>
+                    <div class="node-addr">1000</div>
+                </div>
+                <div class="arrow">
+                    <svg viewBox="0 0 100 24" fill="none"><path d="M100 12 L20 12" stroke="#94a3b8" stroke-width="2"/><path d="M20 12 L30 6 M20 12 L30 18" stroke="#94a3b8" stroke-width="2"/></svg>
+                </div>
+                <div class="node">
+                    <div class="node-label">int *p</div>
+                    <div class="node-box">1000</div>
+                    <div class="node-addr">850</div>
+                </div>
+                <div class="arrow">
+                    <svg viewBox="0 0 100 24" fill="none"><path d="M100 12 L20 12" stroke="#94a3b8" stroke-width="2"/><path d="M20 12 L30 6 M20 12 L30 18" stroke="#94a3b8" stroke-width="2"/></svg>
+                </div>
+                <div class="node">
+                    <div class="node-label">int **q</div>
+                    <div class="node-box hl-cyan">850</div>
+                    <div class="node-addr">1046</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3 -->
+    <section class="card">
+        <h2>3. Accessing Values (The Dereference Trace)</h2>
+        <p>How do we print the original value <code>10</code> using our new double pointer <code>q</code>? We use the indirection (dereferencing) operator <code>*</code> sequentially.</p>
+        
+        <table class="trace-table">
+            <thead>
+                <tr>
+                    <th>Syntax</th>
+                    <th>Meaning</th>
+                    <th>Result</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>q</code></td>
+                    <td>Value stored directly inside q</td>
+                    <td><span class="hl-cyan">850</span> (Address of p)</td>
+                </tr>
+                <tr>
+                    <td><code>*q</code></td>
+                    <td>Value at address(850)</td>
+                    <td><span class="hl-cyan">1000</span> (Address of a)</td>
+                </tr>
+                <tr>
+                    <td><code>**q</code></td>
+                    <td>Value at address(1000) -> read as <code>*(*q)</code></td>
+                    <td><span class="hl-green">10</span> (Original Value)</td>
+                </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <!-- SECTION 4 -->
+    <section class="card">
+        <h2>4. Expanding the Chain: Triple Pointers</h2>
+        <p>You can keep chaining these pointers! Let's create a pointer that points to <code>q</code>. Since <code>q</code> is a level-2 pointer, we need a level-3 pointer (<code>***</code>).</p>
+        <pre><span class="c-type">int</span> ***<span class="c-var">r</span> = &<span class="c-var">q</span>;</pre>
+        
+        <div class="vis-container">
+            <div class="memory-chain">
+                <div class="node"><div class="node-label">int a</div><div class="node-box">10</div><div class="node-addr">1000</div></div>
+                <div class="arrow"><svg viewBox="0 0 60 24" fill="none"><path d="M60 12 L10 12" stroke="#94a3b8" stroke-width="2"/><path d="M10 12 L20 6 M10 12 L20 18" stroke="#94a3b8" stroke-width="2"/></svg></div>
+                <div class="node"><div class="node-label">int *p</div><div class="node-box">1000</div><div class="node-addr">850</div></div>
+                <div class="arrow"><svg viewBox="0 0 60 24" fill="none"><path d="M60 12 L10 12" stroke="#94a3b8" stroke-width="2"/><path d="M10 12 L20 6 M10 12 L20 18" stroke="#94a3b8" stroke-width="2"/></svg></div>
+                <div class="node"><div class="node-label">int **q</div><div class="node-box">850</div><div class="node-addr">1046</div></div>
+                <div class="arrow"><svg viewBox="0 0 60 24" fill="none"><path d="M60 12 L10 12" stroke="#94a3b8" stroke-width="2"/><path d="M10 12 L20 6 M10 12 L20 18" stroke="#94a3b8" stroke-width="2"/></svg></div>
+                <div class="node"><div class="node-label">int ***r</div><div class="node-box hl-cyan">1046</div><div class="node-addr">2046</div></div>
+            </div>
+        </div>
+        <p>To print <code>10</code> using <code>r</code>, you match the levels: <code>printf("%d", ***r);</code></p>
+    </section>
+
+    <!-- SECTION 5 -->
+    <section class="card">
+        <h2>5. Modifying Values via Pointers</h2>
+        <p>Because pointers map directly back to the original memory block, modifying data using a fully dereferenced double/triple pointer alters the core variable.</p>
+        
+        <button class="btn" id="run-code-btn">Execute: **q = 25;</button>
+
+        <div class="vis-container">
+            <div class="memory-chain">
+                <div class="node">
+                    <div class="node-label">int a</div>
+                    <div class="node-box" id="target-box">10</div>
+                    <div class="node-addr">1000</div>
+                </div>
+                <div class="arrow"><svg viewBox="0 0 80 24" fill="none"><path d="M80 12 L10 12" stroke="#94a3b8" stroke-width="2"/><path d="M10 12 L20 6 M10 12 L20 18" stroke="#94a3b8" stroke-width="2"/></svg></div>
+                <div class="node">
+                    <div class="node-label">int *p</div>
+                    <div class="node-box">1000</div>
+                    <div class="node-addr">850</div>
+                </div>
+                <div class="arrow"><svg viewBox="0 0 80 24" fill="none"><path d="M80 12 L10 12" stroke="#94a3b8" stroke-width="2"/><path d="M10 12 L20 6 M10 12 L20 18" stroke="#94a3b8" stroke-width="2"/></svg></div>
+                <div class="node">
+                    <div class="node-label">int **q</div>
+                    <div class="node-box">850</div>
+                    <div class="node-addr">1046</div>
+                </div>
+            </div>
+        </div>
+
+        <p><strong>The "Illegal" Move:</strong> What happens if you write <code>*q = 25;</code>?</p>
+        <p><em>Answer:</em> <code>*q</code> represents the box <code>p</code>. You would overwrite the memory address inside <code>p</code> (850) with the number <code>25</code>. Because <code>25</code> is not a valid memory address you own, your program will crash!</p>
+    </section>
+
+    <!-- SECTION 6 -->
+    <section class="card">
+        <h2>6. Live Coding Proof (VS Code)</h2>
+        <p>Here is the complete C program the instructor runs to prove these concepts. Notice how `%x` (or `%p`) is used to print addresses.</p>
+        <pre><span class="c-comment">#include &lt;stdio.h&gt;</span>
+
+<span class="c-type">void</span> <span class="c-func">main</span>() {
+    <span class="c-type">int</span> <span class="c-var">a</span> = <span class="c-keyword">10</span>;
+    <span class="c-type">int</span> *<span class="c-var">p</span> = &<span class="c-var">a</span>;      <span class="c-comment">// Single pointer</span>
+    <span class="c-type">int</span> **<span class="c-var">q</span> = &<span class="c-var">p</span>;     <span class="c-comment">// Double pointer</span>
+    <span class="c-type">int</span> ***<span class="c-var">r</span> = &<span class="c-var">q</span>;    <span class="c-comment">// Triple pointer</span>
+
+    <span class="c-comment">// 1. Printing the Value (All output "10")</span>
+    <span class="c-func">printf</span>(<span class="c-string">"a = %d\n"</span>, a);
+    <span class="c-func">printf</span>(<span class="c-string">"a = %d\n"</span>, *p);
+    <span class="c-func">printf</span>(<span class="c-string">"a = %d\n"</span>, **q);
+    <span class="c-func">printf</span>(<span class="c-string">"a = %d\n"</span>, ***r);
+
+    <span class="c-comment">// 2. Printing Addresses</span>
+    <span class="c-func">printf</span>(<span class="c-string">"address of q = %x %x\n"</span>, r, &q); 
+    <span class="c-func">printf</span>(<span class="c-string">"address of p = %x %x\n"</span>, q, &p); 
+
+    <span class="c-comment">// 3. Modifying original value</span>
+    **<span class="c-var">q</span> = <span class="c-keyword">17</span>;
+    <span class="c-func">printf</span>(<span class="c-string">"a = %d\n"</span>, a);  <span class="c-comment">// Output: 17</span>
+}</pre>
+    </section>
+
+    <!-- KEY TAKEAWAYS -->
+    <section class="card" style="border-color: var(--accent-green);">
+        <h2 style="color: var(--accent-green);">🌟 Key Takeaways</h2>
+        <ul>
+            <li><strong>Level Matching:</strong> A pointer must match the level of the address it is storing. (Address of <code>int *</code> requires <code>int **</code>).</li>
+            <li><strong>Dereference Formula:</strong> To get the original value, the number of asterisks applied to the variable must match its declared level.</li>
+            <li><strong>Memory Editing:</strong> Updating data using a correctly dereferenced pointer chain (e.g., <code>***r = 50;</code>) directly rewrites the data in the original variable's block.</li>
+        </ul>
+    </section>
+
+</div>
+
+<script>
+    // 1. Scroll Animations (Intersection Observer)
+    const cards = document.querySelectorAll('.card');
+    
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.15 // Trigger when 15% of the card is visible
+    };
+
+    const cardObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target); // Only animate once
+            }
+        });
+    }, observerOptions);
+
+    cards.forEach(card => {
+        cardObserver.observe(card);
+    });
+
+    // Make the first card visible immediately on load just in case
+    setTimeout(() => {
+        if(cards.length > 0) cards[0].classList.add('visible');
+    }, 100);
+
+    // 2. Interactive "Run Code" Button Logic
+    const runBtn = document.getElementById('run-code-btn');
+    const targetBox = document.getElementById('target-box');
+
+    runBtn.addEventListener('click', () => {
+        // Reset if already clicked
+        if(targetBox.classList.contains('updated')) {
+            targetBox.textContent = '10';
+            targetBox.classList.remove('updated');
+            runBtn.textContent = 'Execute: **q = 25;';
+        } else {
+            // Update Value
+            targetBox.textContent = '25';
+            targetBox.classList.add('updated');
+            runBtn.textContent = 'Reset Memory';
+        }
+    });
+</script>
+
+</body>
+</html>

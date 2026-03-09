@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Program: Length of a String | Study Feed</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --text-main: #333;
+            --text-light: #666;
+            --accent-color: #007acc;
+            --accent-light: #e6f2ff;
+            --card-bg: #ffffff;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --border-color: #e1e4e8;
+            --null-color: #ff4d4d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Cards / Sections */
+        .feed-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .feed-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .feed-header h1 {
+            color: var(--accent-color);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feed-header p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        h2 {
+            color: var(--accent-color);
+            border-bottom: 2px solid var(--accent-light);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 1.8rem;
+        }
+
+        h3 {
+            margin: 1.5rem 0 1rem 0;
+            color: #444;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        ul {
+            margin-left: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        .highlight {
+            background-color: var(--accent-light);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: monospace;
+            color: var(--accent-color);
+        }
+
+        /* Visualizations */
+        .visualization-box {
+            background-color: #fafbfc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+
+        .memory-array {
+            display: flex;
+            gap: 0;
+            justify-content: flex-start;
+            margin-top: 1rem;
+            min-width: 600px; /* Ensure scrolling on small screens */
+        }
+
+        .memory-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 60px;
+        }
+
+        .mem-address {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+            font-family: monospace;
+        }
+
+        .mem-box {
+            width: 100%;
+            height: 60px;
+            border: 2px solid #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            font-family: monospace;
+            background-color: white;
+            border-right: none; /* Combine borders */
+        }
+        
+        .memory-cell:last-child .mem-box {
+            border-right: 2px solid #ccc;
+        }
+
+        .mem-box.null-char {
+            color: var(--null-color);
+            background-color: #ffeeee;
+        }
+
+        .mem-index {
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            margin-top: 0.5rem;
+            font-weight: bold;
+        }
+
+        /* Code Blocks */
+        .code-container {
+            background-color: var(--code-bg);
+            border-radius: 8px;
+            padding: 1.5rem;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--code-text);
+            font-size: 1.05rem;
+            white-space: pre;
+        }
+
+        .c-comment { color: #6a9955; }
+        .c-keyword { color: #569cd6; }
+        .c-string { color: #ce9178; }
+        .c-func { color: #dcdcaa; }
+        .c-type { color: #4ec9b0; }
+        .c-num { color: #b5cea8; }
+
+        /* Step-by-Step Table */
+        .trace-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            text-align: left;
+        }
+
+        .trace-table th, .trace-table td {
+            border: 1px solid var(--border-color);
+            padding: 0.75rem;
+        }
+
+        .trace-table th {
+            background-color: var(--accent-light);
+            color: var(--accent-color);
+        }
+
+        .trace-table tr:nth-child(even) {
+            background-color: #fafbfc;
+        }
+
+        .note-box {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 4px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header -->
+        <header class="feed-header">
+            <h1>C Program: Find Length of a String</h1>
+            <p>Instructor: Jayanti Khatri Lamba | Complete Breakdown & Visualization</p>
+        </header>
+
+        <!-- Core Concept Section -->
+        <section class="feed-card">
+            <h2>1. The Core Concept: How Strings are Stored</h2>
+            <p>Before writing code, we must understand how C handles strings in memory. A string is essentially an array of characters.</p>
+            <ul>
+                <li><strong>The Null Character:</strong> Every valid string in C is terminated by a special character: <span class="highlight">'\0'</span> (Null). This tells the compiler where the string ends.</li>
+                <li><strong>Length Definition:</strong> The length of a string is the number of characters <strong>before</strong> the null character. The null character itself is <em>not</em> counted.</li>
+            </ul>
+
+            <div class="visualization-box">
+                <p><strong>Visualization:</strong> Array declared as <span class="highlight">char name[30];</span> storing the word "Jayanti".</p>
+                <div class="memory-array">
+                    <div class="memory-cell"><div class="mem-address">1000</div><div class="mem-box">J</div><div class="mem-index">0</div></div>
+                    <div class="memory-cell"><div class="mem-address">1001</div><div class="mem-box">a</div><div class="mem-index">1</div></div>
+                    <div class="memory-cell"><div class="mem-address">1002</div><div class="mem-box">y</div><div class="mem-index">2</div></div>
+                    <div class="memory-cell"><div class="mem-address">1003</div><div class="mem-box">a</div><div class="mem-index">3</div></div>
+                    <div class="memory-cell"><div class="mem-address">1004</div><div class="mem-box">n</div><div class="mem-index">4</div></div>
+                    <div class="memory-cell"><div class="mem-address">1005</div><div class="mem-box">t</div><div class="mem-index">5</div></div>
+                    <div class="memory-cell"><div class="mem-address">1006</div><div class="mem-box">i</div><div class="mem-index">6</div></div>
+                    <div class="memory-cell"><div class="mem-address">1007</div><div class="mem-box null-char">\0</div><div class="mem-index">7</div></div>
+                    <div class="memory-cell"><div class="mem-address">...</div><div class="mem-box"></div><div class="mem-index">...</div></div>
+                    <div class="memory-cell"><div class="mem-address">1029</div><div class="mem-box"></div><div class="mem-index">29</div></div>
+                </div>
+            </div>
+            <p>In the visual above, the length is <strong>7</strong>. The array has space for 30 characters, but the string naturally ends at index 7.</p>
+        </section>
+
+        <!-- Method 1 Section -->
+        <section class="feed-card">
+            <h2>2. Method 1: Using the Predefined Function <code>strlen()</code></h2>
+            <p>C provides a built-in library function to do this work for us. Because it is "predefined", its logic is already written in a header file.</p>
+            <ul>
+                <li><strong>Header Required:</strong> <span class="highlight">#include &lt;string.h&gt;</span></li>
+                <li><strong>Function Signature:</strong> <span class="highlight">unsigned int strlen(const char *str);</span></li>
+            </ul>
+
+            <div class="note-box">
+                <strong>Instructor Insight: Why 'unsigned int'?</strong><br>
+                The <code>strlen()</code> function returns an <em>unsigned</em> integer because a length can never be a negative number. It will always be 0 or greater. Also, passing the array <code>name</code> into the function passes a <em>pointer</em> to the base address (e.g., memory address 1000).
+            </div>
+
+            <div class="code-container">
+<code><span class="c-comment">// Method 1: Using predefined function</span>
+<span class="c-keyword">#include</span> <span class="c-string">&lt;stdio.h&gt;</span>
+<span class="c-keyword">#include</span> <span class="c-string">&lt;string.h&gt;</span>  <span class="c-comment">// Required for strlen()</span>
+
+<span class="c-type">int</span> <span class="c-func">main</span>() {
+    <span class="c-type">char</span> name[<span class="c-num">30</span>];
+    <span class="c-type">int</span> count = <span class="c-num">0</span>;
+
+    <span class="c-func">printf</span>(<span class="c-string">"Enter name: "</span>);
+    <span class="c-func">gets</span>(name); <span class="c-comment">// 'gets' allows reading strings with spaces</span>
+
+    <span class="c-comment">// strlen counts characters until it hits '\0'</span>
+    count = <span class="c-func">strlen</span>(name); 
+
+    <span class="c-func">printf</span>(<span class="c-string">"String length is %d"</span>, count);
+    
+    <span class="c-keyword">return</span> <span class="c-num">0</span>;
+}</code>
+            </div>
+        </section>
+
+        <!-- Method 2 Section -->
+        <section class="feed-card">
+            <h2>3. Method 2: Custom Logic (Under the Hood)</h2>
+            <p>What if we don't want to use the <code>&lt;string.h&gt;</code> library? We can write our own logic to find the length. This is exactly what <code>strlen()</code> is doing behind the scenes.</p>
+            <p><strong>The Logic:</strong> We initialize a counter (<code>count = 0</code>) and an index (<code>i = 0</code>). We use a <code>while</code> loop to check each character in the array. If the character is NOT <code>'\0'</code>, we increase the count and move to the next index.</p>
+
+            <div class="code-container">
+<code><span class="c-comment">// Method 2: Custom Logic (No string.h)</span>
+<span class="c-keyword">#include</span> <span class="c-string">&lt;stdio.h&gt;</span>
+
+<span class="c-type">int</span> <span class="c-func">main</span>() {
+    <span class="c-type">char</span> name[<span class="c-num">30</span>];
+    <span class="c-type">int</span> count = <span class="c-num">0</span>;
+    <span class="c-type">int</span> i = <span class="c-num">0</span>;
+
+    <span class="c-func">printf</span>(<span class="c-string">"Enter name: "</span>);
+    <span class="c-func">gets</span>(name);
+
+    <span class="c-comment">// Custom Length Logic</span>
+    <span class="c-keyword">while</span>(name[i] != <span class="c-string">'\0'</span>) {
+        count++;    <span class="c-comment">// Increase length count</span>
+        i++;        <span class="c-comment">// Move to the next index</span>
+    }
+
+    <span class="c-func">printf</span>(<span class="c-string">"String length is %d"</span>, count);
+    
+    <span class="c-keyword">return</span> <span class="c-num">0</span>;
+}</code>
+            </div>
+        </section>
+
+        <!-- Dry Run Section -->
+        <section class="feed-card">
+            <h2>4. Dry Running the Loop (Variable Tracking)</h2>
+            <p>Let's see exactly how the computer executes the <code>while(name[i] != '\0')</code> loop if the user inputs <strong>"Jayanti"</strong>.</p>
+            
+            <div class="visualization-box">
+                <table class="trace-table">
+                    <thead>
+                        <tr>
+                            <th>Step</th>
+                            <th>Index (i)</th>
+                            <th>Character (name[i])</th>
+                            <th>Condition: name[i] != '\0'</th>
+                            <th>Action</th>
+                            <th>Count Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Init</td>
+                            <td>0</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>Variables initialized</td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td>0</td>
+                            <td>'J'</td>
+                            <td>True</td>
+                            <td>count++, i++</td>
+                            <td>1</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>1</td>
+                            <td>'a'</td>
+                            <td>True</td>
+                            <td>count++, i++</td>
+                            <td>2</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>2</td>
+                            <td>'y'</td>
+                            <td>True</td>
+                            <td>count++, i++</td>
+                            <td>3</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>3</td>
+                            <td>'a'</td>
+                            <td>True</td>
+                            <td>count++, i++</td>
+                            <td>4</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>4</td>
+                            <td>'n'</td>
+                            <td>True</td>
+                            <td>count++, i++</td>
+                            <td>5</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>5</td>
+                            <td>'t'</td>
+                            <td>True</td>
+                            <td>count++, i++</td>
+                            <td>6</td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>6</td>
+                            <td>'i'</td>
+                            <td>True</td>
+                            <td>count++, i++</td>
+                            <td>7</td>
+                        </tr>
+                        <tr>
+                            <td>8</td>
+                            <td>7</td>
+                            <td><span style="color:var(--null-color); font-weight:bold;">'\0'</span></td>
+                            <td><strong>False</strong></td>
+                            <td><strong>Loop Breaks</strong></td>
+                            <td><strong>7</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="note-box">
+                <strong>What about Spaces? (e.g., "Jayanti Khatri")</strong><br>
+                If the user inputs a space, does the loop break? <strong>No.</strong> <br>
+                The ASCII value of a space character <code>' '</code> is <strong>32</strong>. The ASCII value of the null character <code>'\0'</code> is <strong>0</strong>. Because 32 is not equal to 0, the condition remains True. The loop will count the space as a valid character, resulting in a length of 14.
+            </div>
+        </section>
+
+        <!-- Practical Execution Summary -->
+        <section class="feed-card">
+            <h2>5. Practical Execution Summary (VS Code)</h2>
+            <p>In the final portion of the lesson, the instructor executes the code to prove the concepts:</p>
+            <ul>
+                <li><strong>Execution 1:</strong> Using <code>strlen()</code> with the input "Jayanti Khatri" successfully outputs <code>14</code>.</li>
+                <li><strong>Execution 2:</strong> She removes <code>#include &lt;string.h&gt;</code> and implements the custom <code>while</code> loop. Using the exact same input, the program runs flawlessly and again outputs <code>14</code>.</li>
+            </ul>
+            <p><strong>Conclusion:</strong> Understanding both methods is crucial. While <code>strlen()</code> saves time in production code, writing your own logic is a fundamental exercise for understanding pointers, arrays, and memory in C.</p>
+        </section>
+
+    </div>
+
+</body>
+</html>

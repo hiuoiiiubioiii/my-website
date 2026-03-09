@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strings in C: Runtime Input - Study Notes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --primary: #4f46e5;
+            --primary-light: #e0e7ff;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --success: #10b981;
+            --code-bg: #1e293b;
+            --code-text: #f8fafc;
+            --cell-border: #cbd5e1;
+            --cell-bg: #f8fafc;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+        header p { font-size: 1rem; opacity: 0.9; }
+
+        .feed-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-top: 4px solid var(--primary);
+        }
+
+        .card.danger { border-top-color: var(--danger); }
+
+        h2 { font-size: 1.5rem; color: var(--primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; }
+        .card.danger h2 { color: var(--danger); }
+        
+        p { margin-bottom: 1rem; color: var(--text-muted); }
+        strong { color: var(--text-main); }
+
+        /* Code Block Styling */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.2rem;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+        }
+        .comment { color: #64748b; font-style: italic; }
+        .keyword { color: #c678dd; }
+        .string { color: #98c379; }
+        .function { color: #61afef; }
+
+        /* Memory Tape Visualization */
+        .memory-wrapper {
+            background: #f1f5f9;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+        }
+        .memory-tape {
+            display: flex;
+            gap: 2px;
+            align-items: flex-start;
+        }
+        .memory-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .memory-cell {
+            width: 45px;
+            height: 45px;
+            background: var(--card-bg);
+            border: 2px solid var(--cell-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            font-family: 'Fira Code', monospace;
+            color: var(--text-main);
+        }
+        .memory-cell.null { background: var(--primary-light); color: var(--primary); }
+        .memory-cell.garbage { color: #94a3b8; }
+        .memory-cell.danger { background: var(--danger-light); border-color: var(--danger); color: var(--danger); }
+        .memory-address {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 5px;
+            font-family: 'Fira Code', monospace;
+        }
+        .memory-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--text-main);
+        }
+        .boundary-line {
+            width: 4px;
+            background-color: var(--danger);
+            margin: 0 10px;
+            border-radius: 2px;
+        }
+
+        /* Callout Boxes */
+        .callout {
+            background-color: var(--primary-light);
+            padding: 1rem 1.5rem;
+            border-left: 4px solid var(--primary);
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1.5rem;
+        }
+        .callout p { margin: 0; color: var(--text-main); }
+        
+        .quiz-box {
+            background-color: #fffbeb;
+            border: 1px solid #fde68a;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        .quiz-box h3 { color: #d97706; margin-bottom: 0.5rem; }
+
+        .rules-list { margin-left: 1.5rem; margin-bottom: 1.5rem; color: var(--text-muted); }
+        .rules-list li { margin-bottom: 0.5rem; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🧵 Strings in C: Reading at Runtime</h1>
+        <p>In-depth Study Notes & Memory Visualizations</p>
+    </header>
+
+    <main class="feed-container">
+
+        <!-- Feed Item 1 -->
+        <article class="card">
+            <div class="quiz-box">
+                <h3>🤔 Instructor's Prerequisite Question</h3>
+                <p><strong>Is 'string' a data type in C? Yes or No?</strong></p>
+                <p><em>Answer: No! C does not have a primitive "string" data type. A string is simply an array of characters ending with a Null Character (\0).</em></p>
+            </div>
+            
+            <h2>1. Recap: Strings vs. Character Arrays</h2>
+            <p>Before moving to runtime input, let's look at how strings are stored in memory when hardcoded (compile-time initialization).</p>
+            
+<pre>
+<span class="keyword">char</span> s1[<span class="keyword">10</span>] = <span class="string">"Jenny"</span>;
+</pre>
+
+            <p><strong>The Visual Breakdown:</strong></p>
+            <ul class="rules-list">
+                <li>Because an array size of 10 is declared, the compiler allocates 10 bytes of memory.</li>
+                <li>The name of the array (<code>s1</code>) holds the <strong>base address</strong> (e.g., 1000).</li>
+                <li>The compiler <strong>automatically</strong> adds the Null Character (<code>\0</code>) at the end.</li>
+                <li>Without the <code>\0</code>, it is just a character array, not a string! The remaining blocks contain garbage values.</li>
+            </ul>
+
+            <div class="memory-wrapper">
+                <div class="memory-label">Memory Layout of s1[10]:</div>
+                <div class="memory-tape">
+                    <div class="memory-column"><div class="memory-cell">J</div><div class="memory-address">1000</div></div>
+                    <div class="memory-column"><div class="memory-cell">e</div><div class="memory-address">1001</div></div>
+                    <div class="memory-column"><div class="memory-cell">n</div><div class="memory-address">1002</div></div>
+                    <div class="memory-column"><div class="memory-cell">n</div><div class="memory-address">1003</div></div>
+                    <div class="memory-column"><div class="memory-cell">y</div><div class="memory-address">1004</div></div>
+                    <div class="memory-column"><div class="memory-cell null">\0</div><div class="memory-address">1005</div></div>
+                    <div class="memory-column"><div class="memory-cell garbage">?</div><div class="memory-address">1006</div></div>
+                    <div class="memory-column"><div class="memory-cell garbage">?</div><div class="memory-address">1007</div></div>
+                    <div class="memory-column"><div class="memory-cell garbage">?</div><div class="memory-address">1008</div></div>
+                    <div class="memory-column"><div class="memory-cell garbage">?</div><div class="memory-address">1009</div></div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Feed Item 2 -->
+        <article class="card">
+            <h2>2. Reading Strings using scanf()</h2>
+            <p>How do we read a string while the program is running (runtime) instead of hardcoding it?</p>
+
+<pre>
+<span class="keyword">char</span> name[<span class="keyword">30</span>]; 
+<span class="function">printf</span>(<span class="string">"Enter name: "</span>);
+<span class="function">scanf</span>(<span class="string">"%s"</span>, name);
+</pre>
+
+            <div class="callout">
+                <p><strong>Instructor's Golden Rules for String input:</strong></p>
+            </div>
+            <ul class="rules-list">
+                <li><strong>Format Specifier:</strong> We use <code>%s</code> to read strings.</li>
+                <li><strong>NO Ampersand (&):</strong> Unlike <code>scanf("%d", &age);</code>, we <strong>do not</strong> write <code>&name</code>. Because <code>name</code> is an array, its name already points to the base memory address!</li>
+                <li><strong>NO For-Loops:</strong> Unlike an integer array where you must loop to scan each number, <code>%s</code> reads the whole sequence automatically.</li>
+            </ul>
+        </article>
+
+        <!-- Feed Item 3 -->
+        <article class="card">
+            <h2>3. The Major Drawback of scanf()</h2>
+            <p>What happens if the user types their full name with a space?</p>
+            <p><strong>User Input:</strong> <code>Jayanti Khatri</code></p>
+
+            <p><code>scanf()</code> is programmed to stop reading the moment it encounters <strong>whitespace</strong> (a space, tab, or enter). It will read "Jayanti", see the space, stop entirely, and append the <code>\0</code>.</p>
+
+            <div class="memory-wrapper">
+                <div class="memory-label">Memory Result (Whitespace ends the read):</div>
+                <div class="memory-tape">
+                    <div class="memory-column"><div class="memory-cell">J</div><div class="memory-address">1000</div></div>
+                    <div class="memory-column"><div class="memory-cell">a</div><div class="memory-address">...</div></div>
+                    <div class="memory-column"><div class="memory-cell">y</div><div class="memory-address">...</div></div>
+                    <div class="memory-column"><div class="memory-cell">a</div><div class="memory-address">...</div></div>
+                    <div class="memory-column"><div class="memory-cell">n</div><div class="memory-address">...</div></div>
+                    <div class="memory-column"><div class="memory-cell">t</div><div class="memory-address">...</div></div>
+                    <div class="memory-column"><div class="memory-cell">i</div><div class="memory-address">1006</div></div>
+                    <div class="memory-column"><div class="memory-cell null">\0</div><div class="memory-address">1007</div></div>
+                    <div class="memory-column"><div class="memory-cell garbage">?</div><div class="memory-address">1008</div></div>
+                </div>
+            </div>
+            <p><strong>Output printed:</strong> <code>Jayanti</code> (We lost the surname!)</p>
+        </article>
+
+        <!-- Feed Item 4 -->
+        <article class="card">
+            <h2>4. The Solution: Using gets()</h2>
+            <p>To overcome the whitespace limitation, C provides the <code>gets()</code> function (Get String).</p>
+
+<pre>
+<span class="keyword">char</span> name[<span class="keyword">30</span>];
+<span class="function">printf</span>(<span class="string">"Enter name: "</span>);
+<span class="function">gets</span>(name);  <span class="comment">// Replaces scanf</span>
+</pre>
+
+            <ul class="rules-list">
+                <li>No format specifier (<code>%s</code>) is needed. Just pass the array name.</li>
+                <li><code>gets()</code> reads the <strong>entire line</strong>, including spaces, and only stops when you press the <strong>ENTER</strong> key.</li>
+                <li>When you press Enter, it automatically appends <code>\0</code> at the end.</li>
+            </ul>
+        </article>
+
+        <!-- Feed Item 5 -->
+        <article class="card danger">
+            <h2>🚨 5. The DANGER of both Functions: Buffer Overflow</h2>
+            <p>This is a critical computer science concept. Both <code>scanf</code> and <code>gets</code> are "blind" functions. They do not perform bounds checking.</p>
+
+<pre>
+<span class="keyword">char</span> name[<span class="keyword">5</span>];  <span class="comment">// Very small array! Size is 5.</span>
+<span class="function">gets</span>(name);    
+</pre>
+            
+            <p><strong>User Input:</strong> <code>Jayanti Khatri Lamba</code></p>
+            <p>We only asked for 5 bytes, but we typed a massive string. Because <code>gets</code> doesn't care about size, it will keep writing data, destroying whatever is sitting in the memory addresses *after* our array.</p>
+
+            <div class="memory-wrapper">
+                <div class="memory-label">Visualizing Buffer Overflow:</div>
+                <div class="memory-tape">
+                    <!-- Allocated Memory -->
+                    <div class="memory-column"><div class="memory-cell">J</div><div class="memory-address">1000</div></div>
+                    <div class="memory-column"><div class="memory-cell">a</div><div class="memory-address">1001</div></div>
+                    <div class="memory-column"><div class="memory-cell">y</div><div class="memory-address">1002</div></div>
+                    <div class="memory-column"><div class="memory-cell">a</div><div class="memory-address">1003</div></div>
+                    <div class="memory-column"><div class="memory-cell">n</div><div class="memory-address">1004</div></div>
+                    
+                    <div class="boundary-line"></div>
+                    
+                    <!-- Overflow / Danger Zone -->
+                    <div class="memory-column"><div class="memory-cell danger">t</div><div class="memory-address">1005</div></div>
+                    <div class="memory-column"><div class="memory-cell danger">i</div><div class="memory-address">1006</div></div>
+                    <div class="memory-column"><div class="memory-cell danger">_</div><div class="memory-address">1007</div></div>
+                    <div class="memory-column"><div class="memory-cell danger">K</div><div class="memory-address">1008</div></div>
+                    <div class="memory-column"><div class="memory-cell danger">h</div><div class="memory-address">1009</div></div>
+                </div>
+                <p style="text-align:center; font-size:0.85rem; margin-top:10px; color: var(--danger);"><strong>Danger! Overwriting unallocated memory!</strong></p>
+            </div>
+            
+            <p><strong>Why is this bad?</strong> The memory after your array belongs to other variables, other programs, or your OS. Overwriting it causes software crashes, data corruption, and severe security vulnerabilities. <em>(This is why gets() is considered highly unsafe in modern C).</em></p>
+        </article>
+
+        <!-- Feed Item 6 -->
+        <article class="card">
+            <h2>6. A Hack to fix scanf() Overflow</h2>
+            <p>While <code>gets()</code> cannot be fixed easily, there is a trick you can use with <code>scanf()</code> to prevent buffer overflows.</p>
+
+<pre>
+<span class="keyword">char</span> name[<span class="keyword">5</span>];
+<span class="function">scanf</span>(<span class="string">"%4s"</span>, name);
+</pre>
+
+            <ul class="rules-list">
+                <li>By adding a number to the format specifier (<code>%4s</code>), you instruct <code>scanf</code> to read <strong>a maximum of 4 characters</strong>.</li>
+                <li><strong>The (N-1) Rule:</strong> If your array size is 5, you must write <code>%4s</code>. Why? Because you MUST leave 1 byte of space for the compiler to add the Null Character (<code>\0</code>).</li>
+                <li>Drawback: Hardcoding numbers into format specifiers is generally considered bad practice.</li>
+            </ul>
+        </article>
+
+        <!-- Feed Item 7 -->
+        <article class="card" style="background-color: var(--primary-light); border-top: none;">
+            <h2>⏭️ Conclusion & What's Next</h2>
+            <p><strong>Summary:</strong></p>
+            <ul class="rules-list" style="color: var(--text-main);">
+                <li><code>scanf</code> stops at spaces.</li>
+                <li><code>gets</code> reads spaces but is highly unsafe due to Buffer Overflows.</li>
+            </ul>
+            <p><strong>Next Video Teaser:</strong> To safely read strings with spaces without causing buffer overflows, modern C programmers use <code>fgets()</code>. In the next video, the instructor will cover how to use <code>fgets()</code> properly, as well as <code>puts()</code> for outputting strings!</p>
+        </article>
+
+    </main>
+
+</body>
+</html>

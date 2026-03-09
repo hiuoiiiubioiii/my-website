@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Arrays: Sum & Average | Study Notes Feed</title>
+    <style>
+        /* --- GLOBAL STYLES --- */
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --primary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --highlight-color: #f1c40f;
+            --text-main: #333333;
+            --text-muted: #7f8c8d;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --border-color: #ecf0f1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        /* --- VERTICAL FEED LAYOUT --- */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px; /* Space between each note card */
+        }
+
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #bdc3c7;
+            font-size: 1rem;
+        }
+
+        .note-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary-color);
+        }
+
+        .note-card h2 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        /* --- TYPOGRAPHY & ELEMENTS --- */
+        p { margin-bottom: 15px; }
+        
+        .alert {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 12px;
+            border-left: 4px solid #ffeeba;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .highlight {
+            background-color: var(--highlight-color);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        /* --- CODE BLOCKS --- */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+        }
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #eaeaea;
+            color: #d35400;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        /* --- VISUALIZATIONS --- */
+        .visualization-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        /* Array Drawing */
+        .array-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 2px;
+        }
+
+        .array-cell-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .index-label, .address-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin: 5px 0;
+        }
+
+        .address-label {
+            color: var(--accent-color);
+            font-family: monospace;
+        }
+
+        .array-cell {
+            width: 60px;
+            height: 60px;
+            border: 2px solid var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: white;
+            position: relative;
+        }
+
+        /* Dry Run Table */
+        .dry-run-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background: white;
+        }
+
+        .dry-run-table th, .dry-run-table td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: center;
+        }
+
+        .dry-run-table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .dry-run-table tr:nth-child(even) { background-color: #f9f9f9; }
+        
+        .math-equation {
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            background: #e1f5fe;
+            padding: 10px;
+            border-radius: 5px;
+            display: inline-block;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+
+        <!-- HEADER -->
+        <header class="header">
+            <h1>C Arrays: Sum & Average</h1>
+            <p>Scroll down to review the complete lesson, whiteboard notes, and dry runs.</p>
+        </header>
+
+        <!-- CARD 1: Setup & Variables -->
+        <article class="note-card">
+            <h2>1. Problem Statement & Setup</h2>
+            <p><strong>Goal:</strong> Write a program (WAP) to read marks of 5 students, store them in an array, and calculate the sum and average.</p>
+            <p>We start inside the <code>main()</code> function by declaring the necessary variables:</p>
+            <pre>
+void main() {
+    int marks[5];
+    int sum = 0, avg;
+    int i;
+}</pre>
+            <div class="alert">
+                <strong>⚠️ Instructor's Warning - The "Garbage Value" Trap:</strong><br>
+                You <em>must</em> initialize <code>sum = 0;</code>. If you don't, C assigns a random "garbage value" to the memory block. When you try to add the students' marks to it, your final math will be completely ruined.
+            </div>
+            <p>We also declare an array <code>marks[5]</code> to hold our 5 integers, and an iterator <code>i</code> for our upcoming loops.</p>
+        </article>
+
+        <!-- CARD 2: Memory Visualization -->
+        <article class="note-card">
+            <h2>2. Visualizing Array Memory</h2>
+            <p>The instructor drew this on the whiteboard to explain how arrays are stored in contiguous (side-by-side) memory locations.</p>
+            
+            <div class="visualization-box">
+                <h4>Array: <code>marks[5]</code></h4>
+                <div class="array-container">
+                    <div class="array-cell-wrapper">
+                        <span class="index-label">Index: 0</span>
+                        <div class="array-cell">10</div>
+                        <span class="address-label">Addr: 100</span>
+                    </div>
+                    <div class="array-cell-wrapper">
+                        <span class="index-label">1</span>
+                        <div class="array-cell">20</div>
+                        <span class="address-label">104</span>
+                    </div>
+                    <div class="array-cell-wrapper">
+                        <span class="index-label">2</span>
+                        <div class="array-cell">15</div>
+                        <span class="address-label">108</span>
+                    </div>
+                    <div class="array-cell-wrapper">
+                        <span class="index-label">3</span>
+                        <div class="array-cell">25</div>
+                        <span class="address-label">112</span>
+                    </div>
+                    <div class="array-cell-wrapper">
+                        <span class="index-label">4</span>
+                        <div class="array-cell">7</div>
+                        <span class="address-label">116</span>
+                    </div>
+                </div>
+                <p style="font-size: 0.9rem; color: var(--text-muted); text-align: left; margin-top: 15px;">
+                    <strong>Instructor Notes:</strong><br>
+                    • The array name <code>marks</code> points to the <strong>Base Address (100)</strong>.<br>
+                    • Because an integer takes <strong>4 bytes</strong> of memory, the addresses jump by 4 (100 → 104 → 108...).<br>
+                    • The formula used behind the scenes is: <span class="highlight">Base Address + (i * size_of(int))</span>
+                </p>
+            </div>
+        </article>
+
+        <!-- CARD 3: Reading Input -->
+        <article class="note-card">
+            <h2>3. Reading Input from User</h2>
+            <p>We need to fill the 5 blocks of memory shown above. Instead of writing <code>scanf</code> 5 times, we use a <code>for</code> loop.</p>
+            <pre>
+for (i = 0; i < 5; i++) {
+    scanf("%d", &marks[i]);
+}</pre>
+            <div class="alert">
+                <strong>Crucial Syntax:</strong> Notice the ampersand <code>&</code> in <code>&marks[i]</code>. This tells the computer the exact memory address (e.g., 100, 104) where the typed number should be stored.
+            </div>
+        </article>
+
+        <!-- CARD 4: The Dry Run (Calculating Sum) -->
+        <article class="note-card">
+            <h2>4. Calculating the Sum (Whiteboard Dry Run)</h2>
+            <p>Now that the array is full, we use a second loop to pull out each number and add it to our <code>sum</code> variable.</p>
+            <pre>
+for (i = 0; i < 5; i++) {
+    sum = sum + marks[i];
+}</pre>
+            
+            <p>The instructor performs a detailed "dry run" (tracing the loop manually). Let's visualize how the <code>sum</code> variable changes in memory step-by-step using the numbers from her example (10, 20, 15, 25, 7):</p>
+            
+            <table class="dry-run-table">
+                <thead>
+                    <tr>
+                        <th>Iteration</th>
+                        <th>i value</th>
+                        <th>marks[i] value</th>
+                        <th>Math: sum + marks[i]</th>
+                        <th>New 'sum' Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Start</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td><strong>0</strong> (Initialized)</td>
+                    </tr>
+                    <tr>
+                        <td>1st Loop</td>
+                        <td>i = 0</td>
+                        <td>marks[0] = <strong>10</strong></td>
+                        <td>0 + 10</td>
+                        <td><span class="highlight">10</span></td>
+                    </tr>
+                    <tr>
+                        <td>2nd Loop</td>
+                        <td>i = 1</td>
+                        <td>marks[1] = <strong>20</strong></td>
+                        <td>10 + 20</td>
+                        <td><span class="highlight">30</span></td>
+                    </tr>
+                    <tr>
+                        <td>3rd Loop</td>
+                        <td>i = 2</td>
+                        <td>marks[2] = <strong>15</strong></td>
+                        <td>30 + 15</td>
+                        <td><span class="highlight">45</span></td>
+                    </tr>
+                    <tr>
+                        <td>4th Loop</td>
+                        <td>i = 3</td>
+                        <td>marks[3] = <strong>25</strong></td>
+                        <td>45 + 25</td>
+                        <td><span class="highlight">70</span></td>
+                    </tr>
+                    <tr>
+                        <td>5th Loop</td>
+                        <td>i = 4</td>
+                        <td>marks[4] = <strong>7</strong></td>
+                        <td>70 + 7</td>
+                        <td><span class="highlight">77</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <p>Once <code>i</code> becomes 5, the condition <code>i < 5</code> is false, and the loop breaks. Our final sum is <strong>77</strong>.</p>
+        </article>
+
+        <!-- CARD 5: Average & The Float Trap -->
+        <article class="note-card">
+            <h2>5. Calculating Average & "The Float Trap"</h2>
+            <p>To get the average, we divide the total sum by the number of students (5).</p>
+            <div class="math-equation">avg = sum / 5;</div>
+            <p><strong>The Whiteboard Discussion:</strong><br>
+            If we leave <code>sum</code> and <code>avg</code> as <code>int</code> data types, <code>77 / 5</code> will result in exactly <code>15</code>. Integers chop off (truncate) the decimal values.</p>
+            <p>To get an accurate average (like <code>15.4</code>), the instructor explains that it is better to declare our math variables as <code>float</code>. This requires us to use the <code>%f</code> format specifier when printing.</p>
+        </article>
+
+        <!-- CARD 6: Live Coding (Laptop Session) -->
+        <article class="note-card">
+            <h2>6. Live Coding Session (VS Code)</h2>
+            <p>The instructor moves to her laptop to write the final, robust version of the code, implementing the <code>float</code> fix.</p>
+            
+            <p><em>*Note: During the recording, she gets a compilation error because she initially forgot to declare <code>int i;</code> inside the loop. She quickly fixes this at the top of the function. Here is the final working code she writes:</em></p>
+
+            <pre>
+#include &lt;stdio.h&gt;
+
+void main() {
+    int i;
+    int marks[5];
+    
+    // Changing to float to prevent decimal truncation!
+    float sum = 0, avg; 
+
+    printf("Enter marks of 5 students:\n");
+    
+    // 1. Read values into array
+    for(i = 0; i < 5; i++) {
+        // Using %f because we are allowing floating-point marks now
+        scanf("%f", &marks[i]); 
+    }
+
+    // 2. Calculate Sum
+    for(i = 0; i < 5; i++) {
+        sum = sum + marks[i];
+    }
+
+    // 3. Calculate Average
+    avg = sum / 5;
+
+    // 4. Print Outputs (using %f for floats)
+    printf("sum = %f\n", sum);
+    printf("average = %f\n", avg);
+}</pre>
+            
+            <div class="visualization-box" style="text-align: left; background: #2c3e50; color: #ecf0f1; border-color: #2c3e50;">
+                <h4 style="color: #f1c40f; margin-bottom: 10px;">Terminal Output Example:</h4>
+                <code>Enter marks of 5 students:</code><br>
+                <code>23.45</code><br>
+                <code>56</code><br>
+                <code>78.9</code><br>
+                <code>99.4</code><br>
+                <code>56.7</code><br>
+                <code>sum = 314.450012</code><br>
+                <code>average = 62.890003</code>
+            </div>
+            
+            <p>Because floats default to showing 6 decimal places, the terminal outputs precise answers rather than rounding off.</p>
+        </article>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming Notes: Functions With Arguments & Return Types</title>
+    <style>
+        /* === BASE STYLES & TYPOGRAPHY === */
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-light: #555555;
+            --primary: #4e54c8;
+            --secondary: #8f94fb;
+            --code-bg: #1e1e1e;
+            --highlight: #ffb703;
+            --memory-main: #e0f7fa;
+            --memory-sum: #fce4ec;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.7;
+            padding: 20px;
+        }
+
+        /* === VERTICAL FEED LAYOUT === */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 40px; /* Space between topics */
+        }
+
+        .note-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--primary);
+        }
+
+        /* === TYPOGRAPHY === */
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            color: var(--primary);
+            margin: 20px 0 10px 0;
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .highlight-box {
+            background-color: #fff8e1;
+            border-left: 5px solid var(--highlight);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+            font-style: italic;
+        }
+
+        /* === CODE BLOCKS === */
+        pre {
+            background-color: var(--code-bg);
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.05rem;
+            margin: 20px 0;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .code-comment { color: #6a9955; }
+        .code-keyword { color: #569cd6; }
+        .code-func { color: #dcdcaa; }
+        .code-string { color: #ce9178; }
+        .code-type { color: #4ec9b0; }
+
+        /* === MEMORY VISUALIZATIONS (CSS ART) === */
+        .viz-container {
+            background-color: #fafafa;
+            border: 2px dashed #ccc;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .memory-block {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .main-mem { background-color: var(--memory-main); border: 2px solid #00bcd4; }
+        .sum-mem { background-color: var(--memory-sum); border: 2px solid #e91e63; }
+
+        .memory-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-family: monospace;
+            font-size: 1.2rem;
+        }
+
+        .variable-grid {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .variable {
+            background: white;
+            border: 2px solid #333;
+            border-radius: 6px;
+            width: 70px;
+            height: 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            position: relative;
+        }
+
+        .var-name {
+            position: absolute;
+            top: -25px;
+            font-size: 1rem;
+            color: #555;
+            font-family: monospace;
+        }
+
+        .flow-arrow {
+            font-size: 2rem;
+            color: var(--primary);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(10px); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .note-card { padding: 20px; }
+            h1 { font-size: 2rem; }
+            .variable { width: 60px; height: 60px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+
+        <!-- Header Section -->
+        <header class="note-card" style="text-align: center; border-top: none; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white;">
+            <p style="text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; margin-bottom: 10px;">Jenny's Lectures - C Programming</p>
+            <h1 style="color: white;">Functions WITH Arguments & WITH Return Type</h1>
+            <p style="opacity: 0.9;">In-depth lecture breakdown & whiteboard visualizations</p>
+        </header>
+
+        <!-- Topic 1: Concept Overview -->
+        <article class="note-card">
+            <h2>1. Concept Overview</h2>
+            <p>This is the 4th and final classification of functions in C. In this structure, data flows in both directions:</p>
+            <ul>
+                <li><strong>With Arguments:</strong> The calling function (e.g., <code>main()</code>) passes actual data (values) to the user-defined function.</li>
+                <li><strong>With Return Type:</strong> The user-defined function performs a calculation and sends a final result <em>back</em> to the calling function.</li>
+            </ul>
+            <div class="highlight-box">
+                <strong>Instructor's Rule:</strong> Because data is being passed <em>into</em> the function from <code>main</code>, you <strong>do not need</strong> <code>printf</code> or <code>scanf</code> inside the user-defined function. The input is already provided!
+            </div>
+        </article>
+
+        <!-- Topic 2: Building the Syntax -->
+        <article class="note-card">
+            <h2>2. Step-by-Step Code Construction</h2>
+            
+            <h3>Step A: Function Declaration (Prototype)</h3>
+            <p>Tell the compiler what the function looks like before `main()`. We want the sum of two integers, so the return type is <code>int</code>, and it accepts two <code>int</code> arguments.</p>
+            <pre><code><span class="code-keyword">int</span> <span class="code-func">sum</span>(<span class="code-keyword">int</span>, <span class="code-keyword">int</span>);</code></pre>
+
+            <h3>Step B: The Main Function (Calling)</h3>
+            <p>We ask the user for two numbers, store them in `x` and `y`, and pass them to our function. We must also create a variable `c` to "catch" the answer returning from the function.</p>
+            <pre><code><span class="code-keyword">void</span> <span class="code-func">main</span>() {
+    <span class="code-keyword">int</span> x, y, c;
+    
+    <span class="code-func">printf</span>(<span class="code-string">"Enter x and y: "</span>);
+    <span class="code-func">scanf</span>(<span class="code-string">"%d %d"</span>, &x, &y);
+    
+    <span class="code-comment">// Call the function, pass x and y, and catch the result in c</span>
+    c = <span class="code-func">sum</span>(x, y); 
+    
+    <span class="code-func">printf</span>(<span class="code-string">"Sum = %d"</span>, c);
+}</code></pre>
+
+            <h3>Step C: The Function Definition (The Logic)</h3>
+            <p>Here, we must give the arguments variable names (<code>a</code> and <code>b</code>) to hold the incoming data. We process the sum and use the <code>return</code> keyword.</p>
+            <pre><code><span class="code-keyword">int</span> <span class="code-func">sum</span>(<span class="code-keyword">int</span> a, <span class="code-keyword">int</span> b) {
+    <span class="code-keyword">int</span> s = 0;   <span class="code-comment">// Local variable for processing</span>
+    s = a + b;
+    <span class="code-keyword">return</span> s;    <span class="code-comment">// Send the answer back to main</span>
+
+    <span class="code-comment">// Alternate Syntax mentioned by instructor:</span>
+    <span class="code-comment">// return a + b;</span>
+}</code></pre>
+        </article>
+
+        <!-- Topic 3: The Dry Run / Visualization -->
+        <article class="note-card">
+            <h2>3. Visualizing Memory (The "Dry Run")</h2>
+            <p>How does the computer actually execute this? The instructor drew memory blocks on the whiteboard. Let's assume the user enters <strong>5</strong> and <strong>7</strong>.</p>
+
+            <div class="viz-container">
+                
+                <!-- Main Memory -->
+                <div class="memory-block main-mem">
+                    <div class="memory-title">main() Memory Block</div>
+                    <div class="variable-grid">
+                        <div class="variable">
+                            <span class="var-name">x</span>
+                            5
+                        </div>
+                        <div class="variable">
+                            <span class="var-name">y</span>
+                            7
+                        </div>
+                        <div class="variable" style="background: #f0f0f0;">
+                            <span class="var-name">c</span>
+                            ⏳
+                        </div>
+                    </div>
+                    <p style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: #555;"><code>c = sum(x, y);</code> pauses main() and passes copies of 5 and 7 down.</p>
+                </div>
+
+                <!-- Down Arrow -->
+                <div class="flow-arrow">⬇️ Call by Value ⬇️</div>
+
+                <!-- Sum Memory -->
+                <div class="memory-block sum-mem">
+                    <div class="memory-title">sum() Memory Block</div>
+                    <div class="variable-grid">
+                        <div class="variable">
+                            <span class="var-name">a</span>
+                            5
+                        </div>
+                        <div class="variable">
+                            <span class="var-name">b</span>
+                            7
+                        </div>
+                        <div class="variable">
+                            <span class="var-name">s</span>
+                            12
+                        </div>
+                    </div>
+                    <p style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: #555;"><code>s = a + b;</code> computes 12. <code>return s;</code> sends 12 back up!</p>
+                </div>
+
+                <!-- Up Arrow -->
+                <div class="flow-arrow">⬆️ Return Value (12) ⬆️</div>
+
+            </div>
+
+            <div class="highlight-box">
+                <strong>Crucial Scope Rule:</strong> The variables <code>x, y, c</code> belong ONLY to <code>main()</code>. The variables <code>a, b, s</code> belong ONLY to <code>sum()</code>. You cannot write <code>printf("%d", s)</code> inside main, because <code>s</code> is destroyed the moment the sum function finishes running!
+            </div>
+        </article>
+
+        <!-- Topic 4: Complete Code & Assignment -->
+        <article class="note-card">
+            <h2>4. Complete Execution & Homework</h2>
+            <p>Putting it all together, here is the final code that the instructor ran inside VS Code during the demonstration:</p>
+            <pre><code><span class="code-comment">#include &lt;stdio.h&gt;</span>
+
+<span class="code-keyword">int</span> <span class="code-func">sum</span>(<span class="code-keyword">int</span>, <span class="code-keyword">int</span>);
+
+<span class="code-keyword">void</span> <span class="code-func">main</span>() {
+    <span class="code-keyword">int</span> x, y, c;
+    <span class="code-func">printf</span>(<span class="code-string">"Enter x and y: "</span>);
+    <span class="code-func">scanf</span>(<span class="code-string">"%d %d"</span>, &x, &y);
+    
+    c = <span class="code-func">sum</span>(x, y);
+    <span class="code-func">printf</span>(<span class="code-string">"Sum = %d"</span>, c);
+}
+
+<span class="code-keyword">int</span> <span class="code-func">sum</span>(<span class="code-keyword">int</span> a, <span class="code-keyword">int</span> b) {
+    <span class="code-keyword">return</span> a + b;
+}</code></pre>
+
+            <h3 style="margin-top: 30px;">🎓 Instructor's Homework Assignment</h3>
+            <p>To truly master this, you cannot just memorize the "Sum" program. The instructor assigned the following task:</p>
+            <p style="background: var(--bg-color); padding: 15px; border-left: 4px solid var(--primary); border-radius: 4px;">
+                <strong>Write a program to find the maximum of two numbers.</strong><br>
+                It must take two arguments as input (the two numbers), and it must <code>return</code> the larger number back to <code>main()</code>. Try writing this on your own IDE using the exact blueprint learned today!
+            </p>
+        </article>
+
+    </div>
+
+</body>
+</html>

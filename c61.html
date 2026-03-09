@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Multiplication in C - Study Feed</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --accent-blue: #007bff;
+            --accent-red: #ff4d4d;
+            --accent-green: #28a745;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --highlight-row: rgba(255, 77, 77, 0.2);
+            --highlight-col: rgba(0, 123, 255, 0.2);
+            --highlight-result: rgba(40, 167, 69, 0.3);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Feed Items (Cards) */
+        .feed-item {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e1e4e8;
+        }
+
+        .feed-item h2 {
+            margin-top: 0;
+            color: var(--accent-blue);
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 10px;
+            position: sticky;
+            top: 0;
+            background: var(--card-bg);
+            z-index: 10;
+        }
+
+        .feed-item h3 {
+            color: #444;
+            margin-top: 25px;
+        }
+
+        .highlight-text {
+            background-color: #fff3cd;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* Visualizations: Matrices */
+        .visual-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .matrix-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .matrix {
+            display: grid;
+            gap: 4px;
+            padding: 8px;
+            border-left: 2px solid var(--text-main);
+            border-right: 2px solid var(--text-main);
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+
+        .matrix.m3x3 { grid-template-columns: repeat(3, 40px); }
+        .matrix.m3x2 { grid-template-columns: repeat(2, 40px); }
+
+        .cell {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .matrix-label {
+            margin-top: 10px;
+            font-weight: bold;
+            color: var(--text-muted);
+        }
+
+        .dimension {
+            font-size: 0.9rem;
+            color: var(--accent-red);
+        }
+
+        /* Highlighting Logic */
+        .h-row { background-color: var(--highlight-row); border-color: var(--accent-red); }
+        .h-col { background-color: var(--highlight-col); border-color: var(--accent-blue); }
+        .h-res { background-color: var(--highlight-result); border-color: var(--accent-green); }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.95rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        code { font-family: 'Courier New', Courier, monospace; }
+        .c-comment { color: #6a9955; }
+        .c-keyword { color: #569cd6; }
+        .c-type { color: #4ec9b0; }
+
+        /* Calculation Steps Box */
+        .calc-steps {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--accent-blue);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+            font-family: monospace;
+            font-size: 1rem;
+        }
+
+        .calc-steps ul { padding-left: 20px; margin: 0; }
+        .calc-steps li { margin-bottom: 8px; }
+
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+
+    <!-- Card 1: Setup & Math Rules -->
+    <div class="feed-item">
+        <h2>1. The Setup & Mathematical Rules</h2>
+        <p>Before writing code, we must establish the dimensions of the matrices we want to multiply. Let's define Matrix A and Matrix B.</p>
+        
+        <div class="visual-container">
+            <div class="matrix-wrapper">
+                <div class="matrix m3x3">
+                    <div class="cell">0</div><div class="cell">5</div><div class="cell">2</div>
+                    <div class="cell">-1</div><div class="cell">1</div><div class="cell">0</div>
+                    <div class="cell">7</div><div class="cell">4</div><div class="cell">3</div>
+                </div>
+                <div class="matrix-label">Matrix A <br><span class="dimension">3 Rows (m) × 3 Cols (n)</span></div>
+            </div>
+            
+            <div style="font-size: 2rem; font-weight: bold;">×</div>
+
+            <div class="matrix-wrapper">
+                <div class="matrix m3x2">
+                    <div class="cell">1</div><div class="cell">2</div>
+                    <div class="cell">0</div><div class="cell">4</div>
+                    <div class="cell">3</div><div class="cell">5</div>
+                </div>
+                <div class="matrix-label">Matrix B <br><span class="dimension">3 Rows (p) × 2 Cols (q)</span></div>
+            </div>
+        </div>
+
+        <h3>The Core Rule</h3>
+        <p>You can <strong>ONLY</strong> multiply two matrices if the <span class="highlight-text">Columns of Matrix A == Rows of Matrix B</span>.</p>
+        <ul>
+            <li>In our example: <strong>n (3) == p (3)</strong>. Multiplication is possible.</li>
+            <li>The resulting <strong>Matrix C</strong> will take the remaining dimensions: <strong>Rows of A × Columns of B (3 × 2)</strong>.</li>
+        </ul>
+    </div>
+
+    <!-- Card 2: Core Logic -->
+    <div class="feed-item">
+        <h2>2. Building the Core Logic (Nested Loops)</h2>
+        <p>To multiply these matrices, we need three nested loops. Here is the logic the instructor writes on the whiteboard.</p>
+        
+<pre><code><span class="c-keyword">for</span>(<span class="c-type">int</span> i = <span class="c-keyword">0</span>; i < <span class="c-keyword">3</span>; i++)          <span class="c-comment">// Loop 1: Tracks ROWS of Matrix C</span>
+{
+    <span class="c-keyword">for</span>(<span class="c-type">int</span> j = <span class="c-keyword">0</span>; j < <span class="c-keyword">2</span>; j++)      <span class="c-comment">// Loop 2: Tracks COLUMNS of Matrix C</span>
+    {
+        sum = <span class="c-keyword">0</span>;                <span class="c-comment">// CRUCIAL: Reset sum for every new cell</span>
+        
+        <span class="c-keyword">for</span>(<span class="c-type">int</span> k = <span class="c-keyword">0</span>; k < <span class="c-keyword">3</span>; k++)  <span class="c-comment">// Loop 3: Handles the moving math pointer</span>
+        {
+            sum = sum + a[i][k] * b[k][j]; 
+        }
+        c[i][j] = sum;          <span class="c-comment">// Store final sum in Result Matrix C</span>
+    }
+}</code></pre>
+
+        <h3>Why 3 Loops?</h3>
+        <ul>
+            <li><strong>The <code>i</code> loop:</strong> Determines which row of Matrix A we are using.</li>
+            <li><strong>The <code>j</code> loop:</strong> Determines which column of Matrix B we are using.</li>
+            <li><strong>The <code>k</code> loop:</strong> Moves <i>across</i> the columns of Matrix A and <i>down</i> the rows of Matrix B simultaneously to multiply and add the items.</li>
+        </ul>
+    </div>
+
+    <!-- Card 3: Dry Run C[0][0] -->
+    <div class="feed-item">
+        <h2>3. Dry Run: Calculating C[0][0]</h2>
+        <p>Let's manually trace the code for the very first cell. <br>State: <code>i = 0, j = 0, sum = 0</code></p>
+        
+        <div class="visual-container">
+            <div class="matrix-wrapper">
+                <div class="matrix m3x3">
+                    <div class="cell h-row">0</div><div class="cell h-row">5</div><div class="cell h-row">2</div>
+                    <div class="cell">-1</div><div class="cell">1</div><div class="cell">0</div>
+                    <div class="cell">7</div><div class="cell">4</div><div class="cell">3</div>
+                </div>
+                <div class="matrix-label">A[0][k]</div>
+            </div>
+            
+            <div class="matrix-wrapper">
+                <div class="matrix m3x2">
+                    <div class="cell h-col">1</div><div class="cell">2</div>
+                    <div class="cell h-col">0</div><div class="cell">4</div>
+                    <div class="cell h-col">3</div><div class="cell">5</div>
+                </div>
+                <div class="matrix-label">B[k][0]</div>
+            </div>
+
+            <div style="font-size: 2rem;">=</div>
+
+            <div class="matrix-wrapper">
+                <div class="matrix m3x2">
+                    <div class="cell h-res">6</div><div class="cell"></div>
+                    <div class="cell"></div><div class="cell"></div>
+                    <div class="cell"></div><div class="cell"></div>
+                </div>
+                <div class="matrix-label">C[0][0]</div>
+            </div>
+        </div>
+
+        <div class="calc-steps">
+            <strong>Entering the 'k' loop (k goes 0 → 1 → 2):</strong>
+            <ul>
+                <li><code>k=0</code> : sum = 0 + (0 * 1) → <strong>sum = 0</strong></li>
+                <li><code>k=1</code> : sum = 0 + (5 * 0) → <strong>sum = 0</strong></li>
+                <li><code>k=2</code> : sum = 0 + (2 * 3) → <strong>sum = 6</strong></li>
+            </ul>
+            <strong>Exit loop:</strong> <code>c[0][0] = 6</code>
+        </div>
+    </div>
+
+    <!-- Card 4: Dry Run C[0][1] -->
+    <div class="feed-item">
+        <h2>4. Dry Run: Calculating C[0][1]</h2>
+        <p>The <code>k</code> loop finishes, so <code>j</code> increments to 1. <code>sum</code> resets to 0.<br>State: <code>i = 0, j = 1, sum = 0</code></p>
+        
+        <div class="visual-container">
+            <div class="matrix-wrapper">
+                <div class="matrix m3x3">
+                    <div class="cell h-row">0</div><div class="cell h-row">5</div><div class="cell h-row">2</div>
+                    <div class="cell">-1</div><div class="cell">1</div><div class="cell">0</div>
+                    <div class="cell">7</div><div class="cell">4</div><div class="cell">3</div>
+                </div>
+                <div class="matrix-label">A[0][k]</div>
+            </div>
+            
+            <div class="matrix-wrapper">
+                <div class="matrix m3x2">
+                    <div class="cell">1</div><div class="cell h-col">2</div>
+                    <div class="cell">0</div><div class="cell h-col">4</div>
+                    <div class="cell">3</div><div class="cell h-col">5</div>
+                </div>
+                <div class="matrix-label">B[k][1]</div>
+            </div>
+
+            <div style="font-size: 2rem;">=</div>
+
+            <div class="matrix-wrapper">
+                <div class="matrix m3x2">
+                    <div class="cell">6</div><div class="cell h-res">30</div>
+                    <div class="cell"></div><div class="cell"></div>
+                    <div class="cell"></div><div class="cell"></div>
+                </div>
+                <div class="matrix-label">C[0][1]</div>
+            </div>
+        </div>
+
+        <div class="calc-steps">
+            <strong>Entering the 'k' loop (k goes 0 → 1 → 2):</strong>
+            <ul>
+                <li><code>k=0</code> : sum = 0 + (0 * 2) → <strong>sum = 0</strong></li>
+                <li><code>k=1</code> : sum = 0 + (5 * 4) → <strong>sum = 20</strong></li>
+                <li><code>k=2</code> : sum = 20 + (2 * 5) → <strong>sum = 30</strong></li>
+            </ul>
+            <strong>Exit loop:</strong> <code>c[0][1] = 30</code>
+        </div>
+        <p><i>The program repeats this process for every row in A against every column in B until Matrix C is completely filled.</i></p>
+    </div>
+
+    <!-- Card 5: Full Code Implementation -->
+    <div class="feed-item">
+        <h2>5. Practical C Code Implementation</h2>
+        <p>Moving from the whiteboard to the IDE. Here are the crucial additions made in the final C code:</p>
+        <ul>
+            <li><strong>Dynamic Sizing:</strong> Used <code>#define N 50</code> so matrices can be any size up to 50x50.</li>
+            <li><strong>The Safety Check:</strong> You <strong>must</strong> use an <code>if (n != p)</code> check before starting the loops to prevent mathematical errors.</li>
+        </ul>
+
+<pre><code><span class="c-keyword">#include</span> &lt;stdio.h&gt;
+<span class="c-keyword">#define</span> N 50
+
+<span class="c-type">int</span> main() {
+    <span class="c-type">int</span> a[N][N], b[N][N], c[N][N];
+    <span class="c-type">int</span> i, j, k, sum;
+    <span class="c-type">int</span> m, n, p, q;
+
+    <span class="c-comment">// 1. Ask for dimensions of Matrix A</span>
+    printf(<span class="c-keyword">"Enter rows and columns for first matrix:\n"</span>);
+    scanf(<span class="c-keyword">"%d %d"</span>, &m, &n);
+
+    <span class="c-comment">// Read Matrix A data... (Code omitted for brevity)</span>
+
+    <span class="c-comment">// 2. Ask for dimensions of Matrix B</span>
+    printf(<span class="c-keyword">"Enter rows and columns for second matrix:\n"</span>);
+    scanf(<span class="c-keyword">"%d %d"</span>, &p, &q);
+
+    <span class="c-comment">// Read Matrix B data...</span>
+
+    <span class="c-comment">// 3. THE SAFETY CHECK</span>
+    <span class="c-keyword">if</span> (n != p) {
+        printf(<span class="c-keyword">"Can not multiply\n"</span>);
+    } 
+    <span class="c-keyword">else</span> {
+        <span class="c-comment">// 4. THE MULTIPLICATION LOGIC</span>
+        <span class="c-keyword">for</span>(i = <span class="c-keyword">0</span>; i < m; i++)          <span class="c-comment">// Outer loop: rows of A</span>
+        {
+            <span class="c-keyword">for</span>(j = <span class="c-keyword">0</span>; j < q; j++)      <span class="c-comment">// Inner loop: cols of B</span>
+            {
+                sum = <span class="c-keyword">0</span>;
+                <span class="c-keyword">for</span>(k = <span class="c-keyword">0</span>; k < n; k++)  <span class="c-comment">// Math loop: matching dimension (n or p)</span>
+                {
+                    sum = sum + a[i][k] * b[k][j];
+                }
+                c[i][j] = sum;
+            }
+        }
+        
+        <span class="c-comment">// Print Result Matrix C...</span>
+    }
+    <span class="c-keyword">return</span> <span class="c-keyword">0</span>;
+}</code></pre>
+        <p><i><strong>Instructor's Note:</strong> Always remember that the <code>k</code> loop bounds must be the matching dimension (either <code>n</code> or <code>p</code> since they are equal). The resulting matrix loop bounds are <code>m</code> (rows of A) and <code>q</code> (cols of B).</i></p>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Arrays Study Notes | Memory & Access</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --secondary: #3b82f6;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --code-bg: #1e293b;
+            --code-text: #e2e8f0;
+            --highlight: #fef08a;
+            --border: #e5e7eb;
+            --accent-red: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        /* Feed Container */
+        .feed-container {
+            max-width: 800px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Cards/Sections */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 0.5rem;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+        }
+
+        ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Code Blocks */
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+        }
+
+        code {
+            background: #e2e8f0;
+            color: #b91c1c;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+        }
+
+        .highlight {
+            background-color: var(--highlight);
+            padding: 0 4px;
+            border-radius: 2px;
+        }
+
+        /* Memory Tape Visualization */
+        .memory-tape-wrapper {
+            margin: 2rem 0;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+        }
+
+        .memory-tape {
+            display: flex;
+            min-width: max-content;
+            gap: 4px;
+        }
+
+        .memory-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90px;
+        }
+
+        .block-value {
+            background: var(--primary);
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            width: 100%;
+            text-align: center;
+            padding: 1rem 0;
+            border-radius: 8px 8px 0 0;
+            border: 2px solid var(--primary);
+        }
+
+        .block-index {
+            background: var(--card-bg);
+            color: var(--text-muted);
+            width: 100%;
+            text-align: center;
+            padding: 0.5rem 0;
+            border-left: 2px solid var(--border);
+            border-right: 2px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        .block-address {
+            background: #f8fafc;
+            color: var(--accent-red);
+            font-family: monospace;
+            font-weight: bold;
+            width: 100%;
+            text-align: center;
+            padding: 0.5rem 0;
+            border: 2px solid var(--border);
+            border-radius: 0 0 8px 8px;
+            border-top: none;
+        }
+
+        /* Base Address Pointer Visual */
+        .pointer-visual {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-top: 1.5rem;
+            background: #eff6ff;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .pointer-box {
+            display: inline-block;
+            border: 2px solid var(--text-main);
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            font-family: monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: white;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Formula Box */
+        .formula-box {
+            background: var(--code-bg);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.2rem;
+            margin: 2rem 0;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            border-left: 6px solid #10b981;
+        }
+
+        .formula-box span.math {
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+
+        .header-meta {
+            color: var(--text-muted);
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header Section -->
+        <div>
+            <h1>Memory Representation & Accessing Arrays</h1>
+            <div class="header-meta">
+                <p><strong>Instructor:</strong> Jayanti Khatri Lamba | <strong>Topic:</strong> 1D Arrays in C</p>
+            </div>
+        </div>
+
+        <!-- Section 1: Declaration -->
+        <div class="card">
+            <h2>1. Declaration & Initialization</h2>
+            <p>The instructor begins by declaring and initializing a 1-Dimensional (1D) array simultaneously. This is known as <strong>compile-time initialization</strong>.</p>
+            <pre>int a[5] = {1, 10, 0, -1, 3};</pre>
+            <ul>
+                <li><code>int</code> - The data type of the elements.</li>
+                <li><code>a</code> - The name of the array.</li>
+                <li><code>[5]</code> - The size of the array (it holds 5 elements).</li>
+                <li><code>{...}</code> - The specific values assigned to the array instantly.</li>
+            </ul>
+        </div>
+
+        <!-- Section 2: Memory Tape & Size -->
+        <div class="card">
+            <h2>2. The Memory Tape & Total Size</h2>
+            <p>Computer memory acts like a long tape made up of individual blocks. <strong>Each block represents 1 byte (8 bits).</strong></p>
+            <p>To store our data, the computer needs to calculate how much memory to allocate. Here is how it calculates the required space:</p>
+            
+            <div class="pointer-visual" style="border-left-color: var(--primary);">
+                <p><strong>Total Memory Calculation:</strong></p>
+                <p>1 Integer = <code>4 bytes</code> <em>(assumed for this machine architecture)</em></p>
+                <p>Array Size = <code>5 elements</code></p>
+                <p style="font-size: 1.2rem; margin-top: 10px;"><strong>4 bytes × 5 = <span class="highlight">20 bytes</span></strong></p>
+            </div>
+            <p style="margin-top: 1rem;">The compiler will reserve exactly 20 bytes of space for this array.</p>
+        </div>
+
+        <!-- Section 3: Contiguous Allocation & Visual Map -->
+        <div class="card">
+            <h2>3. The Golden Rule: Contiguous Allocation</h2>
+            <p>The most important property of an array is that memory is allocated in a <strong>contiguous block</strong>. The 20 bytes are not scattered; they are placed side-by-side, one right after the other.</p>
+            
+            <h3>Visualizing the Memory Map</h3>
+            <p>Let's assume the computer places the first element at hypothetical memory address <code>2000</code>. Because an integer takes 4 bytes, the next element will naturally start at <code>2004</code>.</p>
+            
+            <div class="memory-tape-wrapper">
+                <div class="memory-tape">
+                    <div class="memory-block">
+                        <div class="block-value">1</div>
+                        <div class="block-index">Index 0</div>
+                        <div class="block-address">2000</div>
+                    </div>
+                    <div class="memory-block">
+                        <div class="block-value">10</div>
+                        <div class="block-index">Index 1</div>
+                        <div class="block-address">2004</div>
+                    </div>
+                    <div class="memory-block">
+                        <div class="block-value">0</div>
+                        <div class="block-index">Index 2</div>
+                        <div class="block-address">2008</div>
+                    </div>
+                    <div class="memory-block">
+                        <div class="block-value">-1</div>
+                        <div class="block-index">Index 3</div>
+                        <div class="block-address">2012</div>
+                    </div>
+                    <div class="memory-block">
+                        <div class="block-value">3</div>
+                        <div class="block-index">Index 4</div>
+                        <div class="block-address">2016</div>
+                    </div>
+                </div>
+            </div>
+            <p><em>*Note: Array indexing always starts at 0. So a size 5 array ends at index 4 (Size - 1).</em></p>
+        </div>
+
+        <!-- Section 4: Pointers & Base Address -->
+        <div class="card">
+            <h2>4. The "Base Address" & Internal Pointers</h2>
+            <p>The address of the very first element (<code>2000</code>) is known as the <strong>Base Address</strong>. This is the anchor point for the entire array.</p>
+            
+            <div class="pointer-visual">
+                <p style="margin-bottom: 0.5rem; color: var(--text-muted); font-size: 0.9rem;">Array Name Variable:</p>
+                <div class="pointer-box">a [ 2000 ]</div>
+                <p><strong>Crucial Concept:</strong> The name of the array (<code>a</code>) actually acts as an <strong>Internal Pointer</strong>. It is a variable that stores the base address of the array. When the computer sees <code>a</code>, it sees <code>2000</code>.</p>
+            </div>
+        </div>
+
+        <!-- Section 5: Accessing Elements & Formula -->
+        <div class="card">
+            <h2>5. Accessing Elements (Random Access)</h2>
+            <p>Arrays allow for <strong>Random Access</strong>. If you want the 4th element (<code>a[3]</code>), the computer doesn't need to read the 1st, 2nd, and 3rd elements first. It jumps directly to it using a mathematical formula.</p>
+
+            <div class="formula-box">
+                <p><strong>Address Calculation Formula:</strong></p>
+                <br>
+                <p>Address = Base Address + <span class="math">( Index × Size of Data Type )</span></p>
+            </div>
+
+            <p>The computer knows the Base Address (from <code>a</code>) and the data type size (4 bytes). When you provide an index, it calculates the exact memory location instantly.</p>
+        </div>
+
+        <!-- Section 6: Proving the Formula -->
+        <div class="card">
+            <h2>6. Proving the Formula</h2>
+            <p>Let's run the formula manually based on our memory map to prove it works.</p>
+
+            <h3>Example A: Finding the 4th Element <code>a[3]</code></h3>
+            <ul>
+                <li>Base Address = <code>2000</code></li>
+                <li>Target Index = <code>3</code></li>
+                <li>Data Size = <code>4</code></li>
+                <li><strong>Math:</strong> 2000 + (3 × 4) ➔ 2000 + 12 = <strong><span class="highlight">2012</span></strong></li>
+            </ul>
+            <p><em>Result: Address 2012 correctly holds the value <code>-1</code>.</em></p>
+
+            <h3>Example B: Finding the 1st Element <code>a[0]</code></h3>
+            <ul>
+                <li><strong>Math:</strong> 2000 + (0 × 4) ➔ 2000 + 0 = <strong><span class="highlight">2000</span></strong></li>
+            </ul>
+            <p><em>Result: Index 0 mathematically returns the base address itself!</em></p>
+
+            <h3>Example C: Finding the 2nd Element <code>a[1]</code></h3>
+            <ul>
+                <li><strong>Math:</strong> 2000 + (1 × 4) ➔ 2000 + 4 = <strong><span class="highlight">2004</span></strong></li>
+            </ul>
+            <p><em>Result: Accurately points to the start of the second element.</em></p>
+        </div>
+
+        <!-- Section 7: Time Complexity & Conclusion -->
+        <div class="card">
+            <h2>7. Time Complexity & Summary <span class="badge">O(1)</span></h2>
+            <p>Because accessing an element relies entirely on a simple math formula rather than searching sequentially through memory blocks, accessing <em>any</em> element takes exactly the same amount of time.</p>
+            <p>In computer science, this constant speed is known as <strong>Big O of 1</strong>, or <code>O(1)</code> time complexity.</p>
+
+            <h3>What's Next?</h3>
+            <p>Everything discussed in this lesson applies to <strong>1D Arrays</strong> (a single row of data). With the theory of memory and access complete, the next steps will cover practical programming exercises (finding largest/smallest elements, summing elements), before eventually moving on to 2D Arrays.</p>
+        </div>
+
+        <div style="text-align: center; color: var(--text-muted); padding-bottom: 2rem;">
+            <p>End of Notes — Keep scrolling to review!</p>
+        </div>
+
+    </div>
+
+</body>
+</html>

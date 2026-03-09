@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matrix Addition in C - Study Notes</title>
+    <style>
+        /* --- GLOBAL STYLES & TYPOGRAPHY --- */
+        :root {
+            --bg-color: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #475569;
+            --primary: #3b82f6;
+            --primary-light: #eff6ff;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --accent: #10b981;
+            --border: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* --- VERTICAL FEED LAYOUT --- */
+        .feed-container {
+            max-width: 800px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            padding-bottom: 100px;
+        }
+
+        /* --- CARD DESIGN FOR TOPICS --- */
+        .topic-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border);
+        }
+
+        .topic-card h1 {
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+            line-height: 1.2;
+        }
+
+        .topic-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .topic-card p {
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+
+        .highlight {
+            background-color: #fef08a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #854d0e;
+            font-weight: 600;
+        }
+
+        /* --- CODE BLOCKS --- */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            margin: 20px 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        code .keyword { color: #569cd6; }
+        code .type { color: #4ec9b0; }
+        code .string { color: #ce9178; }
+        code .comment { color: #6a9955; }
+        code .func { color: #dcdcaa; }
+
+        /* --- VISUALIZATIONS (CSS MATRICES) --- */
+        .math-equation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .matrix-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .matrix-label {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .matrix {
+            display: inline-grid;
+            grid-template-columns: repeat(3, 40px);
+            gap: 15px;
+            padding: 10px 15px;
+            position: relative;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        /* The brackets of the matrix */
+        .matrix::before, .matrix::after {
+            content: '';
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 10px;
+            border: 2px solid var(--text-main);
+        }
+        .matrix::before { left: 0; border-right: none; }
+        .matrix::after { right: 0; border-left: none; }
+
+        .math-sign {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-muted);
+        }
+
+        .cell-highlight {
+            background-color: rgba(59, 130, 246, 0.2);
+            border-radius: 4px;
+            color: var(--primary);
+        }
+
+        /* --- DRY RUN TRACE BLOCKS --- */
+        .trace-box {
+            background: var(--primary-light);
+            border-left: 4px solid var(--primary);
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border-radius: 0 8px 8px 0;
+        }
+        .trace-box code {
+            background: #e2e8f0;
+            padding: 2px 5px;
+            border-radius: 4px;
+            color: #0f172a;
+        }
+
+        /* Output Box */
+        .output-box {
+            background-color: #000;
+            color: #0f0;
+            padding: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <main class="feed-container">
+        
+        <!-- Header Section -->
+        <header class="topic-card" style="text-align: center; border-top: 8px solid var(--primary);">
+            <h1>Program to Print the Addition of 2 Matrices in C</h1>
+            <p><strong>Continuous Study Feed</strong> | Based on the Whiteboard & VS Code Lecture</p>
+            <p>Scroll down to learn the math, the memory logic, and the exact C code step-by-step.</p>
+        </header>
+
+        <!-- Section 1: Concept -->
+        <article class="topic-card">
+            <h2>📐 1. The Mathematical Rule</h2>
+            <p>Before writing code, we must understand how matrix addition works on paper. The instructor notes one <strong>Golden Rule</strong>:</p>
+            <p><span class="highlight">You can ONLY add matrices if they have the exact same dimensions.</span></p>
+            <p>If Matrix A is 2x3 (2 rows, 3 columns), Matrix B must also be 2x3. The result, Matrix C, will also be 2x3. Addition is performed element-by-element.</p>
+            
+            <!-- Visualization -->
+            <div class="math-equation">
+                <div class="matrix-wrapper">
+                    <span class="matrix-label">Matrix A [2][3]</span>
+                    <div class="matrix">
+                        <span>1</span><span>2</span><span>3</span>
+                        <span>1</span><span>0</span><span>1</span>
+                    </div>
+                </div>
+                <div class="math-sign">+</div>
+                <div class="matrix-wrapper">
+                    <span class="matrix-label">Matrix B [2][3]</span>
+                    <div class="matrix">
+                        <span>1</span><span>1</span><span>1</span>
+                        <span>1</span><span>1</span><span>1</span>
+                    </div>
+                </div>
+                <div class="math-sign">=</div>
+                <div class="matrix-wrapper">
+                    <span class="matrix-label">Matrix C [2][3]</span>
+                    <div class="matrix">
+                        <span>2</span><span>3</span><span>4</span>
+                        <span>2</span><span>1</span><span>2</span>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Section 2: Declarations -->
+        <article class="topic-card">
+            <h2>💾 2. Memory & Declarations</h2>
+            <p>To store these matrices in C, we need 2D Arrays. A 2D array is declared with the number of rows first, then the columns.</p>
+            <pre><code><span class="type">int</span> a[<span class="string">2</span>][<span class="string">3</span>], b[<span class="string">2</span>][<span class="string">3</span>], c[<span class="string">2</span>][<span class="string">3</span>]; <span class="comment">// 3 matrices</span>
+<span class="type">int</span> i, j;                      <span class="comment">// Loop counters</span></code></pre>
+            <p>Here, <code>i</code> will control the <strong>rows</strong>, and <code>j</code> will control the <strong>columns</strong>.</p>
+        </article>
+
+        <!-- Section 3: Reading Matrices -->
+        <article class="topic-card">
+            <h2>📥 3. Reading Inputs (Nested Loops)</h2>
+            <p>To populate a 2D array, we use nested `for` loops. The outer loop runs for every row, and the inner loop iterates through every column of that specific row.</p>
+            <pre><code><span class="comment">// Reading Matrix A</span>
+<span class="keyword">for</span>(i = <span class="string">0</span>; i < <span class="string">2</span>; i++) {       <span class="comment">// Row loop (0 to 1)</span>
+    <span class="keyword">for</span>(j = <span class="string">0</span>; j < <span class="string">3</span>; j++) {   <span class="comment">// Column loop (0 to 2)</span>
+        <span class="func">scanf</span>(<span class="string">"%d"</span>, &a[i][j]); 
+    }
+}</code></pre>
+            <p><em>Note: The instructor writes this exact same block twice on the whiteboard—once for <code>&a[i][j]</code> and once for <code>&b[i][j]</code>.</em></p>
+        </article>
+
+        <!-- Section 4: The Logic -->
+        <article class="topic-card">
+            <h2>⚙️ 4. The Addition & Printing Logic</h2>
+            <p>Efficiency Trick: You do not need a separate set of loops just to print the result. As taught on the whiteboard, we calculate the sum and print it inside the <em>same</em> loop.</p>
+            <pre><code><span class="keyword">for</span>(i = <span class="string">0</span>; i < <span class="string">2</span>; i++) {
+    <span class="keyword">for</span>(j = <span class="string">0</span>; j < <span class="string">3</span>; j++) {
+        <span class="comment">// 1. Add matching elements</span>
+        c[i][j] = a[i][j] + b[i][j]; 
+        
+        <span class="comment">// 2. Print immediately with a tab</span>
+        <span class="func">printf</span>(<span class="string">"%d\t"</span>, c[i][j]); 
+    }
+    <span class="comment">// 3. Newline after a row finishes</span>
+    <span class="func">printf</span>(<span class="string">"\n"</span>); 
+}</code></pre>
+            <p><strong>Why use <code>\t</code> and <code>\n</code>?</strong></p>
+            <ul>
+                <li><code>\t</code> (Tab): Pushes the next number to the right, keeping elements aligned in neat columns.</li>
+                <li><code>\n</code> (Newline): Pushes the cursor to the next line so the next row prints underneath, creating the visual grid.</li>
+            </ul>
+        </article>
+
+        <!-- Section 5: Dry Run Trace -->
+        <article class="topic-card">
+            <h2>🕵️‍♀️ 5. Whiteboard Dry Run / Tracing</h2>
+            <p>The instructor traces the nested loops with new test data to show exactly how memory updates step-by-step.</p>
+            
+            <div class="math-equation">
+                <div class="matrix-wrapper">
+                    <span class="matrix-label">A</span>
+                    <div class="matrix">
+                        <span class="cell-highlight">1</span><span>2</span><span>-1</span>
+                        <span>0</span><span>5</span><span>4</span>
+                    </div>
+                </div>
+                <div class="math-sign">+</div>
+                <div class="matrix-wrapper">
+                    <span class="matrix-label">B</span>
+                    <div class="matrix">
+                        <span class="cell-highlight">5</span><span>-1</span><span>0</span>
+                        <span>10</span><span>11</span><span>7</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="trace-box">
+                <p><strong>Step 1: Outer loop starts. <code>i = 0</code> (Row 0)</strong></p>
+                <p>Inner loop starts. <code>j = 0</code> (Column 0)</p>
+                <p><code>c[0][0] = a[0][0] + b[0][0]</code> ➔ <code>1 + 5 = 6</code></p>
+                <p><em>Prints: 6 [tab]</em></p>
+            </div>
+
+            <div class="trace-box">
+                <p><strong>Step 2: <code>i = 0</code></strong></p>
+                <p>Inner loop increments. <code>j = 1</code> (Column 1)</p>
+                <p><code>c[0][1] = a[0][1] + b[0][1]</code> ➔ <code>2 + (-1) = 1</code></p>
+                <p><em>Prints: 1 [tab]</em></p>
+            </div>
+
+            <div class="trace-box">
+                <p><strong>Step 3: <code>i = 0</code></strong></p>
+                <p>Inner loop increments. <code>j = 2</code> (Column 2)</p>
+                <p><code>c[0][2] = a[0][2] + b[0][2]</code> ➔ <code>-1 + 0 = -1</code></p>
+                <p><em>Prints: -1 [tab]</em></p>
+            </div>
+
+            <p>Now <code>j = 3</code>. The condition <code>j < 3</code> fails. The inner loop exits. The program executes <code>printf("\n");</code> moving the cursor to the next line. Then <code>i</code> becomes 1, and the process repeats for Row 1.</p>
+        </article>
+
+        <!-- Section 6: Final Code -->
+        <article class="topic-card">
+            <h2>💻 6. Full VS Code Implementation</h2>
+            <p>Here is the final, polished code the instructor writes in the IDE. She adds standard print statements to make it user-friendly, as well as logic to print out the original matrices before the sum.</p>
+            
+            <pre><code><span class="comment">#include &lt;stdio.h&gt;</span>
+
+<span class="type">int</span> <span class="func">main</span>() {
+    <span class="type">int</span> a[<span class="string">2</span>][<span class="string">3</span>], b[<span class="string">2</span>][<span class="string">3</span>], c[<span class="string">2</span>][<span class="string">3</span>], i, j;
+
+    <span class="comment">// --- STEP 1: READ FIRST MATRIX ---</span>
+    <span class="func">printf</span>(<span class="string">"Enter first matrix:\n"</span>);
+    <span class="keyword">for</span>(i = <span class="string">0</span>; i < <span class="string">2</span>; i++) {
+        <span class="keyword">for</span>(j = <span class="string">0</span>; j < <span class="string">3</span>; j++) {
+            <span class="func">scanf</span>(<span class="string">"%d"</span>, &a[i][j]);
+        }
+    }
+
+    <span class="comment">// --- STEP 2: READ SECOND MATRIX ---</span>
+    <span class="func">printf</span>(<span class="string">"Enter second matrix:\n"</span>);
+    <span class="keyword">for</span>(i = <span class="string">0</span>; i < <span class="string">2</span>; i++) {
+        <span class="keyword">for</span>(j = <span class="string">0</span>; j < <span class="string">3</span>; j++) {
+            <span class="func">scanf</span>(<span class="string">"%d"</span>, &b[i][j]);
+        }
+    }
+
+    <span class="comment">// --- STEP 3: PRINT FIRST MATRIX ---</span>
+    <span class="func">printf</span>(<span class="string">"\nThe first matrix is:\n"</span>);
+    <span class="keyword">for</span>(i = <span class="string">0</span>; i < <span class="string">2</span>; i++) {
+        <span class="keyword">for</span>(j = <span class="string">0</span>; j < <span class="string">3</span>; j++) {
+            <span class="func">printf</span>(<span class="string">"%d\t"</span>, a[i][j]);
+        }
+        <span class="func">printf</span>(<span class="string">"\n"</span>);
+    }
+
+    <span class="comment">// --- STEP 4: PRINT SECOND MATRIX ---</span>
+    <span class="func">printf</span>(<span class="string">"\nThe second matrix is:\n"</span>);
+    <span class="keyword">for</span>(i = <span class="string">0</span>; i < <span class="string">2</span>; i++) {
+        <span class="keyword">for</span>(j = <span class="string">0</span>; j < <span class="string">3</span>; j++) {
+            <span class="func">printf</span>(<span class="string">"%d\t"</span>, b[i][j]);
+        }
+        <span class="func">printf</span>(<span class="string">"\n"</span>);
+    }
+
+    <span class="comment">// --- STEP 5: CALCULATE AND PRINT THE SUM ---</span>
+    <span class="func">printf</span>(<span class="string">"\nThe Third matrix (Sum) is:\n"</span>);
+    <span class="keyword">for</span>(i = <span class="string">0</span>; i < <span class="string">2</span>; i++) {
+        <span class="keyword">for</span>(j = <span class="string">0</span>; j < <span class="string">3</span>; j++) {
+            c[i][j] = a[i][j] + b[i][j]; 
+            <span class="func">printf</span>(<span class="string">"%d\t"</span>, c[i][j]);     
+        }
+        <span class="func">printf</span>(<span class="string">"\n"</span>);                    
+    }
+
+    <span class="keyword">return</span> <span class="string">0</span>;
+}</code></pre>
+            
+            <p><strong>Terminal Output:</strong></p>
+            <div class="output-box">Enter first matrix:
+1 2 -1
+0 5 4
+Enter second matrix:
+5 -1 0
+10 11 7
+
+The Third matrix (Sum) is:
+6       1       -1
+10      16      11</div>
+        </article>
+
+        <!-- Section 7: Homework -->
+        <article class="topic-card" style="border-left: 8px solid var(--accent);">
+            <h2>📝 7. Homework Assignment</h2>
+            <p>At the end of the video, the instructor provided a challenge: <strong>Write a C program to perform the subtraction of two matrices.</strong></p>
+            <p><em>Instructor's Hint:</em> The logic is virtually identical! Because matrix subtraction also happens element-by-element, you just need to change your inner logic to:</p>
+            <pre style="margin-top: 10px;"><code>c[i][j] = a[i][j] <span class="keyword">-</span> b[i][j];</code></pre>
+            <p>Try writing this in your IDE and testing it with negative numbers!</p>
+        </article>
+
+    </main>
+
+</body>
+</html>

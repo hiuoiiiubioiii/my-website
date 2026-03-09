@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: Switch Calculator</title>
+    <style>
+        :root {
+            --bg-color: #f3f4f6;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --primary: #3b82f6;
+            --secondary: #10b981;
+            --card-bg: #ffffff;
+            --code-bg: #1e1e1e;
+            --border: #e5e7eb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 6px;
+            background: #e5e7eb;
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+        }
+
+        /* Feed Layout Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        /* Feed Header */
+        .feed-header {
+            text-align: center;
+            margin-bottom: 20px;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .feed-header h1 {
+            font-size: 2.5rem;
+            color: var(--text-main);
+            margin-bottom: 10px;
+        }
+
+        .feed-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Feed Cards (Continuous Scroll Items) */
+        .feed-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .feed-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card-tag {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .feed-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--text-main);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .feed-card p, .feed-card ul {
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+        }
+
+        .feed-card ul {
+            padding-left: 20px;
+        }
+
+        .feed-card li {
+            margin-bottom: 8px;
+        }
+
+        /* Visualizations */
+        
+        /* 1. Terminal UX */
+        .terminal-box {
+            background: var(--code-bg);
+            color: #10b981;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .terminal-box .input { color: #fff; }
+
+        /* 2. Memory/RAM Visualization */
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .memory-block {
+            background: #f8fafc;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            position: relative;
+        }
+
+        .memory-block.active {
+            border-color: var(--primary);
+            background: #eff6ff;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
+        }
+
+        .memory-label {
+            font-weight: bold;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .memory-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            font-family: monospace;
+        }
+
+        .memory-size {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+
+        /* Code Block */
+        pre {
+            background: var(--code-bg);
+            color: #e5e7eb;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 0.95rem;
+            margin: 20px 0;
+        }
+
+        .highlight-keyword { color: #f472b6; }
+        .highlight-type { color: #38bdf8; }
+        .highlight-string { color: #a3e635; }
+        .highlight-comment { color: #9ca3af; font-style: italic; }
+
+        /* Homework Callout */
+        .homework-box {
+            background: #fffbeb;
+            border-left: 5px solid #f59e0b;
+            padding: 20px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+
+        .homework-box h3 {
+            color: #b45309;
+            margin-bottom: 10px;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Scroll Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar" id="myBar"></div>
+    </div>
+
+    <!-- Continuous Feed Layout -->
+    <div class="feed-container">
+        
+        <header class="feed-header">
+            <h1>C Program: Switch Calculator</h1>
+            <p>In-depth video breakdown. Scroll to learn the logic, code, and memory execution.</p>
+        </header>
+
+        <!-- Post 1: Objective & UX -->
+        <section class="feed-card">
+            <span class="card-tag">1. Logic Building</span>
+            <h2>Visualizing the Output Screen</h2>
+            <p>Before writing a single line of code, the instructor explains the importance of planning the output screen. We need to ask the user for three specific things: an <strong>operator</strong> and <strong>two numbers</strong>.</p>
+            <p>Here is what the UX (User Experience) should look like when the program runs successfully:</p>
+            
+            <div class="terminal-box">
+                <p>Enter operator: <span class="input">+</span></p>
+                <p>Enter two operands: </p>
+                <p><span class="input">2</span></p>
+                <p><span class="input">3</span></p>
+                <p>addition is : 5</p>
+            </div>
+            
+            <p>Because there are exactly four operator choices (<code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>), the <code>switch</code> statement is the perfect tool instead of using a long chain of <code>if-else</code> statements.</p>
+        </section>
+
+        <!-- Post 2: Rules -->
+        <section class="feed-card">
+            <span class="card-tag">2. Theory Review</span>
+            <h2>Rules of the Switch Statement</h2>
+            <p>The instructor verbally emphasizes two crucial rules to remember when using the switch statement:</p>
+            <ul>
+                <li><strong>Rule 1: Unique Cases.</strong> Two cases cannot have the same value. If you write <code>case 2:</code> and then write another <code>case 2:</code> later in the block, the compiler will throw a "duplicate case" error.</li>
+                <li><strong>Rule 2: Character Constants.</strong> Because our mathematical operators are characters (symbols), they must be wrapped in single quotes inside the case statement (e.g., <code>case '+':</code>). This tells the C compiler to treat it as a character constant based on its ASCII value.</li>
+            </ul>
+        </section>
+
+        <!-- Post 3: Full Code -->
+        <section class="feed-card">
+            <span class="card-tag">3. The Code</span>
+            <h2>Complete Whiteboard Program</h2>
+            <p>Here is the exact C program written by the instructor on the whiteboard. Take note of the variables declared at the top and the structure of the switch block.</p>
+            
+<pre>
+<span class="highlight-comment">#include &lt;stdio.h&gt;</span>
+<span class="highlight-comment">#include &lt;conio.h&gt;</span>
+
+<span class="highlight-type">void</span> <span class="highlight-keyword">main</span>() {
+    <span class="highlight-type">int</span> a, b, sum, sub, div, mul;
+    <span class="highlight-type">char</span> operator;
+
+    <span class="highlight-comment">// 1. Ask for Operator</span>
+    <span class="highlight-keyword">printf</span>(<span class="highlight-string">"Enter operator: "</span>);
+    <span class="highlight-keyword">scanf</span>(<span class="highlight-string">"%c"</span>, &operator);
+
+    <span class="highlight-comment">// 2. Ask for Numbers</span>
+    <span class="highlight-keyword">printf</span>(<span class="highlight-string">"Enter two operands: "</span>);
+    <span class="highlight-keyword">scanf</span>(<span class="highlight-string">"%d %d"</span>, &a, &b);
+
+    <span class="highlight-comment">// 3. Switch Logic</span>
+    <span class="highlight-keyword">switch</span>(operator) {
+        <span class="highlight-keyword">case</span> <span class="highlight-string">'+'</span>:
+            sum = a + b;
+            <span class="highlight-keyword">printf</span>(<span class="highlight-string">"Sum = %d"</span>, sum);
+            <span class="highlight-keyword">break</span>;
+        <span class="highlight-keyword">case</span> <span class="highlight-string">'-'</span>:
+            sub = a - b;
+            <span class="highlight-keyword">printf</span>(<span class="highlight-string">"Sub = %d"</span>, sub);
+            <span class="highlight-keyword">break</span>;
+        <span class="highlight-keyword">case</span> <span class="highlight-string">'*'</span>:
+            mul = a * b;
+            <span class="highlight-keyword">printf</span>(<span class="highlight-string">"Mul = %d"</span>, mul);
+            <span class="highlight-keyword">break</span>;
+        <span class="highlight-keyword">case</span> <span class="highlight-string">'/'</span>:
+            div = a / b;
+            <span class="highlight-keyword">printf</span>(<span class="highlight-string">"Div = %d"</span>, div);
+            <span class="highlight-keyword">break</span>;
+        <span class="highlight-keyword">default</span>:
+            <span class="highlight-keyword">printf</span>(<span class="highlight-string">"Enter valid operator"</span>);
+    }
+    <span class="highlight-keyword">getch</span>();
+}
+</pre>
+        </section>
+
+        <!-- Post 4: Line by line breakdown -->
+        <section class="feed-card">
+            <span class="card-tag">4. Code Breakdown</span>
+            <h2>Why was it written this way?</h2>
+            <p>Let's combine the instructor's audio explanations with the code:</p>
+            <ul>
+                <li><strong>The <code>scanf</code> formats:</strong> For the operator, she uses <code>%c</code> to grab a single character. For the numbers, she grabs both at once using <code>"%d %d"</code>. Remember to use the ampersand (<code>&</code>) to store inputs at specific memory addresses!</li>
+                <li><strong>Printing results:</strong> She verbally reminds the class that you <strong>do not</strong> use an <code>&</code> inside a <code>printf</code> statement, only in <code>scanf</code>.</li>
+                <li><strong>The <code>break</code> keyword:</strong> Crucial step! The instructor explains that <code>break</code> forces the program to exit the switch block entirely. If you omit it, the program will "fall through" and execute the code in the cases below it.</li>
+                <li><strong>The <code>default</code> net:</strong> This catches errors. If a user types the letter 'X' instead of a math symbol, the program jumps to default and prints an error message.</li>
+            </ul>
+        </section>
+
+        <!-- Post 5: Memory Trace Visualization -->
+        <section class="feed-card">
+            <span class="card-tag">5. Behind the Scenes</span>
+            <h2>Memory Execution Walkthrough (RAM)</h2>
+            <p>At 11:10, the instructor draws the computer's memory on the whiteboard to prove how the code works. Here is a visualization of the computer's RAM when the user enters <code>+</code>, <code>2</code>, and <code>3</code>.</p>
+            
+            <div class="memory-grid">
+                <!-- Operator -->
+                <div class="memory-block active">
+                    <div class="memory-label">operator</div>
+                    <div class="memory-value">'+'</div>
+                    <div class="memory-size">1 byte (char)<br><small>Stored as ASCII binary</small></div>
+                </div>
+                <!-- Operand A -->
+                <div class="memory-block active">
+                    <div class="memory-label">a</div>
+                    <div class="memory-value">2</div>
+                    <div class="memory-size">2 bytes (int)</div>
+                </div>
+                <!-- Operand B -->
+                <div class="memory-block active">
+                    <div class="memory-label">b</div>
+                    <div class="memory-value">3</div>
+                    <div class="memory-size">2 bytes (int)</div>
+                </div>
+                <!-- Math Variables -->
+                <div class="memory-block active">
+                    <div class="memory-label">sum</div>
+                    <div class="memory-value">5</div>
+                    <div class="memory-size">2 bytes (int)</div>
+                </div>
+                <div class="memory-block">
+                    <div class="memory-label">sub</div>
+                    <div class="memory-value">?</div>
+                    <div class="memory-size">2 bytes (int)</div>
+                </div>
+                <div class="memory-block">
+                    <div class="memory-label">mul</div>
+                    <div class="memory-value">?</div>
+                    <div class="memory-size">2 bytes (int)</div>
+                </div>
+                <div class="memory-block">
+                    <div class="memory-label">div</div>
+                    <div class="memory-value">?</div>
+                    <div class="memory-size">2 bytes (int)</div>
+                </div>
+            </div>
+
+            <p><strong>Execution Trace:</strong> The program hits <code>switch(operator)</code>. Because the <code>operator</code> box holds <code>+</code>, it jumps straight to <code>case '+':</code>. It adds <code>2 + 3</code>, stores <code>5</code> in the <code>sum</code> memory box, prints it, and breaks out.</p>
+        </section>
+
+        <!-- Post 6: Homework -->
+        <section class="feed-card">
+            <span class="card-tag">6. Check Your Knowledge</span>
+            <h2>Instructor's Homework Challenges</h2>
+            <p>At the end of the video, the instructor leaves you with two challenges to test your critical thinking. Think about these before your next coding session:</p>
+            
+            <div class="homework-box">
+                <h3>Challenge 1: Format Change</h3>
+                <p>Currently, the program asks for the operator first, then the numbers. How would you rewrite the <code>printf</code> and <code>scanf</code> statements if you wanted the user to input everything on one single line like this: <code>2 + 3</code> (Operand Operator Operand)?</p>
+            </div>
+
+            <div class="homework-box" style="border-color: #ef4444; background: #fef2f2;">
+                <h3 style="color: #b91c1c;">Challenge 2: The Missing Break Bug</h3>
+                <p>What will the exact terminal output look like if you enter <code>+</code>, <code>2</code>, and <code>3</code>, but you accidentally forget to type the word <code>break;</code> under <code>case '+':</code>?</p>
+            </div>
+        </section>
+        
+        <br><br>
+    </div>
+
+    <!-- JavaScript for Feed UX -->
+    <script>
+        // 1. Scroll Progress Bar logic
+        window.onscroll = function() { updateProgressBar() };
+
+        function updateProgressBar() {
+            var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            var scrolled = (winScroll / height) * 100;
+            document.getElementById("myBar").style.width = scrolled + "%";
+        }
+
+        // 2. Intersection Observer to fade in feed cards as user scrolls
+        document.addEventListener("DOMContentLoaded", function() {
+            const cards = document.querySelectorAll('.feed-card');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.15 // Triggers when 15% of the card is visible
+            };
+
+            const cardObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        // Optional: stop observing once it has faded in
+                        // observer.unobserve(entry.target); 
+                    }
+                });
+            }, observerOptions);
+
+            cards.forEach(card => {
+                cardObserver.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>

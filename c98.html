@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: Returning Strings</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #cbd5e1;
+            --text-heading: #f8fafc;
+            --accent-cyan: #22d3ee;
+            --accent-pink: #fb7185;
+            --accent-green: #4ade80;
+            --accent-yellow: #fbbf24;
+            --code-bg: #0b0f19;
+            --memory-stack: #f59e0b;
+            --memory-ro: #06b6d4;
+            --memory-static: #a855f7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            width: 100%;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .feed-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--card-bg);
+        }
+
+        .feed-header h1 {
+            color: var(--accent-cyan);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .feed-header p {
+            font-size: 1.1rem;
+            color: #94a3b8;
+        }
+
+        /* Card Styles */
+        .feed-item {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            border-left: 4px solid var(--accent-cyan);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.6s forwards;
+        }
+
+        .feed-item:nth-child(2) { animation-delay: 0.1s; border-left-color: var(--accent-cyan); }
+        .feed-item:nth-child(3) { animation-delay: 0.2s; border-left-color: var(--accent-yellow); }
+        .feed-item:nth-child(4) { animation-delay: 0.3s; border-left-color: var(--accent-pink); }
+        .feed-item:nth-child(5) { animation-delay: 0.4s; border-left-color: var(--accent-green); }
+        .feed-item:nth-child(6) { animation-delay: 0.5s; border-left-color: var(--memory-static); }
+
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: var(--text-heading);
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        p { margin-bottom: 15px; font-size: 1.05rem; }
+        
+        strong { color: var(--text-heading); }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            margin: 20px 0;
+            border: 1px solid #334155;
+        }
+
+        .code-keyword { color: var(--accent-pink); }
+        .code-type { color: var(--accent-cyan); }
+        .code-string { color: var(--accent-green); }
+        .code-comment { color: #64748b; font-style: italic; }
+
+        /* Callouts */
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            background: rgba(251, 113, 133, 0.1);
+            border: 1px solid var(--accent-pink);
+            margin: 20px 0;
+        }
+        .alert-title { color: var(--accent-pink); font-weight: bold; margin-bottom: 5px; }
+
+        /* --- VISUALIZATIONS --- */
+        .visualization {
+            background: #0b0f19;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border: 1px dashed #334155;
+        }
+
+        .vis-title { text-align: center; color: #94a3b8; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; }
+
+        .ram-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .memory-block {
+            border: 2px solid;
+            border-radius: 8px;
+            padding: 15px;
+            min-width: 150px;
+            text-align: center;
+            position: relative;
+        }
+
+        .memory-block h4 { font-size: 0.9rem; margin-bottom: 10px; border-bottom: 1px solid; padding-bottom: 5px; }
+
+        /* Specific Memory Areas */
+        .block-stack { border-color: var(--memory-stack); }
+        .block-stack h4 { color: var(--memory-stack); border-color: var(--memory-stack); }
+        
+        .block-ro { border-color: var(--memory-ro); }
+        .block-ro h4 { color: var(--memory-ro); border-color: var(--memory-ro); }
+
+        .block-static { border-color: var(--memory-static); }
+        .block-static h4 { color: var(--memory-static); border-color: var(--memory-static); }
+
+        /* Memory Cells */
+        .mem-cell {
+            background: rgba(255,255,255,0.05);
+            padding: 8px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .array-cells { display: flex; gap: 2px; justify-content: center; margin-top: 10px; }
+        .cell-box {
+            width: 25px; height: 25px; border: 1px solid var(--text-main); display: flex; align-items: center; justify-content: center; font-family: monospace;
+        }
+
+        /* Destroyed Animation */
+        .destroyed {
+            opacity: 0.3;
+            position: relative;
+        }
+        .destroyed::after {
+            content: "DESTROYED";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            color: var(--accent-pink);
+            font-weight: bold;
+            font-size: 1.2rem;
+            border: 2px solid var(--accent-pink);
+            padding: 5px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 4px;
+        }
+
+        /* Summary Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.95rem; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #334155; }
+        th { color: var(--accent-cyan); font-weight: 600; }
+        tr:nth-child(even) { background-color: rgba(255,255,255,0.02); }
+
+        @media (max-width: 600px) {
+            .ram-container { flex-direction: column; align-items: center; }
+            .memory-block { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <div class="feed-header">
+            <h1>C Programming: Returning Strings</h1>
+            <p>Instructor Whiteboard Breakdown & Memory Visualizations</p>
+        </div>
+
+        <!-- Section 1 -->
+        <section class="feed-item">
+            <h2>1. The Basics: Returning a String Literal</h2>
+            <p>The instructor begins by trying to return a simple string literal (<code>"Jenny"</code>) from a function to the <code>main()</code> function.</p>
+            
+            <pre>
+<span class="code-type">char*</span> <span class="code-keyword">display</span>() {
+    <span class="code-keyword">return</span> <span class="code-string">"Jenny"</span>;
+}
+
+<span class="code-type">void</span> <span class="code-keyword">main</span>() {
+    <span class="code-type">char*</span> str;               <span class="code-comment">// Pointer to catch the address</span>
+    str = <span class="code-keyword">display</span>();         
+    <span class="code-keyword">printf</span>(<span class="code-string">"String is: %s"</span>, str);
+}</pre>
+
+            <p><strong>The "Why":</strong> Strings in C are character arrays. You cannot return an entire array directly. Instead, you return the <strong>base address</strong> (a pointer to the first character, 'J'). This is why the return type must be <code>char*</code>.</p>
+        </section>
+
+        <!-- Section 2 -->
+        <section class="feed-item">
+            <h2>2. Memory Visualization: Why this works</h2>
+            <p>The instructor draws the memory layout. When <code>display()</code> finishes, its stack frame is destroyed. So why does <code>"Jenny"</code> survive?</p>
+
+            <div class="visualization">
+                <div class="vis-title">System RAM Layout</div>
+                <div class="ram-container">
+                    <div class="memory-block block-stack">
+                        <h4>Stack Memory</h4>
+                        <div class="mem-cell destroyed">display() Frame</div>
+                        <div class="mem-cell">main() Frame<br>str = 100</div>
+                    </div>
+                    <div class="memory-block block-ro">
+                        <h4>Read-Only Data</h4>
+                        <div class="mem-cell">
+                            Base Address: 100<br>
+                            <div class="array-cells">
+                                <div class="cell-box">J</div><div class="cell-box">e</div><div class="cell-box">n</div><div class="cell-box">n</div><div class="cell-box">y</div><div class="cell-box">\0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p><strong>Explanation:</strong> String literals are <strong>NOT</strong> stored in the stack frame. They are stored in a separate, <strong>Read-Only Data Section</strong>. When the <code>display()</code> stack frame is wiped out, the string remains safely in memory, and `main()` can still read it via the pointer!</p>
+        </section>
+
+        <!-- Section 3 -->
+        <section class="feed-item">
+            <h2>3. The Interview Trap: Returning a Local Array</h2>
+            <p>Next, the instructor shows the most common mistake students make: declaring the string as a local array.</p>
+
+            <pre>
+<span class="code-type">char*</span> <span class="code-keyword">display</span>() {
+    <span class="code-type">char</span> str[] = <span class="code-string">"Jenny"</span>; <span class="code-comment">// Local array!</span>
+    <span class="code-keyword">return</span> str;
+}</pre>
+
+            <div class="alert">
+                <div class="alert-title">⚠️ The Dangling Pointer Problem</div>
+                <p>By writing <code>char str[]</code>, you allocate memory for the array <strong>inside the stack frame</strong> of <code>display()</code>. When the function returns, that stack frame is wiped out.</p>
+            </div>
+
+            <div class="visualization">
+                <div class="vis-title">What happens in RAM?</div>
+                <div class="ram-container">
+                    <div class="memory-block block-stack">
+                        <h4>Stack Memory</h4>
+                        <div class="mem-cell destroyed">
+                            display() Frame<br>
+                            <div class="array-cells">
+                                <div class="cell-box">J</div><div class="cell-box">e</div><div class="cell-box">n</div><div class="cell-box">y</div><div class="cell-box">\0</div>
+                            </div>
+                        </div>
+                        <div class="mem-cell">main() Frame<br>str = <em>(Points to Garbage)</em></div>
+                    </div>
+                </div>
+            </div>
+
+            <p><code>main()</code> receives the address, but the data is gone. Running this prints garbage values or crashes.</p>
+        </section>
+
+        <!-- Section 4 -->
+        <section class="feed-item">
+            <h2>4. The Fix: Using the 'static' Keyword</h2>
+            <p>How do we fix the local array trap? By using the <code>static</code> keyword.</p>
+
+            <pre>
+<span class="code-type">char*</span> <span class="code-keyword">display</span>() {
+    <span class="code-keyword">static char</span> str[] = <span class="code-string">"Jenny"</span>; <span class="code-comment">// Added 'static'</span>
+    <span class="code-keyword">return</span> str;
+}</pre>
+
+            <div class="visualization">
+                <div class="vis-title">RAM Layout with Static</div>
+                <div class="ram-container">
+                    <div class="memory-block block-stack">
+                        <h4>Stack Memory</h4>
+                        <div class="mem-cell destroyed">display() Frame</div>
+                    </div>
+                    <div class="memory-block block-static">
+                        <h4>Static/Global Memory</h4>
+                        <div class="mem-cell">
+                            str[]<br>
+                            <div class="array-cells">
+                                <div class="cell-box">J</div><div class="cell-box">e</div><div class="cell-box">n</div><div class="cell-box">n</div><div class="cell-box">y</div><div class="cell-box">\0</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p>The <code>static</code> keyword removes the variable from the temporary Stack memory and places it in the <strong>Static memory section</strong>. Its lifetime is now the entire duration of the program.</p>
+        </section>
+
+        <!-- Section 5 -->
+        <section class="feed-item">
+            <h2>5. Modifying Strings & The 'const' Keyword</h2>
+            <p>What if you try to change the returned string inside <code>main()</code>?</p>
+
+            <pre>
+<span class="code-type">void</span> <span class="code-keyword">main</span>() {
+    <span class="code-type">char*</span> str = <span class="code-keyword">display</span>();
+    str[0] = <span class="code-string">'Z'</span>; <span class="code-comment">// Trying to change "Jenny" to "Zenny"</span>
+}</pre>
+
+            <p><strong>If you returned a string literal:</strong> The program will crash (Segmentation Fault). Why? Because string literals live in the Read-Only Data Section. You cannot write to it.</p>
+            <p><strong>The Compilier Issue:</strong> The compiler won't stop you from writing <code>str[0] = 'Z'</code>. It will only fail at runtime.</p>
+
+            <div class="alert" style="background: rgba(74, 222, 128, 0.1); border-color: var(--accent-green);">
+                <div class="alert-title" style="color: var(--accent-green);">✅ Best Practice: Use const</div>
+                <p>To protect your code, declare the return type as <code>const char*</code>. This tells the compiler the data is read-only. If you accidentally try to modify it, the compiler will throw an error immediately, saving you from a runtime crash.</p>
+            </div>
+
+            <pre>
+<span class="code-type">const char*</span> <span class="code-keyword">display</span>() {          
+    <span class="code-type">const char*</span> str = <span class="code-string">"Jenny"</span>; 
+    <span class="code-keyword">return</span> str;
+}</pre>
+        </section>
+
+        <!-- Section 6 -->
+        <section class="feed-item">
+            <h2>6. VS Code Practical Demo Results</h2>
+            <p>At the end of the video, the instructor proves these concepts in her terminal. Here is exactly what happened:</p>
+
+            <table>

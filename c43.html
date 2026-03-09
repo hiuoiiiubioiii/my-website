@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nested Loops in C | Study Guide</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+        :root {
+            --bg-color: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #475569;
+            --primary: #2563eb;
+            --secondary: #3b82f6;
+            --accent: #f59e0b;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.7;
+            padding-bottom: 4rem;
+        }
+
+        /* Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Cards/Sections */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border);
+        }
+
+        .card h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 1.2rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        strong {
+            color: var(--primary);
+        }
+
+        /* Code Blocks */
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            font-family: 'Fira Code', monospace;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        code .keyword { color: #569cd6; }
+        code .type { color: #4ec9b0; }
+        code .string { color: #ce9178; }
+        code .comment { color: #6a9955; font-style: italic; }
+        code .func { color: #dcdcaa; }
+
+        /* Visualizations */
+        .visual-box {
+            background: #f1f5f9;
+            border-left: 4px solid var(--accent);
+            padding: 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1.5rem 0;
+        }
+
+        .star-grid {
+            font-family: monospace;
+            font-size: 1.5rem;
+            line-height: 1.2;
+            color: var(--primary);
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            letter-spacing: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-top: 1rem;
+        }
+
+        /* Trace Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) { background: #f8fafc; }
+
+        .true-pill { background: var(--success); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; }
+        .false-pill { background: var(--danger); color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; }
+
+        /* Flowchart CSS */
+        .flowchart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            background: #1e293b;
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-top: 1.5rem;
+        }
+
+        .flow-node {
+            background: var(--secondary);
+            padding: 10px 20px;
+            border-radius: 6px;
+            margin: 5px 0;
+            text-align: center;
+            min-width: 250px;
+        }
+        
+        .flow-diamond {
+            background: var(--accent);
+            color: #000;
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            padding: 20px;
+            margin: 10px 0;
+            text-align: center;
+            width: 200px;
+            font-weight: bold;
+        }
+
+        .flow-arrow {
+            color: var(--accent);
+            font-size: 1.5rem;
+            margin: 2px 0;
+        }
+
+        .flow-row {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+            margin: 10px 0;
+        }
+
+        .flow-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Rules List */
+        .rules-list {
+            list-style: none;
+        }
+
+        .rules-list li {
+            background: #eff6ff;
+            border-left: 4px solid var(--secondary);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        @media (max-width: 600px) {
+            .feed-container { padding: 1rem; }
+            h1 { font-size: 2rem; }
+            .flow-row { flex-direction: column; align-items: center; gap: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <header>
+            <h1>Nested Loops in C</h1>
+            <p>Instructor: Jayanti Khatri Lamba | Complete Visual Study Guide</p>
+        </header>
+
+        <!-- Topic 1 -->
+        <div class="card">
+            <h2>🚨 The Problem: Why Do We Need Nesting?</h2>
+            <p>Before understanding <em>what</em> a nested loop is, we must understand <em>why</em> we use it. The instructor builds the logic through three scenarios:</p>
+            
+            <div class="visual-box">
+                <p><strong>Scenario 1: Print a single star.</strong></p>
+                <pre><code><span class="func">printf</span>(<span class="string">"*"</span>);</code></pre>
+                
+                <p><strong>Scenario 2: Print a line of 5 stars.</strong></p>
+                <p>Hardcoding <code>printf("*****");</code> is bad practice. If the user wants 500 stars, you can't type 500 stars. We use a single loop:</p>
+                <pre><code><span class="keyword">for</span>(<span class="type">int</span> i = <span class="string">1</span>; i <= <span class="string">5</span>; i++) {
+    <span class="func">printf</span>(<span class="string">"*"</span>);
+}</code></pre>
+                
+                <p><strong>Scenario 3: Print a 6x5 Grid of Stars.</strong></p>
+                <p>You cannot write 6 separate <code>for</code> loops sequentially. To repeat a process (printing a line) that is <em>already a loop</em>, you must put that loop inside another loop.</p>
+                <div class="star-grid">
+                    * * * * *<br>
+                    * * * * *<br>
+                    * * * * *<br>
+                    * * * * *<br>
+                    * * * * *<br>
+                    * * * * *
+                </div>
+            </div>
+        </div>
+
+        <!-- Topic 2 -->
+        <div class="card">
+            <h2>💻 The Solution: Syntax & Code</h2>
+            <p>A nested loop is simply a loop placed inside the body of another loop. The outer loop controls the <strong>rows</strong> (vertical lines), and the inner loop controls the <strong>columns</strong> (items per line).</p>
+            
+            <pre><code><span class="comment">// General Syntax taught on the whiteboard</span>
+<span class="keyword">for</span>(Initialization; Condition; Update) {    <span class="comment">// OUTER LOOP</span>
+    
+    <span class="keyword">for</span>(Init; Condition; Update) {          <span class="comment">// INNER LOOP</span>
+        <span class="comment">// Inner Loop Statement Block</span>
+    }
+    
+    <span class="comment">// Outer Loop Statement Block</span>
+}</code></pre>
+
+            <p>Here is the exact code to generate the 6x5 star grid:</p>
+            <pre><code><span class="keyword">for</span>(i = <span class="string">1</span>; i <= <span class="string">6</span>; i++) {          <span class="comment">// Loops 6 times (Rows)</span>
+    <span class="keyword">for</span>(j = <span class="string">1</span>; j <= <span class="string">5</span>; j++) {      <span class="comment">// Loops 5 times per row (Cols)</span>
+        <span class="func">printf</span>(<span class="string">"* "</span>);
+    }
+    <span class="func">printf</span>(<span class="string">"\n"</span>);                  <span class="comment">// Moves cursor to next line</span>
+}</code></pre>
+        </div>
+
+        <!-- Topic 3 -->
+        <div class="card">
+            <h2>🧠 The Dry Run (How the Compiler Reads It)</h2>
+            <p><strong>The Golden Rule:</strong> For every single iteration of the Outer Loop, the Inner Loop runs to <em>complete finish</em> and resets.</p>
+            <p>Here is a trace of the variables executing in memory. Note how <code>j</code> resets to 1 every time <code>i</code> increases.</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Outer Loop (i)</th>
+                        <th>i <= 6?</th>
+                        <th>Inner Loop (j)</th>
+                        <th>j <= 5?</th>
+                        <th>Output Generated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td rowspan="6"><strong>i = 1</strong></td>
+                        <td rowspan="6"><span class="true-pill">True</span></td>
+                        <td>j = 1</td>
+                        <td><span class="true-pill">True</span></td>
+                        <td><code>*</code></td>
+                    </tr>
+                    <tr><td>j = 2</td><td><span class="true-pill">True</span></td><td><code>* *</code></td></tr>
+                    <tr><td>j = 3</td><td><span class="true-pill">True</span></td><td><code>* * *</code></td></tr>
+                    <tr><td>j = 4</td><td><span class="true-pill">True</span></td><td><code>* * * *</code></td></tr>
+                    <tr><td>j = 5</td><td><span class="true-pill">True</span></td><td><code>* * * * *</code></td></tr>
+                    <tr><td><strong>j = 6</strong></td><td><span class="false-pill">False</span></td><td><em>Exits inner loop, prints \n</em></td></tr>
+                    
+                    <tr>
+                        <td rowspan="2"><strong>i = 2</strong></td>
+                        <td rowspan="2"><span class="true-pill">True</span></td>
+                        <td><strong>j = 1 (Resets)</strong></td>
+                        <td><span class="true-pill">True</span></td>
+                        <td><code>*</code> (On row 2)</td>
+                    </tr>
+                    <tr><td colspan="3" style="color:var(--text-muted); font-style:italic;">...repeats until j=6, prints \n</td></tr>
+                    <tr>
+                        <td colspan="5" style="background:#f1f5f9; font-weight:bold;">... Repeats until i = 7 ...</td>
+                    </tr>
+                    <tr>
+                        <td><strong>i = 7</strong></td>
+                        <td><span class="false-pill">False</span></td>
+                        <td colspan="3"><strong>Program completely exits the nested loops.</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="visual-box">
+                <p><strong>Math Check:</strong> Outer runs 6 times. Inner runs 5 times. Total stars printed = <strong>6 × 5 = 30 stars.</strong></p>
+            </div>
+        </div>
+
+        <!-- Topic 4 -->
+        <div class="card">
+            <h2>🗺️ The Logic Flowchart</h2>
+            <p>The instructor drew a flowchart to explain control flow. Follow the arrows to understand how the compiler enters and exits diamonds (conditions).</p>
+            
+            <div class="flowchart">
+                <div>[ START ]</div>
+                <div class="flow-arrow">↓</div>
+                
+                <div class="flow-diamond">Outer Loop<br>Condition</div>
+                
+                <div class="flow-row">
+                    <div class="flow-col">
+                        <div style="color:var(--danger)">← False (Exit All)</div>
+                        <div class="flow-node" style="background:var(--card-bg); color:#333; margin-top:20px;">Execute Code<br>After Loops</div>
+                    </div>
+                    
+                    <div class="flow-col" style="border-left: 2px dashed #475569; padding-left: 2rem;">
+                        <div style="color:var(--success)">True ↓</div>
+                        
+                        <div class="flow-diamond" style="width:180px; padding:15px; font-size:0.85rem;">Inner Loop<br>Condition</div>
+                        
+                        <!-- Inner loop true path -->
+                        <div style="color:var(--success)">True ↓</div>
+                        <div class="flow-node" style="background:#4ec9b0; color:#000;">Inner Loop Statements<br>(printf "*")</div>
+                        <div class="flow-arrow">↓</div>
+                        <div class="flow-node">Update Inner Loop (j++)</div>
+                        <div style="color:var(--accent); margin-top:5px; border:1px solid; padding:5px; border-radius:5px;">↑ Loop back to Inner Condition</div>
+                        
+                        <div style="margin:20px 0; border-top:2px dotted white; width:100%;"></div>
+
+                        <!-- Inner loop false path -->
+                        <div style="color:var(--danger)">If Inner is False ↓</div>
+                        <div class="flow-node" style="background:#ce9178; color:#000;">Outer Loop Statements<br>(printf "\n")</div>
+                        <div class="flow-arrow">↓</div>
+                        <div class="flow-node">Update Outer Loop (i++)</div>
+                        <div style="color:var(--accent); margin-top:5px; border:1px solid; padding:5px; border-radius:5px;">↑ Loop back to Outer Condition</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Topic 5 -->
+        <div class="card">
+            <h2>📝 Important Rules of Nesting</h2>
+            <p>Before concluding, the instructor listed three critical rules about nesting loops in C that you must remember for exams:</p>
+            
+            <ul class="rules-list">
+                <li>
+                    <strong>1. Infinite Depths:</strong> You are not restricted to just two levels (Inner and Outer). You can place a loop inside a loop inside a loop up to <code>N</code> levels. However, time complexity drastically increases.
+                </li>
+                <li>
+                    <strong>2. Mixing Loop Types:</strong> You do not have to put a <code>for</code> loop inside a <code>for</code> loop. You can legally nest a <code>while</code> loop inside a <code>for</code> loop, or a <code>do-while</code> inside a <code>while</code>.
+                </li>
+                <li>
+                    <strong>3. Sequential Inner Loops:</strong> It is totally valid to have an outer loop that contains <em>multiple separate</em> inner loops sequentially. For example: Outer loop starts ➔ Inner Loop A finishes ➔ Inner Loop B finishes ➔ Outer Loop updates and restarts.
+                </li>
+            </ul>
+
+            <div class="visual-box">
+                <p><strong>💡 Pro-Tip (Dynamic Input):</strong> Avoid hardcoding numbers like <code>5</code> and <code>6</code>. A better practice is to take input from the user (e.g., <code>scanf("%d", &n);</code>) and use <code>i <= n;</code> in your loop condition to make your program flexible!</p>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

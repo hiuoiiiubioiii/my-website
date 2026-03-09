@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>In-Depth C Programming: The Switch Statement</title>
+    <style>
+        /* Base Variables & Reset */
+        :root {
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --primary: #4F46E5;
+            --secondary: #ec4899;
+            --code-bg: #282c34;
+            --card-bg: #ffffff;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --success: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* Feed Layout Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px; /* Space between each feed item */
+        }
+
+        /* Feed Items (Cards) */
+        .feed-item {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--primary);
+        }
+
+        .feed-item h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feed-item p {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #4b5563;
+        }
+
+        /* Callout Boxes */
+        .callout {
+            background: #e0e7ff;
+            border-left: 4px solid var(--primary);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+            font-weight: 500;
+        }
+
+        /* Code Visualization Windows */
+        .code-window {
+            background: var(--code-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .code-header {
+            background: #1e2227;
+            padding: 10px 15px;
+            display: flex;
+            gap: 8px;
+            color: #abb2bf;
+            font-size: 0.9rem;
+            font-family: monospace;
+        }
+
+        .code-dots span {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .code-dots span:nth-child(1) { background: #ff5f56; }
+        .code-dots span:nth-child(2) { background: #ffbd2e; }
+        .code-dots span:nth-child(3) { background: #27c93f; }
+
+        pre {
+            padding: 20px;
+            color: #abb2bf;
+            overflow-x: auto;
+            font-size: 1.05rem;
+            font-family: 'Courier New', Courier, monospace;
+            line-height: 1.5;
+        }
+
+        .keyword { color: #c678dd; }
+        .function { color: #61afef; }
+        .string { color: #98c379; }
+        .comment { color: #5c6370; font-style: italic; }
+        .variable { color: #e06c75; }
+
+        /* The 6 Rules Grid Layout */
+        .rules-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .rule-card {
+            background: #fffbeb;
+            border-left: 5px solid var(--warning);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .rule-card.danger {
+            background: #fef2f2;
+            border-left-color: var(--danger);
+        }
+
+        .rule-card h3 {
+            margin-bottom: 8px;
+            color: #1f2937;
+        }
+
+        /* Flowchart Visualization (CSS-only) */
+        .flowchart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 30px 0;
+        }
+
+        .node {
+            background: var(--primary);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            width: 80%;
+            max-width: 300px;
+            position: relative;
+        }
+
+        .decision-node {
+            background: var(--warning);
+            color: #333;
+            border-radius: 30px;
+        }
+
+        .action-node {
+            background: var(--success);
+        }
+
+        .arrow {
+            height: 30px;
+            width: 4px;
+            background: #cbd5e1;
+            position: relative;
+        }
+        
+        .arrow::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: -6px;
+            border-width: 8px;
+            border-style: solid;
+            border-color: #cbd5e1 transparent transparent transparent;
+        }
+
+        .header-title {
+            text-align: center;
+            padding-bottom: 20px;
+        }
+        .header-title h1 {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        .header-title p {
+            font-size: 1.2rem;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+
+    <!-- Header -->
+    <div class="header-title">
+        <h1>Switch Statements in C</h1>
+        <p>Complete Audio/Visual Breakdown • Continuous Study Feed</p>
+    </div>
+
+    <!-- 1. Introduction -->
+    <div class="feed-item">
+        <h2>👋 1. What is a Switch Statement?</h2>
+        <p>In C, the <code>switch</code> statement is a <strong>multi-way decision statement</strong>. It acts as an alternative to long, unreadable <code>else-if</code> ladders.</p>
+        <p><strong>Why use it?</strong></p>
+        <ul style="margin-left: 20px; margin-bottom: 15px;">
+            <li>It makes your program shorter, more readable, and easier to understand.</li>
+            <li>It executes faster than a long <code>if-else</code> block because the compiler can often optimize the jump directly to the matching case.</li>
+        </ul>
+        <div class="callout">
+            💡 <strong>Instructor Note:</strong> "Whatever you do with an if-else block, you can do using a switch statement. It is a simplified version of a long if-else construct."
+        </div>
+    </div>
+
+    <!-- 2. Syntax Blueprint -->
+    <div class="feed-item">
+        <h2>📐 2. The General Syntax</h2>
+        <p>Here is the exact blueprint written on the whiteboard. Pay attention to the keywords, colons, and breaks.</p>
+        
+        <div class="code-window">
+            <div class="code-header">
+                <div class="code-dots"><span></span><span></span><span></span></div>
+                syntax_blueprint.c
+            </div>
+<pre><code><span class="keyword">switch</span> (<span class="variable">expression</span>) {
+    <span class="keyword">case</span> <span class="variable">value1</span>:
+        <span class="comment">// Block of statements 1</span>
+        <span class="keyword">break</span>; <span class="comment">// Exits the switch</span>
+        
+    <span class="keyword">case</span> <span class="variable">value2</span>:
+        <span class="comment">// Block of statements 2</span>
+        <span class="keyword">break</span>;
+        
+    <span class="comment">// ... multiple cases allowed ...</span>
+        
+    <span class="keyword">default</span>:
+        <span class="comment">// Executes if no case matches</span>
+        <span class="comment">// No break needed here at the end</span>
+}
+<span class="comment">// Statement-x (Rest of program)</span></code></pre>
+        </div>
+    </div>
+
+    <!-- 3. How it Works -->
+    <div class="feed-item">
+        <h2>⚙️ 3. Execution Walkthrough (Integer Example)</h2>
+        <p>Let's see how control moves through the switch using a simple integer program.</p>
+        
+        <div class="code-window">
+            <div class="code-header">
+                <div class="code-dots"><span></span><span></span><span></span></div>
+                integer_example.c
+            </div>
+<pre><code><span class="keyword">int</span> <span class="variable">a</span>;
+<span class="function">printf</span>(<span class="string">"Enter a: "</span>);
+<span class="function">scanf</span>(<span class="string">"%d"</span>, &amp;<span class="variable">a</span>);
+
+<span class="keyword">switch</span>(<span class="variable">a</span>) {
+    <span class="keyword">case</span> 1: 
+        <span class="function">printf</span>(<span class="string">"JK\n"</span>);
+        <span class="keyword">break</span>;
+    <span class="keyword">case</span> 2: 
+        <span class="function">printf</span>(<span class="string">"Jenny\n"</span>);
+        <span class="keyword">break</span>;
+    <span class="keyword">default</span>:
+        <span class="function">printf</span>(<span class="string">"Bye\n"</span>);
+}
+<span class="function">printf</span>(<span class="string">"go to home\n"</span>);</code></pre>
+        </div>
+
+        <div class="callout">
+            <strong>Scenario 1 (User enters 1):</strong> Switch checks <code>a</code>. <code>1 == 1</code> is true. Jumps to case 1. Prints "JK". Hits <code>break</code> and exits. Finally prints "go to home".<br><br>
+            <strong>Scenario 2 (User enters 3):</strong> Case 1 fails. Case 2 fails. Control drops to <code>default</code>. Prints "Bye". Exits and prints "go to home".
+        </div>
+    </div>
+
+    <!-- 4. The 6 Golden Rules -->
+    <div class="feed-item">
+        <h2>⚠️ 4. The 6 Golden Rules of Switch</h2>
+        <p>The instructor spent heavy emphasis on these facts. These are common exam and interview questions!</p>
+        
+        <div class="rules-grid">
+            <div class="rule-card">
+                <h3>1. Expressions are Allowed (Must be Integer/Char)</h3>
+                <p>You can write <code>switch(a * 2)</code> or <code>switch(a + b)</code>. As long as the math evaluates to a whole integer or a character, it is valid.</p>
+            </div>
+            
+            <div class="rule-card danger">
+                <h3>2. No Floating-Point Numbers ❌</h3>
+                <p>You cannot use <code>float</code> or <code>double</code> in the expression or the case labels. <code>switch(1.5)</code> will cause a compiler error.</p>
+            </div>
+
+            <div class="rule-card">
+                <h3>3. Case Order Does Not Matter</h3>
+                <p>You do not have to put cases in sequential order (1, 2, 3). You can legally write <code>case 10:</code> followed by <code>case 3:</code>.</p>
+            </div>
+
+            <div class="rule-card danger">
+                <h3>4. The Danger of "Fall-Through"</h3>
+                <p>If you omit the <code>break;</code> statement, the code will execute the matched case AND <strong>all cases below it</strong> until it hits a break. This is called falling through.</p>
+            </div>
+
+            <div class="rule-card">
+                <h3>5. Default is Optional (and Movable)</h3>
+                <p>You don't have to include <code>default:</code>. If you do, it doesn't have to be at the bottom (though it is standard practice to put it there).</p>
+            </div>
+
+            <div class="rule-card danger">
+                <h3>6. No Relational Operators in Cases ❌</h3>
+                <p>A case checks for strict equality. You cannot write <code>case marks > 80:</code>. Case labels must be specific constants (like <code>case 5:</code> or <code>case 'A':</code>).</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Flowchart -->
+    <div class="feed-item">
+        <h2>📊 5. Visualizing the Logic (Flowchart)</h2>
+        <p>Here is the visual representation of how the compiler reads the statement top-to-bottom.</p>
+
+        <div class="flowchart">
+            <div class="node">Start: Evaluate Switch Expression</div>
+            <div class="arrow"></div>
+            
+            <div class="node decision-node">Is expr == Case Value 1?</div>
+            <div style="display:flex; width:100%; justify-content: center; gap: 40px; margin-top: 10px;">
+                <div style="text-align: center;">
+                    <span style="color:var(--success); font-weight:bold;">YES ➔</span>
+                    <div class="node action-node" style="margin-top:10px; width: 150px;">Execute Code 1<br>& Break</div>
+                </div>
+            </div>
+            
+            <div class="arrow"></div>
+            <span style="color:var(--danger); font-weight:bold; margin-bottom: 5px;">NO</span>
+            
+            <div class="node decision-node">Is expr == Case Value 2?</div>
+            <div style="display:flex; width:100%; justify-content: center; gap: 40px; margin-top: 10px;">
+                <div style="text-align: center;">
+                    <span style="color:var(--success); font-weight:bold;">YES ➔</span>
+                    <div class="node action-node" style="margin-top:10px; width: 150px;">Execute Code 2<br>& Break</div>
+                </div>
+            </div>
+
+            <div class="arrow"></div>
+            <span style="color:var(--danger); font-weight:bold; margin-bottom: 5px;">NO</span>
+
+            <div class="node" style="background: #64748b;">Default: Execute Default Code</div>
+            <div class="arrow"></div>
+            <div class="node" style="background: #0f172a;">Exit Switch Block</div>
+        </div>
+    </div>
+
+    <!-- 6. Character Grouping Example -->
+    <div class="feed-item">
+        <h2>🔤 6. Characters & Intentional Fall-Through</h2>
+        <p>You can evaluate characters instead of integers. By deliberately omitting <code>break;</code>, you can group cases together to execute the same block of code. Here is the whiteboard example testing for vowels.</p>
+
+        <div class="code-window">
+            <div class="code-header">
+                <div class="code-dots"><span></span><span></span><span></span></div>
+                vowel_checker.c
+            </div>
+<pre><code><span class="keyword">char</span> <span class="variable">ch</span>;
+<span class="function">printf</span>(<span class="string">"Enter ch: "</span>);
+<span class="function">scanf</span>(<span class="string">"%c"</span>, &amp;<span class="variable">ch</span>);
+
+<span class="keyword">switch</span>(<span class="variable">ch</span>) {
+    <span class="comment">// Notice the lack of breaks!</span>
+    <span class="keyword">case</span> <span class="string">'a'</span>:
+    <span class="keyword">case</span> <span class="string">'e'</span>:
+    <span class="keyword">case</span> <span class="string">'i'</span>:
+    <span class="keyword">case</span> <span class="string">'o'</span>:
+    <span class="keyword">case</span> <span class="string">'u'</span>:
+        <span class="function">printf</span>(<span class="string">"Vowel\n"</span>);
+        <span class="keyword">break</span>; <span class="comment">// Break triggers ONLY after printing</span>
+        
+    <span class="keyword">default</span>:
+        <span class="function">printf</span>(<span class="string">"Not Vowel\n"</span>);
+}</code></pre>
+        </div>
+        <p><strong>How it works:</strong> If you enter 'e', it matches <code>case 'e':</code>. Because there is no break, gravity pulls execution straight down through 'i', 'o', and 'u' until it hits the print statement and the break.</p>
+    </div>
+
+    <!-- 7. Final Assignment -->
+    <div class="feed-item">
+        <h2>🎯 7. End of Video Assignment</h2>
+        <p>The instructor leaves you with a challenge: Convert an <code>else-if</code> grading system into a <code>switch</code> statement.</p>
+        <div class="callout">
+            <strong>The Problem:</strong><br>
+            If Marks &gt; 80, Print A.<br>
+            If Marks &gt; 70, Print B.<br>
+            If Marks &gt; 60, Print C.<br>
+            Else Print D.
+        </div>
+        <p><strong>The Catch:</strong> Remember Rule #6! You <em>cannot</em> use <code>&gt;</code> inside a switch case. <br><br><em>Hint for students: Try dividing the marks by 10 (e.g. <code>switch(marks/10)</code>). If they score an 85, 85/10 (in integer math) equals 8. You can then use <code>case 8:</code>!</em></p>
+    </div>
+
+</div>
+
+</body>
+</html>

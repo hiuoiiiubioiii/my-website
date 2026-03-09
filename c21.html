@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Operator Precedence & Associativity | Study Notes</title>
+    <style>
+        :root {
+            --bg-color: #f4f7fa;
+            --text-main: #333;
+            --text-muted: #666;
+            --card-bg: #ffffff;
+            --accent-primary: #4361ee;
+            --accent-secondary: #3f37c9;
+            --highlight-bg: #e0e7ff;
+            --danger: #ef233c;
+            --success: #2b9348;
+            --code-bg: #1e1e24;
+            --code-text: #f8f9fa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+
+        /* Feed Container */
+        .feed-container {
+            max-width: 800px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Header Styles */
+        header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--accent-secondary);
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Card / Section Styles */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--accent-primary);
+        }
+
+        .card h2 {
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+            border-bottom: 2px solid var(--highlight-bg);
+            padding-bottom: 0.5rem;
+        }
+
+        .card h3 {
+            margin: 1.5rem 0 0.5rem 0;
+            color: #222;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        /* Visualizer Blocks */
+        .visual-block {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.2rem;
+        }
+
+        .step-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .step {
+            background: rgba(255,255,255,0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            width: 100%;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .arrow {
+            color: var(--accent-primary);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .highlight-calc {
+            background-color: rgba(67, 97, 238, 0.4);
+            padding: 0 4px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #fff;
+            border: 1px solid var(--accent-primary);
+        }
+
+        .dim {
+            opacity: 0.5;
+        }
+
+        .wrong-path {
+            border-left: 4px solid var(--danger);
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+            background: #fff0f0;
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .correct-path {
+            border-left: 4px solid var(--success);
+            padding-left: 1rem;
+            background: #f0fff4;
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* Table Styles */
+        .table-responsive {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            min-width: 600px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: var(--highlight-bg);
+            color: var(--accent-secondary);
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        code {
+            background-color: #e9ecef;
+            color: #d00000;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+        }
+
+        /* Pro-tip Box */
+        .pro-tip {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c8b6ff 100%);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+            border-left: 6px solid var(--accent-secondary);
+        }
+
+        .pro-tip h3 {
+            margin-top: 0;
+            color: var(--accent-secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .homework-box {
+            border: 3px dashed var(--accent-primary);
+            background-color: #f8f9fa;
+            text-align: center;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 0.25em 0.6em;
+            font-size: 0.75em;
+            font-weight: 700;
+            border-radius: 0.25rem;
+            background-color: var(--accent-primary);
+            color: white;
+        }
+        
+        .badge.rtl {
+            background-color: var(--danger);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header -->
+        <header>
+            <h1>C Operator Precedence & Associativity</h1>
+            <p>Complete visual study notes. Scroll down to master the concepts step-by-step.</p>
+        </header>
+
+        <!-- Section 1: Introduction -->
+        <article class="card">
+            <h2>1. The Core Problem</h2>
+            <p>In a programming expression containing multiple operators, variables, and constants, the C compiler needs strict mathematical rules to know exactly which operation to perform first.</p>
+            
+            <h3>Visualizing the Dilemma</h3>
+            <p>Look at this simple expression: <code>2 + 3 * 4</code>. How should the computer read this?</p>
+            
+            <div class="wrong-path">
+                <strong>❌ Case 1: Blindly reading Left to Right</strong>
+                <div class="step-container" style="align-items: flex-start; margin-top: 10px; color: #333; font-family: monospace; font-size: 1.1rem;">
+                    <div><span class="highlight-calc" style="background: #ffb3c1; color: #000; border-color: red;">2 + 3</span> * 4</div>
+                    <div style="margin-left: 20px;">↓</div>
+                    <div>5 * 4 = <strong>20 (Wrong!)</strong></div>
+                </div>
+            </div>
+
+            <div class="correct-path">
+                <strong>✅ Case 2: Using Precedence (Multiplication beats Addition)</strong>
+                <div class="step-container" style="align-items: flex-start; margin-top: 10px; color: #333; font-family: monospace; font-size: 1.1rem;">
+                    <div>2 + <span class="highlight-calc" style="background: #95d5b2; color: #000; border-color: green;">3 * 4</span></div>
+                    <div style="margin-left: 40px;">↓</div>
+                    <div>2 + 12 = <strong>14 (Correct!)</strong></div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Section 2: Definitions -->
+        <article class="card">
+            <h2>2. The Two Golden Rules</h2>
+            <p>To solve the problem above, the C compiler relies on two distinct properties of operators:</p>
+            
+            <h3 style="color: var(--accent-primary)">1. Operator Precedence (Priority)</h3>
+            <p>Precedence decides <strong>which</strong> operator is executed first. Think of it like the BODMAS/PEMDAS rule in standard math. Multiplication has a higher "priority" than addition.</p>
+
+            <h3 style="color: var(--accent-primary)">2. Operator Associativity (Direction)</h3>
+            <p>Associativity decides the sequence of execution when two or more operators in an expression have the <strong>exact same precedence</strong>. It tells you whether to calculate from Left-to-Right (L → R) or Right-to-Left (R → L).</p>
+
+            <div class="visual-block">
+                <p style="color: #adb5bd; font-size: 0.9rem; margin-bottom: 10px;">Example: Division and Multiplication share the exact same priority.</p>
+                <div class="step-container">
+                    <div class="step"><span class="highlight-calc">2 * 3</span> / 2 * 12 <span style="font-size: 0.8rem; color: #ffd166;">(Rule: Left to Right)</span></div>
+                    <div class="arrow">↓</div>
+                    <div class="step"><span class="highlight-calc">6 / 2</span> * 12</div>
+                    <div class="arrow">↓</div>
+                    <div class="step"><span class="highlight-calc">3 * 12</span></div>
+                    <div class="arrow">↓</div>
+                    <div class="step" style="color: #06d6a0; font-weight: bold;">36</div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Section 3: The Chart -->
+        <article class="card">
+            <h2>3. The Ultimate Precedence Chart</h2>
+            <p>This chart dictates the execution priority of every operator in C. <strong>Priority 1 is the highest</strong> (executed first), and <strong>Priority 15 is the lowest</strong>.</p>
+            
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Priority</th>
+                            <th>Operator Symbol(s)</th>
+                            <th>Name / Type</th>
+                            <th>Associativity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><code>()</code> <code>[]</code> <code>.</code> <code>-&gt;</code> <code>++</code> <code>--</code></td>
+                            <td>Parentheses, Array, Member selection, <strong>Postfix</strong> inc/dec</td>
+                            <td><span class="badge">L → R</span></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><code>++</code> <code>--</code> <code>+</code> <code>-</code> <code>!</code> <code>~</code> <code>*</code> <code>&amp;</code> <code>sizeof</code> <code>(type)</code></td>
+                            <td><strong>Prefix</strong> inc/dec, Unary +/-, Logical/Bitwise NOT, Pointers, Sizeof, Cast</td>
+                            <td><span class="badge rtl">R → L</span></td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><code>*</code> <code>/</code> <code>%</code></td>
+                            <td>Multiplication, Division, Modulo</td>
+                            <td><span class="badge">L → R</span></td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><code>+</code> <code>-</code></td>
+                            <td>Addition, Subtraction (Binary)</td>
+                            <td><span class="badge">L → R</span></td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td><code>&lt;&lt;</code> <code>&gt;&gt;</code></td>
+                            <td>Bitwise Shift (Left, Right)</td>
+                            <td><span class="badge">L → R</span></td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td><code>&lt;</code> <code>&lt;=</code> <code>&gt;</code> <code>&gt;=</code></td>
+                            <td>Relational (Less, Greater)</td>
+                            <td><span class="badge">L → R</span></td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td><code>==</code> <code>!=</code></td>
+                            <td>Equality (Equal, Not Equal)</td>
+                            <td><span class="badge">L → R</span></td>
+                        </tr>
+                        <tr>
+                            <td>8</td>
+                            <td><code>&amp;</code></td>
+                            <td>Bitwise AND</td>
+                            <td><span class="badge">L → R</span></td>
+                        </tr>
+                        <tr>
+                            <td>9</td>
+                            <td><code>^</code></td>
+                            <td>Bitwise XOR</td>
+                            <td><span class="badge">L → R</span></td>
+                        </tr>
+                        <tr>
+                            <td>10</td>
+                            <td><code>|</code></td>
+                            <td>Bitwise OR</td>
+                            <td><span class="badge">L → R</span></td>
+                        </tr>
+                        <tr>
+                            <td>11</td>
+                            <td><code>&amp;&amp;</code></td>
+                            <td>Logical AND</td>
+                            <td><span class="badge">L → R</span></td>
+                        </tr>
+                        <tr>
+                            <td>12</td>
+                            <td><code>||</code></td>
+                            <td>Logical OR</td>
+                            <td><span class="badge">L → R</span></td>
+                        </tr>
+                        <tr>
+                            <td>13</td>
+                            <td><code>?:</code></td>
+                            <td>Conditional (Ternary)</td>
+                            <td><span class="badge rtl">R → L</span></td>
+                        </tr>
+                        <tr>
+                            <td>14</td>
+                            <td><code>=</code> <code>+=</code> <code>-=</code> <code>*=</code> ...</td>
+                            <td>Assignment Operators</td>
+                            <td><span class="badge rtl">R → L</span></td>
+                        </tr>
+                        <tr>
+                            <td>15</td>
+                            <td><code>,</code></td>
+                            <td>Comma Operator</td>
+                            <td><span class="badge">L → R</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pro-tip">
+                <h3>💡 The Instructor's Secret Shortcut</h3>
+                <p>Don't memorize the whole Associativity column! Notice a pattern? Almost <strong>every single operator in C evaluates Left-to-Right</strong>.</p>
+                <p>You only need to memorize the <strong>Three Right-to-Left (R → L) Exceptions:</strong></p>
+                <ol style="margin-left: 20px; font-weight: 500;">
+                    <li><strong>Unary Operators</strong> (Priority #2) - <em>Careful: Prefix is R→L, but Postfix is L→R!</em></li>
+                    <li><strong>Ternary Operator <code>?:</code></strong> (Priority #13)</li>
+                    <li><strong>Assignment Operators <code>=</code></strong> (Priority #14)</li>
+                </ol>
+            </div>
+        </article>
+
+        <!-- Section 4: Visual Step-by-Step Practice -->
+        <article class="card">
+            <h2>4. Step-by-Step Practice Problems</h2>
+            <p>Let's trace through the instructor's exact whiteboard examples to see how the compiler reads them.</p>
+
+            <h3>Example A: Same Precedence everywhere</h3>
+            <p>Expression has <code>*</code>, <code>%</code>, and <code>/</code>. They all share Priority #3. We use the Associativity rule: <strong>Left to Right</strong>.</p>
+            <div class="visual-block">
+                <div class="step-container">
+                    <div class="step"><span class="dim">a = </span><span class="highlight-calc">3 * 4</span><span class="dim"> % 5 / 2</span></div>
+                    <div class="arrow">↓</div>
+                    <div class="step"><span class="dim">a = </span><span class="highlight-calc">12 % 5</span><span class="dim"> / 2</span></div>
+                    <div class="arrow">↓</div>
+                    <div class="step"><span class="dim">a = </span><span class="highlight-calc">2 / 2</span></div>
+                    <div class="arrow">↓</div>
+                    <div class="step" style="color: #06d6a0;">a = 1</div>
+                </div>
+            </div>
+
+            <h3>Example B: Introducing Parentheses</h3>
+            <p>Parentheses <code>()</code> have Priority #1. They override everything else. We jump straight to them.</p>
+            <div class="visual-block">
+                <div class="step-container">
+                    <div class="step"><span class="dim">a = 3 * </span><span class="highlight-calc">(4 % 5)</span><span class="dim"> / 2</span></div>
+                    <div class="arrow">↓</div>
+                    <div class="step"><span class="dim">a = </span><span class="highlight-calc">3 * 4</span><span class="dim"> / 2</span></div>
+                    <div class="arrow">↓</div>
+                    <div class="step"><span class="dim">a = </span><span class="highlight-calc">12 / 2</span></div>
+                    <div class="arrow">↓</div>
+                    <div class="step" style="color: #06d6a0;">a = 6</div>
+                </div>
+            </div>
+
+            <h3>Example C: Mixed Precedence</h3>
+            <p><code>*</code> has a higher priority than <code>+</code>. We execute both multiplications first (Left-to-Right), then add them.</p>
+            <div class="visual-block">
+                <div class="step-container">
+                    <div class="step"><span class="dim">a = </span><span class="highlight-calc">3 * 4</span><span class="dim"> + 5 * 6</span></div>
+                    <div class="arrow">↓</div>
+                    <div class="step"><span class="dim">a = 12 + </span><span class="highlight-calc">5 * 6</span></div>
+                    <div class="arrow">↓</div>
+                    <div class="step"><span class="dim">a = </span><span class="highlight-calc">12 + 30</span></div>
+                    <div class="arrow">↓</div>
+                    <div class="step" style="color: #06d6a0;">a = 42</div>
+                </div>
+            </div>
+
+            <h3>Example D: Parentheses override Mixed Precedence</h3>
+            <p>Even though <code>+</code> is usually lower priority than <code>*</code>, the brackets force us to evaluate the addition first.</p>
+            <div class="visual-block">
+                <div class="step-container">
+                    <div class="step"><span class="dim">a = 3 * </span><span class="highlight-calc">(4 + 5)</span><span class="dim"> * 6</span></div>
+                    <div class="arrow">↓</div>
+                    <div class="step"><span class="dim">a = </span><span class="highlight-calc">3 * 9</span><span class="dim"> * 6</span></div>
+                    <div class="arrow">↓</div>
+                    <div class="step"><span class="dim">a = </span><span class="highlight-calc">27 * 6</span></div>
+                    <div class="arrow">↓</div>
+                    <div class="step" style="color: #06d6a0;">a = 162</div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Section 5: Homework -->
+        <article class="card homework-box">
+            <h2>🎯 The Boss Level: Your Assignment</h2>
+            <p>Apply everything you've learned to solve the final expression from the video.</p>
+            
+            <div style="background: white; padding: 1.5rem; border-radius: 8px; border: 1px solid #ddd; display: inline-block; text-align: left; margin-bottom: 1rem;">
+                <p style="margin-bottom: 5px; color: var(--text-muted); font-family: monospace;">// Given Variables:</p>
+                <code>a = 0;</code><br>
+                <code>b = 1;</code><br>
+                <code>c = -1;</code>
+            </div>
+
+            <div class="visual-block" style="background: var(--accent-secondary); color: white; border: none; font-size: 1.4rem; padding: 2rem;">
+                --a * (5 + b) / 2 - c++ * b
+            </div>
+
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+                <strong>Hint:</strong> Pay close attention to Priority #1 and #2. What is the difference between Postfix (<code>c++</code>) and Prefix (<code>--a</code>)? Don't forget to evaluate your parentheses first!
+            </p>
+        </article>
+
+    </div>
+
+</body>
+</html>

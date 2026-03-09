@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Pointer Arithmetic | Study Feed</title>
+    <style>
+        /* === BASE STYLES === */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;600&display=swap');
+
+        :root {
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --card-bg: #ffffff;
+            --primary: #4F46E5;
+            --secondary: #4338ca;
+            --danger: #ef4444;
+            --success: #10b981;
+            --code-bg: #1e1e2e;
+            --formula-bg: #eff6ff;
+            --border: #e5e7eb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding-bottom: 100px;
+        }
+
+        /* === FEED LAYOUT === */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin: 60px 0 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: #6b7280;
+        }
+
+        .feed-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+            margin-bottom: 40px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            border: 1px solid var(--border);
+        }
+
+        .feed-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card-tag {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .feed-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: #111827;
+        }
+
+        .feed-card h3 {
+            font-size: 1.3rem;
+            margin: 25px 0 10px;
+            color: var(--primary);
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+        }
+
+        /* === CODE BLOCKS === */
+        pre {
+            background-color: var(--code-bg);
+            color: #cdd6f4;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            margin: 20px 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        code .keyword { color: #cba6f7; }
+        code .type { color: #f38ba8; }
+        code .variable { color: #89b4fa; }
+        code .number { color: #fab387; }
+        code .comment { color: #6c7086; font-style: italic; }
+
+        /* === VISUALIZATIONS === */
+        .formula-box {
+            background-color: var(--formula-bg);
+            border-left: 5px solid var(--primary);
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+            font-size: 1.1rem;
+        }
+
+        .formula-box strong {
+            display: block;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-top: 10px;
+        }
+
+        .memory-diagram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 30px 0;
+            background: #f8fafc;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px dashed var(--border);
+        }
+
+        .array-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .memory-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80px;
+        }
+
+        .index {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .cell {
+            width: 100%;
+            height: 60px;
+            background-color: white;
+            border: 2px solid var(--secondary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .address {
+            font-size: 0.8rem;
+            font-family: 'Fira Code', monospace;
+            color: #ef4444;
+            margin-top: 8px;
+        }
+
+        /* Pointer Arrows */
+        .pointer-arrow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .arrow-line {
+            width: 2px;
+            height: 20px;
+            background-color: var(--primary);
+            position: relative;
+        }
+        .arrow-line::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -4px;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-bottom: 5px solid var(--primary);
+        }
+
+        .status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .status.illegal { background: #fee2e2; color: #991b1b; }
+        .status.valid { background: #d1fae5; color: #065f46; }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .feed-card { padding: 20px; }
+            .array-container { flex-direction: column; align-items: center; }
+            .memory-block { flex-direction: row; width: 100%; justify-content: flex-start; gap: 15px; }
+            .cell { width: 80px; }
+            .pointer-arrow { flex-direction: row; margin-top: 0; margin-left: 10px; }
+            .arrow-line { height: 2px; width: 20px; margin-right: 5px;}
+            .arrow-line::before {
+                top: -4px; left: -5px;
+                border-top: 5px solid transparent;
+                border-bottom: 5px solid transparent;
+                border-right: 5px solid var(--primary);
+                border-left: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header -->
+        <div class="header">
+            <h1>Pointer Arithmetic in C</h1>
+            <p>Scroll down to learn how pointer addition works under the hood.</p>
+        </div>
+
+        <!-- Section 1 -->
+        <div class="feed-card">
+            <span class="card-tag" style="background: var(--danger)">Rule #1</span>
+            <h2>Adding Two Pointers is <span class="status illegal">ILLEGAL</span></h2>
+            <p>The very first rule of pointer arithmetic: You <strong>cannot add two pointer variables together</strong>.</p>
+            <p>If pointer <code>p</code> holds memory address <code>1000</code>, and pointer <code>q</code> holds <code>1000</code>, adding them together yields <code>2000</code>. This makes absolutely no logical sense in computer memory.</p>
+            
+            <pre><code><span class="type">int</span> <span class="variable">a</span> = <span class="number">10</span>;
+<span class="type">int</span> *<span class="variable">p</span> = &a;
+<span class="type">int</span> *<span class="variable">q</span> = &a;
+
+<span class="variable">p</span> + <span class="variable">q</span>;  <span class="comment">// ❌ ERROR: invalid operands to binary +</span></code></pre>
+        </div>
+
+        <!-- Section 2 -->
+        <div class="feed-card">
+            <span class="card-tag" style="background: var(--success)">Rule #2</span>
+            <h2>Adding an Integer to a Pointer is <span class="status valid">VALID</span></h2>
+            <p>While adding two pointers is forbidden, you <strong>can</strong> add an integer to a pointer. This simply tells the compiler to jump to the <em>next</em> block of memory for that data type.</p>
+            
+            <pre><code><span class="variable">p</span> + <span class="number">1</span>; <span class="comment">// ✅ Valid</span>
+<span class="variable">p</span> + <span class="number">5</span>; <span class="comment">// ✅ Valid</span>
+<span class="variable">p</span> + <span class="number">0</span>; <span class="comment">// ✅ Valid</span></code></pre>
+        </div>
+
+        <!-- Section 3 -->
+        <div class="feed-card">
+            <span class="card-tag">The Math</span>
+            <h2>How the Math Actually Works</h2>
+            <p>A common student mistake is treating pointer math like standard math.</p>
+            <pre><code><span class="type">int</span> <span class="variable">a</span> = <span class="number">10</span>;  <span class="comment">// Let's say 'a' is stored at address 1000</span>
+<span class="type">int</span> *<span class="variable">p</span> = &a; <span class="comment">// p holds 1000</span>
+<span class="variable">p</span> = <span class="variable">p</span> + <span class="number">2</span>;   <span class="comment">// Where does p point now?</span></code></pre>
+            
+            <p>❌ <strong>The Misconception:</strong> Students think 1000 + 2 = 1002. <br>
+            ✅ <strong>The Reality:</strong> An integer takes up 4 bytes (addresses 1000, 1001, 1002, 1003). If <code>p</code> points to 1002, it points to the middle of the variable, giving garbage data!</p>
+
+            <div class="formula-box">
+                <strong>The Golden Formula:</strong>
+                <code>New Address = p + (n * sizeof(data_type))</code>
+            </div>
+
+            <p>Applying the formula to <code>p = p + 2</code>:</p>
+            <ul>
+                <li>Base address (p) = 1000</li>
+                <li>Value to add (n) = 2</li>
+                <li>Size of <code>int</code> = 4 bytes</li>
+                <li><strong>Math:</strong> 1000 + (2 × 4) = <strong>1008</strong></li>
+            </ul>
+        </div>
+
+        <!-- Section 4 -->
+        <div class="feed-card">
+            <span class="card-tag">Visualization</span>
+            <h2>The True Power: Pointers & Arrays</h2>
+            <p>Pointer arithmetic is designed for <strong>Arrays</strong> because array elements are stored contiguously (side-by-side) in memory.</p>
+            
+            <pre><code><span class="type">int</span> <span class="variable">a</span>[<span class="number">5</span>] = {<span class="number">0</span>, <span class="number">1</span>, -<span class="number">1</span>, <span class="number">10</span>, <span class="number">11</span>};
+<span class="type">int</span> *<span class="variable">p</span> = &a[<span class="number">0</span>]; <span class="comment">// Pointer starts at index 0</span></code></pre>
+
+            <div class="memory-diagram">
+                <h3>Memory Map (Assuming 4-byte integers)</h3><br>
+                <div class="array-container">
+                    <div class="memory-block">
+                        <span class="index">a[0]</span>
+                        <div class="cell">0</div>
+                        <span class="address">1000</span>
+                        <div class="pointer-arrow" id="ptr-0">
+                            <div class="arrow-line"></div>
+                            <span>p</span>
+                        </div>
+                    </div>
+                    <div class="memory-block">
+                        <span class="index">a[1]</span>
+                        <div class="cell">1</div>
+                        <span class="address">1004</span>
+                        <div class="pointer-arrow" style="opacity: 0;">
+                            <div class="arrow-line"></div>
+                            <span>p</span>
+                        </div>
+                    </div>
+                    <div class="memory-block">
+                        <span class="index">a[2]</span>
+                        <div class="cell">-1</div>
+                        <span class="address">1008</span>
+                        <div class="pointer-arrow" id="ptr-2" style="opacity: 0.3; border-bottom: 2px dashed var(--primary); padding-bottom: 5px;">
+                            <div class="arrow-line"></div>
+                            <span>p+2</span>
+                        </div>
+                    </div>
+                    <div class="memory-block">
+                        <span class="index">a[3]</span>
+                        <div class="cell">10</div>
+                        <span class="address">1012</span>
+                    </div>
+                    <div class="memory-block">
+                        <span class="index">a[4]</span>
+                        <div class="cell">11</div>
+                        <span class="address">1016</span>
+                    </div>
+                </div>
+            </div>
+
+            <p>If we execute <code>p = p + 2;</code>, the pointer calculates <code>1000 + (2 * 4) = 1008</code>. It safely lands exactly on the starting byte of <code>a[2]</code>.</p>
+
+            <h3>The Array Name is a Constant Pointer</h3>
+            <p>In C, the array name <code>a</code> acts as a pointer to the first element (<code>1000</code>).</p>
+            <ul>
+                <li><code>*(a + 2)</code> -> <strong>Valid!</strong> Safely peeks at value <code>-1</code>.</li>
+                <li><code>a = a + 2;</code> -> <span style="color: red; font-weight: bold;">Invalid!</span> You cannot permanently move <code>a</code> because it is a Constant Pointer.</li>
+            </ul>
+        </div>
+
+        <!-- Section 5 -->
+        <div class="feed-card">
+            <span class="card-tag">Code Demo</span>
+            <h2>VS Code Practical Proof</h2>
+            <p>Let's print the actual memory addresses to prove the formula works.</p>
+
+            <pre><code><span class="type">int</span> <span class="variable">a</span>[<span class="number">5</span>] = {<span class="number">1</span>, <span class="number">4</span>, <span class="number">3</span>, -<span class="number">8</span>, <span class="number">0</span>};
+<span class="type">int</span> *<span class="variable">p</span> = &a[<span class="number">0</span>];
+
+<span class="keyword">printf</span>(<span class="string">"Address is: %u\n"</span>, p);  
+<span class="comment">// Output: Address is: 6422200</span>
+
+<span class="variable">p</span> = <span class="variable">p</span> + <span class="number">2</span>;
+
+<span class="keyword">printf</span>(<span class="string">"Address is: %u\n"</span>, p);  
+<span class="comment">// Output: Address is: 6422208 (Exactly 8 bytes higher!)</span></code></pre>
+        </div>
+
+        <!-- Section 6 -->
+        <div class="feed-card">
+            <span class="card-tag" style="background: #eab308; color: black;">Homework</span>
+            <h2>Pop Quiz!</h2>
+            <p>Look at the following code. What will be the final output?</p>
+
+            <pre><code><span class="type">int</span> <span class="variable">a</span>[<span class="number">5</span>] = {<span class="number">1</span>, <span class="number">4</span>, <span class="number">3</span>, -<span class="number">8</span>, <span class="number">0</span>};
+<span class="type">int</span> *<span class="variable">p</span> = &a[<span class="number">0</span>];
+
+<span class="variable">p</span> = <span class="variable">p</span> + <span class="number">1</span>;
+*<span class="variable">p</span> = <span class="number">2</span>;
+
+<span class="keyword">printf</span>(<span class="string">"value is: %d"</span>, *p);</code></pre>
+
+            <details style="margin-top: 20px; background: #f3f4f6; padding: 15px; border-radius: 8px; cursor: pointer;">
+                <summary style="font-weight: bold; color: var(--primary);">Tap to Reveal Answer</summary>
+                <div style="margin-top: 15px;">
+                    <p><strong>The output is: <code>2</code></strong></p>
+                    <ol style="margin-left: 20px;">
+                        <li><code>p = p + 1;</code> moves the pointer to index 1 (which currently holds the value <code>4</code>).</li>
+                        <li><code>*p = 2;</code> uses the dereference operator to <strong>overwrite</strong> the <code>4</code> with a <code>2</code>.</li>
+                        <li>The print statement outputs the newly assigned value.</li>
+                    </ol>
+                </div>
+            </details>
+        </div>
+
+        <div style="text-align: center; color: #9ca3af; margin-top: 50px;">
+            <p>End of Lesson • Keep Coding! 🚀</p>
+        </div>
+
+    </div>
+
+    <!-- JS for scroll animation -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const cards = document.querySelectorAll('.feed-card');
+            
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.15 // Trigger when 15% of the card is visible
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target); // Stop observing once it fades in
+                    }
+                });
+            }, observerOptions);
+
+            cards.forEach(card => {
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operators in C - Interactive Study Notes</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+        :root {
+            --primary: #4F46E5;
+            --primary-light: #818CF8;
+            --bg-color: #F3F4F6;
+            --card-bg: #FFFFFF;
+            --text-main: #1F2937;
+            --text-muted: #4B5563;
+            --code-bg: #1E293B;
+            --code-text: #E2E8F0;
+            --accent-green: #10B981;
+            --accent-red: #EF4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 50px;
+        }
+
+        /* Vertical Feed Layout Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Header Styling */
+        header {
+            text-align: center;
+            padding: 40px 0 20px 0;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Card / Post Styling */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card h2 {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 10px;
+        }
+
+        .card h3 {
+            font-size: 1.4rem;
+            margin: 20px 0 10px 0;
+            color: var(--text-main);
+        }
+
+        .card p {
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            overflow-x: auto;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background-color: #E5E7EB;
+            color: #DC2626;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        /* Visualizations */
+        .viz-container {
+            background-color: #F8FAFC;
+            border: 2px dashed #CBD5E1;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-light);
+        }
+
+        /* Memory Box Visualization styling */
+        .memory-wrapper {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            margin-top: 20px;
+            min-height: 120px;
+        }
+
+        .memory-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .memory-box {
+            width: 80px;
+            height: 80px;
+            border: 3px solid var(--text-main);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+            font-family: 'Fira Code', monospace;
+            background-color: white;
+            transition: all 0.4s ease;
+        }
+
+        .memory-label {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .highlight-read {
+            border-color: var(--primary);
+            background-color: #EEF2FF;
+            transform: scale(1.1);
+        }
+
+        .highlight-write {
+            border-color: var(--accent-green);
+            background-color: #ECFDF5;
+            transform: scale(1.1);
+        }
+
+        .explain-text {
+            min-height: 30px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-top: 15px;
+        }
+
+        /* Ternary Visualization */
+        .ternary-viz {
+            font-family: 'Fira Code', monospace;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .t-cond, .t-true, .t-false {
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .fade-out {
+            opacity: 0.2;
+            text-decoration: line-through;
+        }
+
+        .highlight-red { background-color: #FEE2E2; color: var(--accent-red); }
+        .highlight-green { background-color: #D1FAE5; color: var(--accent-green); }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Operators in C</h1>
+        <p>Complete In-Depth Study Notes & Visualizations</p>
+    </header>
+
+    <div class="feed-container">
+
+        <!-- Post 1: Basics -->
+        <section class="card">
+            <h2>1. What is an Operator?</h2>
+            <p>An <strong>operator</strong> is simply a symbol that tells the compiler or computer to perform a specific mathematical or logical manipulation on data.</p>
+            <pre>1 + 2 = 3</pre>
+            <ul>
+                <li><strong>Operator:</strong> The <code>+</code> symbol. It tells the computer to perform addition.</li>
+                <li><strong>Operands:</strong> The numbers <code>1</code> and <code>2</code>. Operands are the actual data being manipulated.</li>
+            </ul>
+
+            <h3>What is an Expression?</h3>
+            <p>An <strong>expression</strong> is a sequence of operators and operands that, after processing, results in a single value.</p>
+            <pre>a = 5 + 5</pre>
+            <p>In this expression:</p>
+            <ul>
+                <li><code>5</code> and <code>5</code> are <strong>operands</strong>.</li>
+                <li><code>+</code> and <code>=</code> are <strong>operators</strong>.</li>
+                <li><code>a</code> is a <strong>variable</strong>.</li>
+            </ul>
+            <p><em>Process:</em> The computer calculates 5 + 5, gets a single value (10), and assigns it to the variable 'a'.</p>
+        </section>
+
+        <!-- Post 2: Classification -->
+        <section class="card">
+            <h2>2. Classification of Operators</h2>
+            <p>Operators in C are classified into two main categories:</p>
+            <ul>
+                <li><strong>Based on Operands:</strong> How many pieces of data the operator requires to work. <em>(Focus of this lesson)</em></li>
+                <li><strong>Based on Operations:</strong> What the operator actually does (Arithmetic, Relational, etc.).</li>
+            </ul>
+            <p>Based on operands, there are three types:</p>
+            <ol>
+                <li><strong>Unary:</strong> Requires exactly <strong>1</strong> operand.</li>
+                <li><strong>Binary:</strong> Requires exactly <strong>2</strong> operands.</li>
+                <li><strong>Ternary:</strong> Requires exactly <strong>3</strong> operands.</li>
+            </ol>
+        </section>
+
+        <!-- Post 3: Unary Operators -->
+        <section class="card">
+            <h2>3. Unary Operators (1 Operand)</h2>
+            <p>These operators only need a single piece of data to function.</p>
+
+            <h3>1. Unary Minus (<code>-</code>)</h3>
+            <p>Used to change the mathematical sign of a single value. It converts positive to negative, and negative to positive. This is different from the binary minus used for subtraction.</p>
+            <pre>
+int a = 5;
+int b = 10;
+int c = a + (-b); // c = 5 + (-10) = -5
+a = -b;           // a = -10</pre>
+
+            <h3>2. Increment (<code>++</code>) and Decrement (<code>--</code>)</h3>
+            <p>These operators add 1 or subtract 1 from a variable. Placement matters drastically:</p>
+            <ul>
+                <li><strong>Postfix (<code>x++</code>):</strong> Written <em>after</em> the variable. The compiler assigns the value first, then increments it.</li>
+                <li><strong>Prefix (<code>++x</code>):</strong> Written <em>before</em> the variable. The compiler increments the value first, then assigns it.</li>
+            </ul>
+
+            <!-- Interactive Visualization: Postfix vs Prefix -->
+            <div class="viz-container">
+                <h3>Visualizing Postfix vs Prefix Memory Execution</h3>
+                <p style="font-size: 0.9rem; margin-bottom: 10px;">Click the buttons to see how the computer updates memory step-by-step.</p>
+                
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button class="btn" onclick="runPostfix()">Run Postfix: y = x++</button>
+                    <button class="btn" onclick="runPrefix()">Run Prefix: y = ++x</button>
+                    <button class="btn" style="background: #64748B;" onclick="resetMemory()">Reset</button>
+                </div>
+
+                <div class="memory-wrapper">
+                    <div class="memory-unit">
+                        <span class="memory-label">Variable: y</span>
+                        <div id="mem-y" class="memory-box">10</div>
+                    </div>
+                    <div class="memory-unit">
+                        <span class="memory-label">Variable: x</span>
+                        <div id="mem-x" class="memory-box">11</div>
+                    </div>
+                </div>
+                <div id="mem-explain" class="explain-text">Initial State: y is 10, x is 11.</div>
+            </div>
+
+            <h3>3. Logical NOT (<code>!</code>)</h3>
+            <p>Reverses the logical state of an operand (True becomes False, False becomes True).</p>
+            <pre>
+int x = 11, y = 10;
+!(x > y) // (11 > 10) is True. NOT True -> False
+!(y > x) // (10 > 11) is False. NOT False -> True</pre>
+
+            <h3>4. Address Of (<code>&</code>)</h3>
+            <p>Retrieves the exact physical memory location (address) of a variable. Used heavily in <code>scanf</code> and with pointers.</p>
+
+            <h3>5. Sizeof (<code>sizeof()</code>)</h3>
+            <p>Tells you how much memory (in bytes) a data type or variable is taking up.</p>
+            <pre>
+sizeof(int)   // Returns 2 or 4 bytes
+sizeof(float) // Returns 4 bytes
+int a; 
+sizeof(a)     // Returns 2 or 4 bytes</pre>
+        </section>
+
+        <!-- Post 4: Binary Operators -->
+        <section class="card">
+            <h2>4. Binary Operators (2 Operands)</h2>
+            <p>These require two pieces of data. While detailed in the next lesson, the instructor lists the following categories:</p>
+            <ul>
+                <li><strong>Arithmetic:</strong> <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>%</code> (modulo)</li>
+                <li><strong>Relational:</strong> <code><</code>, <code>></code>, <code><=</code>, <code>>=</code></li>
+                <li><strong>Logical:</strong> <code>&&</code> (AND), <code>||</code> (OR)</li>
+                <li><strong>Bitwise:</strong> <code>&</code>, <code>|</code>, <code><<</code>, <code>>></code>, <code>^</code>, <code>~</code></li>
+                <li><strong>Equality:</strong> <code>==</code>, <code>!=</code></li>
+                <li><strong>Comma:</strong> <code>,</code></li>
+                <li><strong>Assignment:</strong> <code>=</code></li>
+            </ul>
+        </section>
+
+        <!-- Post 5: Ternary Operator -->
+        <section class="card">
+            <h2>5. Ternary Operator (3 Operands)</h2>
+            <p>Also known as the Conditional Operator. It uses the symbols <code>?</code> and <code>:</code>. It serves as a rapid shortcut for writing simple <code>if-else</code> statements.</p>
+            
+            <pre>Expression1 ? Expression2 : Expression3;</pre>
+            <ul>
+                <li><strong>Expression 1:</strong> MUST be a condition (evaluates to true or false).</li>
+                <li><strong>If True:</strong> Evaluates and returns Expression 2.</li>
+                <li><strong>If False:</strong> Skips Expression 2, evaluates and returns Expression 3.</li>
+            </ul>
+
+            <!-- Interactive Visualization: Ternary Operator -->
+            <div class="viz-container">
+                <h3>Visualizing the Ternary Operator</h3>
+                <p style="font-size: 0.9rem; margin-bottom: 10px;">Let a = 10, b = 15. We want to execute: <code>X = (a > b) ? a : b;</code></p>
+                
+                <button class="btn" onclick="runTernary()">Evaluate Expression</button>
+                <button class="btn" style="background: #64748B;" onclick="resetTernary()">Reset</button>
+
+                <div class="ternary-viz">
+                    <span>X = </span>
+                    <span id="t-cond" class="t-cond">(10 > 15)</span>
+                    <span> ? </span>
+                    <span id="t-true" class="t-true">10</span>
+                    <span> : </span>
+                    <span id="t-false" class="t-false">15</span>
+                    <span>;</span>
+                </div>
+                <div id="t-explain" class="explain-text">Waiting to evaluate...</div>
+            </div>
+
+            <h3>Ternary vs If-Else Equivalent</h3>
+            <p>The instructor demonstrates that the ternary operator does the exact same job as an if-else block, just taking up less space.</p>
+            <pre>
+// Using Ternary:
+X = (a < b) ? a : b;
+
+// Exact Same Logic using If-Else:
+if (a < b) {
+    X = a;
+} else {
+    X = b;
+}</pre>
+        </section>
+
+    </div>
+
+    <!-- JavaScript for Visualizations -->
+    <script>
+        // --- Memory Visualization Logic (Increment/Decrement) ---
+        const memX = document.getElementById('mem-x');
+        const memY = document.getElementById('mem-y');
+        const memExplain = document.getElementById('mem-explain');
+
+        function resetMemory() {
+            memY.innerText = '10';
+            memX.innerText = '11';
+            memY.className = 'memory-box';
+            memX.className = 'memory-box';
+            memExplain.innerText = 'Initial State: y is 10, x is 11.';
+        }
+
+        function runPostfix() {
+            resetMemory();
+            memExplain.innerText = "Step 1: Because it's Postfix (x++), read 'x' first and assign to 'y'.";
+            memX.classList.add('highlight-read');
+            
+            setTimeout(() => {
+                memY.innerText = '11';
+                memY.classList.add('highlight-write');
+                memExplain.innerText = "Step 2: 'y' is now 11. Now, increment 'x' by 1.";
+                
+                setTimeout(() => {
+                    memX.innerText = '12';
+                    memX.classList.replace('highlight-read', 'highlight-write');
+                    memY.classList.remove('highlight-write');
+                    memExplain.innerText = "Final State: y = 11, x = 12.";
+                    
+                    setTimeout(() => { memX.classList.remove('highlight-write'); }, 1000);
+                }, 1500);
+            }, 1500);
+        }
+
+        function runPrefix() {
+            resetMemory();
+            memExplain.innerText = "Step 1: Because it's Prefix (++x), increment 'x' by 1 first.";
+            memX.classList.add('highlight-write');
+            
+            setTimeout(() => {
+                memX.innerText = '12';
+                memExplain.innerText = "Step 2: 'x' is now 12. Read this new value and assign to 'y'.";
+                
+                setTimeout(() => {
+                    memX.classList.replace('highlight-write', 'highlight-read');
+                    memY.innerText = '12';
+                    memY.classList.add('highlight-write');
+                    memExplain.innerText = "Final State: y = 12, x = 12.";
+
+                    setTimeout(() => { 
+                        memX.classList.remove('highlight-read'); 
+                        memY.classList.remove('highlight-write');
+                    }, 1000);
+                }, 1500);
+            }, 1500);
+        }
+
+        // --- Ternary Operator Visualization Logic ---
+        const tCond = document.getElementById('t-cond');
+        const tTrue = document.getElementById('t-true');
+        const tFalse = document.getElementById('t-false');
+        const tExplain = document.getElementById('t-explain');
+
+        function resetTernary() {
+            tCond.className = 't-cond';
+            tTrue.className = 't-true';
+            tFalse.className = 't-false';
+            tExplain.innerText = 'Waiting to evaluate...';
+        }
+
+        function runTernary() {
+            resetTernary();
+            tExplain.innerText = "Step 1: Compiler evaluates Expression 1 (10 > 15)...";
+            
+            setTimeout(() => {
+                tCond.classList.add('highlight-red');
+                tExplain.innerText = "Step 2: 10 is NOT greater than 15. The condition is FALSE.";
+                
+                setTimeout(() => {
+                    tTrue.classList.add('fade-out');
+                    tFalse.classList.add('highlight-green');
+                    tExplain.innerText = "Step 3: Because it is False, it skips Expression 2 and returns Expression 3. X becomes 15.";
+                }, 2000);
+            }, 1500);
+        }
+    </script>
+</body>
+</html>

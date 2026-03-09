@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Data Types: Integer Ranges & Overflow Notes</title>
+    <style>
+        /* Base Styling & Vertical Feed Layout */
+        :root {
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+            --card-bg: #ffffff;
+            --primary: #3b82f6;
+            --secondary: #64748b;
+            --code-bg: #0f172a;
+            --code-text: #e2e8f0;
+            --accent: #ef4444;
+            --success: #10b981;
+            --border: #e2e8f0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* The Feed Container */
+        .feed-container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            padding: 2rem 1.5rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        h1 { font-size: 2.5rem; color: #0f172a; margin-bottom: 0.5rem; line-height: 1.2;}
+        h2 { font-size: 1.8rem; color: var(--primary); margin-bottom: 1rem; border-left: 4px solid var(--primary); padding-left: 10px;}
+        h3 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+        p { margin-bottom: 1rem; font-size: 1.1rem; }
+        
+        .subtitle { color: var(--secondary); font-size: 1.1rem; }
+
+        /* Content Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border);
+        }
+
+        .highlight-box {
+            background: #eff6ff;
+            border-left: 4px solid var(--primary);
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1.5rem 0;
+            font-style: italic;
+        }
+
+        /* Visualizations: Memory Bits */
+        .memory-viz {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 2rem 0;
+            background: #f1f5f9;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .byte-container {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .bit {
+            width: 35px;
+            height: 35px;
+            background: white;
+            border: 2px solid var(--secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        .bit-label {
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--secondary);
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* Visualizations: The Circles */
+        .circles-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .circle-viz {
+            width: 300px;
+            text-align: center;
+        }
+
+        .circle-viz h4 { margin-bottom: 1rem; color: #0f172a; }
+
+        /* Code Blocks */
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.05rem;
+            margin-bottom: 1.5rem;
+        }
+
+        code .keyword { color: #f472b6; }
+        code .type { color: #38bdf8; }
+        code .string { color: #a3e635; }
+        code .comment { color: #64748b; font-style: italic; }
+        code .number { color: #fbbf24; }
+
+        /* Scenario Cards */
+        .scenario-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .scenario {
+            background: #fafafa;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .scenario-title {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #0f172a;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .badge {
+            background: var(--primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        /* RAM Box Visualization */
+        .ram-box {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 1rem 0;
+        }
+        .ram-memory {
+            border: 2px solid #0f172a;
+            padding: 10px 20px;
+            font-family: monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background: #fef08a;
+            border-radius: 4px;
+        }
+        .ram-address {
+            font-size: 0.8rem;
+            color: var(--secondary);
+            margin-top: 5px;
+        }
+        .ram-variable {
+            font-size: 1rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .output-block {
+            background: #e0f2fe;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: bold;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Interactive Element */
+        .interactive-calculator {
+            background: #1e293b;
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 2rem;
+        }
+        .interactive-calculator input, .interactive-calculator select {
+            padding: 10px;
+            font-size: 1.1rem;
+            border-radius: 4px;
+            border: none;
+            margin: 10px;
+        }
+        .interactive-calculator button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .interactive-calculator button:hover { background: #2563eb; }
+        #calc-result {
+            margin-top: 15px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #a3e635;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header -->
+        <header>
+            <h1>Data Types in C</h1>
+            <p class="subtitle">Integer Ranges, Format Specifiers, and the "Circle" of Overflow</p>
+        </header>
+
+        <!-- Section 1 -->
+        <div class="card">
+            <h2>1. The Core Problem</h2>
+            <p>In standard C programming, you might declare a variable and assign it a specific number. But when you run the program, it prints a completely different number. Why?</p>
+            <div class="highlight-box">
+                <p><strong>The Answer:</strong> It has to do with the <strong>memory size</strong> of the data type, its mathematical <strong>range</strong>, and how the compiler wraps numbers around when they are too big or too small (overflow and underflow).</p>
+            </div>
+            <p><em>Note: In this lecture, we use the context of a 16-bit compiler where an integer takes 2 bytes. The logic applies perfectly to modern 32/64-bit systems (where int is 4 bytes), just with larger numbers.</em></p>
+        </div>
+
+        <!-- Section 2 -->
+        <div class="card">
+            <h2>2. Understanding Integer Storage</h2>
+            <p>An <code>int</code> takes <strong>2 Bytes</strong> of memory. Since 1 Byte = 8 bits, 2 Bytes = <strong>16 bits</strong>. Computers only understand Binary (0s and 1s).</p>
+            
+            <div class="memory-viz">
+                <p style="margin-bottom: 10px;"><strong>The Lowest Number: All Zeros (0)</strong></p>
+                <div class="byte-container">
+                    <div class="bit">0</div><div class="bit">0</div><div class="bit">0</div><div class="bit">0</div>
+                    <div class="bit">0</div><div class="bit">0</div><div class="bit">0</div><div class="bit">0</div>
+                    <div class="bit">0</div><div class="bit">0</div><div class="bit">0</div><div class="bit">0</div>
+                    <div class="bit">0</div><div class="bit">0</div><div class="bit">0</div><div class="bit">0</div>
+                </div>
+                
+                <p style="margin: 20px 0 10px 0;"><strong>The Highest Number: All Ones (65,535)</strong></p>
+                <div class="byte-container">
+                    <div class="bit">1</div><div class="bit">1</div><div class="bit">1</div><div class="bit">1</div>
+                    <div class="bit">1</div><div class="bit">1</div><div class="bit">1</div><div class="bit">1</div>
+                    <div class="bit">1</div><div class="bit">1</div><div class="bit">1</div><div class="bit">1</div>
+                    <div class="bit">1</div><div class="bit">1</div><div class="bit">1</div><div class="bit">1</div>
+                </div>
+                <div class="bit-label">Total capacity: 65,536 unique values (0 to 65535)</div>
+            </div>
+
+            <h3>The Two Types of Integers</h3>
+            <ul>
+                <li><strong>Unsigned int:</strong> <code>0 to 65535</code> (Stores strictly positive numbers).</li>
+                <li><strong>Signed int (Default):</strong> <code>-32768 to 32767</code> (Stores positive and negative numbers). We get this by dividing the total capacity (65536) by 2.</li>
+            </ul>
+        </div>
+
+        <!-- Section 3 -->
+        <div class="card">
+            <h2>3. The "Circular" Concept (Crucial)</h2>
+            <p>In C, when a number exceeds its maximum limit, the program does not crash. Instead, it wraps around like a clock. This is why format specifiers dictate what you see on the screen.</p>
+
+            <div class="circles-container">
+                <!-- SVG Unsigned Circle -->
+                <div class="circle-viz">
+                    <h4>Unsigned Int <code>%u</code></h4>
+                    <svg viewBox="0 0 200 200" width="250" height="250">
+                        <circle cx="100" cy="100" r="80" fill="none" stroke="#3b82f6" stroke-width="4" stroke-dasharray="10 5"/>
+                        <text x="100" y="15" text-anchor="middle" font-weight="bold" font-size="14">0</text>
+                        <text x="195" y="105" text-anchor="start" font-size="12">...1, 2, 3</text>
+                        <text x="5" y="105" text-anchor="end" font-size="12">65534...</text>
+                        <text x="100" y="195" text-anchor="middle" font-weight="bold" font-size="14">65535</text>
+                        <!-- Arrow -->
+                        <path d="M 100 10 Q 180 10 180 100" fill="none" stroke="#0f172a" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#0f172a" />
+                            </marker>
+                        </defs>
+                    </svg>
+                    <p style="font-size: 0.9rem; color: #64748b;">Starts at 0, goes clockwise up to 65535, then wraps back to 0.</p>
+                </div>
+
+                <!-- SVG Signed Circle -->
+                <div class="circle-viz">
+                    <h4>Signed Int <code>%d</code></h4>
+                    <svg viewBox="0 0 200 200" width="250" height="250">
+                        <circle cx="100" cy="100" r="80" fill="none" stroke="#ef4444" stroke-width="4" stroke-dasharray="10 5"/>
+                        <text x="100" y="15" text-anchor="middle" font-weight="bold" font-size="14">0</text>
+                        <text x="195" y="105" text-anchor="start" font-size="12">...1, 2, 3</text>
+                        <text x="5" y="105" text-anchor="end" font-size="12">-1, -2, -3...</text>
+                        
+                        <text x="140" y="195" text-anchor="middle" font-weight="bold" font-size="14">32767</text>
+                        <text x="60" y="195" text-anchor="middle" font-weight="bold" font-size="14">-32768</text>
+                        <!-- Arrows -->
+                        <path d="M 100 10 Q 180 10 180 100" fill="none" stroke="#0f172a" stroke-width="2" marker-end="url(#arrowhead)"/>
+                        <path d="M 100 10 Q 20 10 20 100" fill="none" stroke="#0f172a" stroke-width="2" marker-end="url(#arrowhead)"/>
+                    </svg>
+                    <p style="font-size: 0.9rem; color: #64748b;">Clockwise: Positive (0 to 32767). Counter-Clockwise: Negative (-1 to -32768).</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 4 -->
+        <div class="card">
+            <h2>4. Code Execution & Dry Runs</h2>
+            <p>Let's look at what the compiler actually prints when we test these boundaries in C.</p>
+            
+<pre><code><span class="keyword">#include</span> <span class="string">&lt;stdio.h&gt;</span>
+<span class="keyword">#include</span> <span class="string">&lt;conio.h&gt;</span>
+
+<span class="type">void</span> main() {
+    <span class="type">int</span> a = <span class="comment">/* Value */</span>;
+    clrscr();
+    printf(<span class="string">"%d"</span>, a); <span class="comment">// %d reads the Signed Circle</span>
+    printf(<span class="string">"%u"</span>, a); <span class="comment">// %u reads the Unsigned Circle</span>
+    getch();
+}</code></pre>
+
+            <div class="scenario-grid">
+                
+                <!-- Scenario 1 -->
+                <div class="scenario">
+                    <div class="scenario-title"><span class="badge">1</span> Valid In-Range Number</div>
+                    <code><span class="type">int</span> a = <span class="number">32767</span>;</code>
+                    <div style="display:flex; gap: 20px; align-items:center;">
+                        <div class="ram-box">
+                            <div class="ram-variable">a</div>
+                            <div class="ram-memory">32767</div>
+                            <div class="ram-address">Address: 1000</div>
+                        </div>
+                        <p><strong>What happens:</strong> 32767 is inside the valid Signed range. It sits happily in memory.</p>
+                    </div>
+                    <div class="output-block">
+                        <span>Output (%d): 32767</span>
+                        <span>Output (%u): 32767</span>
+                    </div>
+                </div>
+
+                <!-- Scenario 2 -->
+                <div class="scenario">
+                    <div class="scenario-title"><span class="badge">2</span> Exceeding the Positive Range (Overflow)</div>
+                    <code><span class="type">int</span> a = <span class="number">32768</span>;</code>
+                    <div style="display:flex; gap: 20px; align-items:center;">
+                        <div class="ram-box">
+                            <div class="ram-variable">a</div>
+                            <div class="ram-memory">-32768</div>
+                            <div class="ram-address">Memory strictly stores Bits</div>
+                        </div>
+                        <p><strong>What happens:</strong> 32768 is too big! On the Signed Circle, stepping 1 past 32767 wraps you directly to the bottom left: <strong>-32768</strong>. <br><br>But if you ask <code>%u</code> to read it, it looks at the Unsigned Circle where that binary pattern equals <strong>32768</strong>.</p>
+                    </div>
+                    <div class="output-block">
+                        <span style="color:var(--accent);">Output (%d): -32768</span>
+                        <span>Output (%u): 32768</span>
+                    </div>
+                </div>
+
+                <!-- Scenario 3 -->
+                <div class="scenario">
+                    <div class="scenario-title"><span class="badge">3</span> Going Further Out of Range</div>
+                    <code><span class="type">int</span> a = <span class="number">32770</span>;</code>
+                    <p style="margin-top: 10px;"><strong>What happens:</strong> Start at 32767 on the Signed Circle. Take 3 steps forward (68, 69, 70). You wrap around to -32768 -> -32767 -> <strong>-32766</strong>.</p>
+                    <div class="output-block">
+                        <span style="color:var(--accent);">Output (%d): -32766</span>
+                        <span>Output (%u): 32770</span>
+                    </div>
+                </div>
+
+                <!-- Scenario 4 -->
+                <div class="scenario">
+                    <div class="scenario-title"><span class="badge">4</span> Negative Value with Unsigned Format</div>
+                    <code><span class="type">int</span> a = <span class="number">-10</span>;</code>
+                    <p style="margin-top: 10px;"><strong>What happens:</strong> -10 is a valid signed integer. But <code>%u</code> refuses to print negatives. It looks at the Unsigned Circle, starts at 0, and steps backwards 10 spaces (0 -> 65535 -> 65534...). <br><em>Math: 65536 - 10 = 65526.</em></p>
+                    <div class="output-block">
+                        <span>Output (%d): -10</span>
+                        <span style="color:var(--accent);">Output (%u): 65526</span>
+                    </div>
+                </div>
+
+                <!-- Scenario 5 -->
+                <div class="scenario">
+                    <div class="scenario-title"><span class="badge">5</span> Unsigned Int taking a Negative</div>
+                    <code><span class="type">unsigned int</span> a = <span class="number">-32767</span>;</code>
+                    <p style="margin-top: 10px;"><strong>What happens:</strong> <code>%d</code> sees the binary in memory and simply says "-32767". But <code>%u</code> forces the Unsigned Circle logic. Starting from 0 and going backward 32,767 steps lands you precisely halfway across the right side. <br><em>Math: 65536 - 32767 = 32769.</em></p>
+                    <div class="output-block">
+                        <span>Output (%d): -32767</span>
+                        <span style="color:var(--accent);">Output (%u): 32769</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Interactive Calculator Bonus -->
+        <div class="interactive-calculator">
+            <h2>🧠 Interactive Wrap Calculator (16-bit)</h2>
+            <p>Input any number and see what the computer will actually print based on the format specifier!</p>
+            <input type="number" id="userInput" placeholder="Enter a number (e.g., 32770)" value="32770">
+            <select id="formatSelect">
+                <option value="d">Format: %d (Signed)</option>
+                <option value="u">Format: %u (Unsigned)</option>
+            </select>
+            <button onclick="calculateWrap()">Simulate Output</button>
+            <div id="calc-result">Waiting for input...</div>
+            <p id="calc-explanation" style="font-size:0.9rem; color:#94a3b8; margin-top:10px;"></p>
+        </div>
+
+    </div>
+
+    <script>
+        function calculateWrap() {
+            let input = parseInt(document.getElementById('userInput').value);
+            let format = document.getElementById('formatSelect').value;
+            let resultBox = document.getElementById('calc-result');
+            let explanation = document.getElementById('calc-explanation');
+
+            if (isNaN(input)) {
+                resultBox.innerText = "Please enter a valid number.";
+                return;
+            }
+
+            // Simulate 16-bit memory truncation
+            // In JS, we can use typed arrays or bitwise operators to simulate C behavior
+            let int16View = new Int16Array([input]); // Simulates signed int in 16-bit
+            let uint16View = new Uint16Array([input]); // Simulates unsigned int in 16-bit
+
+            let printedValue;
+
+            if (format === 'd') {
+                printedValue = int16View[0];
+                if(input !== printedValue) {
+                    explanation.innerText = `Because ${input} is outside the signed range (-32768 to 32767), it wraps around the circle to ${printedValue}.`;
+                } else {
+                    explanation.innerText = `${input} is safely within the signed range. No wrapping occurred.`;
+                }
+            } else {
+                printedValue = uint16View[0];
+                if (input < 0) {
+                    explanation.innerText = `Because %u cannot print negative numbers, it steps backward on the unsigned circle. 65536 + (${input}) = ${printedValue}.`;
+                } else if (input !== printedValue) {
+                    explanation.innerText = `Because ${input} is outside the 16-bit unsigned range (0 to 65535), it wraps around the circle to ${printedValue}.`;
+                } else {
+                    explanation.innerText = `${input} is safely within the unsigned range. No wrapping occurred.`;
+                }
+            }
+
+            resultBox.innerText = `Output Printed: ${printedValue}`;
+        }
+
+        // Run once on load
+        calculateWrap();
+    </script>
+</body>
+</html>

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Features of C - Jenny's Lectures Notes</title>
+    <!-- Importing a handwriting font to simulate the whiteboard -->
+    <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --accent-color: #2c3e50;
+            --marker-blue: #0044cc;
+            --marker-black: #222;
+            --highlight: #fff3cd;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Sticky Header */
+        header {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        header p {
+            margin: 5px 0 0;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Main Feed Container */
+        .feed-container {
+            max-width: 700px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        /* Feed Item Card */
+        .feed-item {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            overflow: hidden;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        /* Visual Whiteboard Section */
+        .whiteboard-visual {
+            background-color: #ffffff;
+            border-bottom: 1px solid #eee;
+            padding: 20px;
+            position: relative;
+            background-image: radial-gradient(#e0e0e0 1px, transparent 1px);
+            background-size: 20px 20px; /* Dot grid pattern */
+        }
+
+        .whiteboard-text {
+            font-family: 'Patrick Hand', cursive; /* Handwriting font */
+            font-size: 1.8rem;
+            color: var(--marker-black);
+        }
+
+        .marker-blue { color: var(--marker-blue); }
+        
+        .whiteboard-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #eee;
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            color: #666;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        /* Lecture Notes Section */
+        .lecture-notes {
+            padding: 20px;
+        }
+
+        .lecture-notes h3 {
+            margin-top: 0;
+            color: var(--accent-color);
+            font-size: 1.2rem;
+        }
+
+        .note-content {
+            font-size: 1rem;
+            color: #444;
+        }
+
+        .key-takeaway {
+            background-color: var(--highlight);
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            border-left: 3px solid #ffc107;
+        }
+
+        /* Code Snippet Simulation */
+        .code-block {
+            background: #2d2d2d;
+            color: #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+
+        /* Nuance Alert */
+        .nuance-alert {
+            background-color: #ffebee;
+            border-left: 5px solid #c62828;
+        }
+        
+        .nuance-alert .lecture-notes h3 {
+            color: #c62828;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Features of C Language</h1>
+        <p>Instructor: Jayanti Khatri Lamba | Lecture Notes Feed</p>
+    </header>
+
+    <div class="feed-container">
+
+        <!-- Intro Item -->
+        <div class="feed-item">
+            <div class="lecture-notes">
+                <h3>Introduction</h3>
+                <p class="note-content">
+                    Before diving in, the instructor recalls previous topics: Low/High-level languages and Translators. <br><br>
+                    <strong>Why this matters:</strong> This lecture outlines <em>why</em> C is still relevant and what makes it unique. She advises writing these points down for your exams.
+                </p>
+            </div>
+        </div>
+
+        <!-- Point 1 -->
+        <div class="feed-item">
+            <div class="whiteboard-visual">
+                <div class="whiteboard-tag">Board Visual</div>
+                <div class="whiteboard-text">1. High-level lang</div>
+            </div>
+            <div class="lecture-notes">
+                <h3>Abstraction from Hardware</h3>
+                <div class="note-content">
+                    <p>C is a high-level language. This means you, the programmer, focus on the logic and the program itself, rather than the low-level machine details.</p>
+                    <ul>
+                        <li>You don't need to worry about the CPU architecture or specific hardware.</li>
+                        <li>It uses English-like words and mathematical notation.</li>
+                        <li>It handles variables, constants, and data types in a way that is human-readable.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Point 2 -->
+        <div class="feed-item">
+            <div class="whiteboard-visual">
+                <div class="whiteboard-tag">Board Visual</div>
+                <div class="whiteboard-text">2. small lang having <span class="marker-blue">32 keywords</span></div>
+            </div>
+            <div class="lecture-notes">
+                <h3>Simplicity & Size</h3>
+                <div class="note-content">
+                    <p>C is considered a "small" language. It has a very limited vocabulary.</p>
+                    <div class="key-takeaway">
+                        <strong>Fact:</strong> C only has 32 keywords. Compared to languages like Java or C++, this makes C syntactically easier to learn and memorize.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Point 3 -->
+        <div class="feed-item">
+            <div class="whiteboard-visual">
+                <div class="whiteboard-tag">Board Visual</div>
+                <div class="whiteboard-text">3. Core lang. as many other Prog. lang. are dependent on C</div>
+            </div>
+            <div class="lecture-notes">
+                <h3>The Mother Language</h3>
+                <div class="note-content">
+                    <p>C is a core, foundational language. Many modern languages (C++, Java, Python) derive their syntax and concepts directly from C.</p>
+                    <p><em>"If you learn C, learning other languages becomes much easier."</em></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Point 4 -->
+        <div class="feed-item">
+            <div class="whiteboard-visual">
+                <div class="whiteboard-tag">Board Visual</div>
+                <div class="whiteboard-text">4. Portable</div>
+            </div>
+            <div class="lecture-notes">
+                <h3>Machine Independence</h3>
+                <div class="note-content">
+                    <p>Programs written in C are portable. This means you can write a program on one computer and run the source code on a completely different machine.</p>
+                    <p>While you might need minor modifications occasionally, generally, the logic remains the same across platforms.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Point 5 -->
+        <div class="feed-item">
+            <div class="whiteboard-visual">
+                <div class="whiteboard-tag">Board Visual</div>
+                <div class="whiteboard-text">5. built-in functions & operators</div>
+            </div>
+            <div class="lecture-notes">
+                <h3>Standard Libraries</h3>
+                <div class="note-content">
+                    <p>C comes with a rich library of pre-defined functions. You don't have to reinvent the wheel.</p>
+                    <ul>
+                        <li>If you need to print to the screen? Use <code>printf()</code>.</li>
+                        <li>Need math? Use the math library.</li>
+                    </ul>
+                    <p>You access these by including header files at the top of your program.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Point 6 -->
+        <div class="feed-item">
+            <div class="whiteboard-visual">
+                <div class="whiteboard-tag">Board Visual</div>
+                <div class="whiteboard-text">6. Structured lang <span class="marker-blue">Modular</span></div>
+            </div>
+            <div class="lecture-notes">
+                <h3>Organization via Functions</h3>
+                <div class="note-content">
+                    <p>C allows you to break a large program into smaller blocks called <strong>Functions</strong>.</p>
+                    <p><strong>Example:</strong> If you are calculating the area of different shapes, you don't write one giant block of code. You create:</p>
+                    <ul>
+                        <li>Module 1: Area of Triangle</li>
+                        <li>Module 2: Area of Rectangle</li>
+                        <li>Module 3: Area of Circle</li>
+                    </ul>
+                    <p>This is called <strong>Modular Programming</strong>. It makes code easier to debug and read.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Point 7 -->
+        <div class="feed-item">
+            <div class="whiteboard-visual">
+                <div class="whiteboard-tag">Board Visual</div>
+                <div class="whiteboard-text">7. Pointers</div>
+            </div>
+            <div class="lecture-notes">
+                <h3>Direct Memory Access</h3>
+                <div class="note-content">
+                    <p>This is one of C's most powerful features. Pointers allow you to directly interact with computer memory.</p>
+                    <p>A pointer is a variable that stores the <strong>address</strong> of another variable. This allows for efficient memory management and system-level programming.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Point 8 -->
+        <div class="feed-item">
+            <div class="whiteboard-visual">
+                <div class="whiteboard-tag">Board Visual</div>
+                <div class="whiteboard-text">8. extensible lang</div>
+            </div>
+            <div class="lecture-notes">
+                <h3>Adding Your Own Features</h3>
+                <div class="note-content">
+                    <p>C is extensible. You are not limited to the standard library provided by C.</p>
+                    <p>You can create your own functions and add them to the C library. Essentially, you can "extend" the language to suit your specific needs.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Point 9 -->
+        <div class="feed-item">
+            <div class="whiteboard-visual">
+                <div class="whiteboard-tag">Board Visual</div>
+                <div class="whiteboard-text">9. compilation & execution is faster</div>
+            </div>
+            <div class="lecture-notes">
+                <h3>Performance</h3>
+                <div class="note-content">
+                    <p>Because C is a <strong>Compiled Language</strong> (not interpreted) and it is a "small" language with less overhead, it is extremely fast.</p>
+                    <p>The time required to compile and execute a C program is significantly less than languages like Python or Java.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Point 10 -->
+        <div class="feed-item">
+            <div class="whiteboard-visual">
+                <div class="whiteboard-tag">Board Visual</div>
+                <div class="whiteboard-text">10. Dynamic Memory allocation<br><span class="marker-blue" style="font-size: 1.2rem; display:block; text-align:right;">free( )</span></div>
+            </div>
+            <div class="lecture-notes">
+                <h3>Runtime Memory Management</h3>
+                <div class="note-content">
+                    <p>C allows you to allocate memory while the program is running (using <code>malloc</code> and <code>calloc</code>).</p>
+                    <div class="key-takeaway">
+                        <strong>Important:</strong> You can also free up memory at any time using the <code>free()</code> function. This makes C very efficient with system resources.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Point 11 -->
+        <div class="feed-item">
+            <div class="whiteboard-visual">
+                <div class="whiteboard-tag">Board Visual</div>
+                <div class="whiteboard-text">11. are Sensitive <br> <span class="marker-blue" style="float:right;">a &nbsp; A</span></div>
+            </div>
+            <div class="lecture-notes">
+                <h3>Case Sensitivity</h3>
+                <div class="note-content">
+                    <p>C distinguishes between uppercase and lowercase letters.</p>
+                    <p>The variable <strong>'a'</strong> is treated as completely different from the variable <strong>'A'</strong>. You must be careful with capitalization.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Point 12 -->
+        <div class="feed-item">
+            <div class="whiteboard-visual">
+                <div class="whiteboard-tag">Board Visual</div>
+                <div class="whiteboard-text">12. Embedded System</div>
+            </div>
+            <div class="lecture-notes">
+                <h3>System Programming</h3>
+                <div class="note-content">
+                    <p>C is used to develop <strong>Embedded Systems</strong>. These are the computer systems inside devices like microwaves, refrigerators, and washing machines.</p>
+                    <p>Because it is close to the hardware, C is also used to write Operating Systems and drivers.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Important Clarification / Nuance -->
+        <div class="feed-item nuance-alert">
+            <div class="whiteboard-visual" style="background-color: #ffebee;">
+                <div class="whiteboard-tag" style="background: #ffcdd2; color: #b71c1c;">Important Clarification</div>
+                <div class="whiteboard-text">
+                    .exe (Windows)<br>
+                    .dmg (Mac)
+                </div>
+            </div>
+            <div class="lecture-notes">
+                <h3>Portability vs. Platform Dependency</h3>
+                <div class="note-content">
+                    <p>The instructor makes a crucial distinction here:</p>
+                    <ol>
+                        <li><strong>Source Code (Portable):</strong> The text code you write is portable. It can move between Windows and Mac.</li>
+                        <li><strong>Object Code (Dependent):</strong> When you compile code on Windows, it creates an <code>.exe</code> file. This file <strong>cannot</strong> run on Mac or Linux.</li>
+                    </ol>
+                    <p><strong>Conclusion:</strong> The language is portable, but the compiled executable file is platform-dependent.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

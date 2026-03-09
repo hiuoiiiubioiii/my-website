@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: Identifiers & Keywords Feed</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Kalam:wght@400;700&family=Fira+Code:wght@400;600&display=swap');
+
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --primary: #0ea5e9;
+            --success: #10b981;
+            --success-bg: #d1fae5;
+            --danger: #ef4444;
+            --danger-bg: #fee2e2;
+            --whiteboard-bg: #fdfefe;
+            --whiteboard-border: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-top: 2rem;
+            padding-bottom: 4rem;
+        }
+
+        /* --- Vertical Feed Layout --- */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem; /* Space between feed items */
+        }
+
+        .feed-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-top: 4px solid var(--primary);
+        }
+
+        .feed-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .feed-header h1 {
+            font-size: 2.5rem;
+            color: #111827;
+            margin-bottom: 0.5rem;
+        }
+
+        .feed-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #111827;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* --- Visualizations (Whiteboards & Code) --- */
+        .whiteboard {
+            background-color: var(--whiteboard-bg);
+            border: 2px solid var(--whiteboard-border);
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.02);
+            font-family: 'Kalam', cursive; /* Looks like marker writing */
+            font-size: 1.4rem;
+            color: #1e3a8a;
+        }
+
+        .code-block {
+            background-color: #1e293b;
+            color: #f8fafc;
+            font-family: 'Fira Code', monospace;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-size: 1.05rem;
+            overflow-x: auto;
+        }
+
+        .highlight {
+            background-color: #fef08a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .analogy-box {
+            background-color: #e0f2fe;
+            border-left: 4px solid var(--primary);
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+        }
+
+        /* --- Valid vs Invalid Styling --- */
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .rule-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-family: 'Fira Code', monospace;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .rule-item.valid {
+            background-color: var(--success-bg);
+            border-color: var(--success);
+            color: #065f46;
+        }
+
+        .rule-item.invalid {
+            background-color: var(--danger-bg);
+            border-color: var(--danger);
+            color: #991b1b;
+        }
+
+        .badge {
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .badge.valid { background-color: var(--success); color: white; }
+        .badge.invalid { background-color: var(--danger); color: white; }
+
+        .homework-card {
+            border-top: 4px solid #8b5cf6;
+            background-color: #f5f3ff;
+        }
+        
+        .homework-card h2 {
+            color: #5b21b6;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .grid-2col { grid-template-columns: 1fr; }
+            .feed-card { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-header">
+        <h1>Identifiers & Keywords in C</h1>
+        <p>Lecture breakdown by Jayanti Khatri Lamba • Standard: ANSI C (1989)</p>
+    </div>
+
+    <main class="feed-container">
+
+        <!-- Feed Item 1: Intro & Keywords -->
+        <article class="feed-card">
+            <h2>1. What are Keywords?</h2>
+            <p>Keywords are <strong>reserved words</strong> or <strong>predefined words</strong> in the C language. Their meanings are already built into the C compiler, and you absolutely cannot change them.</p>
+            
+            <div class="analogy-box">
+                💡 <strong>Instructor's Analogy:</strong> Just like <code>printf</code> is a predefined function in the <code>&lt;stdio.h&gt;</code> library whose meaning you cannot alter, keywords are basic building blocks with fixed instructions.
+            </div>
+
+            <h3>Key Facts:</h3>
+            <ul>
+                <li>There are exactly <span class="highlight">32 keywords</span> in the ANSI C standard.</li>
+                <li>They form the sequence of instructions used to build a program.</li>
+                <li><strong>Crucial Rule:</strong> All keywords must be written in exactly <strong>lowercase letters</strong>.</li>
+            </ul>
+
+            <div class="whiteboard">
+                <div style="text-decoration: underline; margin-bottom: 10px;">Examples of Keywords on the Board:</div>
+                int, float, break, goto, if, for, continue, while, do, switch, auto, double...
+            </div>
+
+            <h3>Case Sensitivity Warning ⚠️</h3>
+            <p>C is highly case-sensitive. The instructor visually demonstrates that capital letters break keywords.</p>
+            <div class="code-block">
+                int a = 5;  // ✅ VALID: 'int' is lowercase<br>
+                Int a = 5;  // ❌ INVALID: Compiler does not recognize 'Int'
+            </div>
+        </article>
+
+        <!-- Feed Item 2: Identifiers -->
+        <article class="feed-card">
+            <h2>2. What are Identifiers?</h2>
+            <p>Identifiers are the <strong>user-defined names</strong> given to various program elements. You use them to name your variables, functions, arrays, structures, and unions.</p>
+
+            <div class="analogy-box">
+                👤 <strong>Instructor's Analogy:</strong> To identify the instructor, you use her identifier (name): Jayanti. In code, an identifier is the name you give a piece of data so you can "identify" and use it later.
+            </div>
+
+            <p>Because these are created by the user (you), the compiler needs strict rules to understand what is a valid name and what isn't.</p>
+        </article>
+
+        <!-- Feed Item 3: The 6 Rules -->
+        <article class="feed-card">
+            <h2>3. The 6 Rules for Identifiers</h2>
+            <p>Before writing code, you must memorize these rules for naming things in C:</p>
+            <ul>
+                <li><strong>1. Allowed Characters:</strong> You can only use letters (a-z, A-Z), numbers (0-9), and the underscore ( <code>_</code> ).</li>
+                <li><strong>2. No Special Characters:</strong> Symbols like <code>@</code>, <code>$</code>, <code>%</code>, <code>-</code>, <code>.</code>, spaces, or parentheses are strictly forbidden.</li>
+                <li><strong>3. Starting Character:</strong> An identifier must <em>always</em> begin with a letter or an underscore. It <strong>cannot</strong> start with a number.</li>
+                <li><strong>4. No Keywords:</strong> You cannot use any of the 32 reserved keywords (like <code>int</code>, <code>while</code>) as an identifier name.</li>
+                <li><strong>5. Length Limit:</strong> According to ANSI C, only the first <strong>31 characters</strong> of an identifier are significant to the compiler.</li>
+                <li><strong>6. Case Sensitivity:</strong> Uppercase and lowercase letters are treated as completely different characters.</li>
+            </ul>
+        </article>
+
+        <!-- Feed Item 4: Whiteboard Visualizations (Variables) -->
+        <article class="feed-card">
+            <h2>4. Whiteboard Visuals: Valid vs. Invalid</h2>
+            <p>The instructor spent the second half of the video rapidly writing examples on the whiteboard. Here is the complete breakdown of everything she tested.</p>
+
+            <h3>Testing Characters & Starting Rules</h3>
+            <div class="rule-item valid"><span>Sum</span> <span class="badge valid">✓ VALID</span></div>
+            <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">Contains only allowed letters.</p>
+
+            <div class="rule-item valid"><span>Sum12</span> <span class="badge valid">✓ VALID</span></div>
+            <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">Letters and numbers. Starts with a letter.</p>
+
+            <div class="rule-item valid"><span>Sum_12</span> <span class="badge valid">✓ VALID</span></div>
+            <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">Letters, numbers, and underscore. Starts with a letter.</p>
+
+            <div class="rule-item invalid"><span>12Sumx</span> <span class="badge invalid">✗ INVALID</span></div>
+            <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Rule Broken: Identifiers CANNOT start with a number.</p>
+
+
+            <h3>Testing Special Characters</h3>
+            <div class="grid-2col">
+                <div>
+                    <div class="rule-item invalid"><span>$Sum</span> <span class="badge invalid">✗</span></div>
+                    <div class="rule-item invalid"><span>Sum$12</span> <span class="badge invalid">✗</span></div>
+                    <div class="rule-item invalid"><span>Sum 12</span> <span class="badge invalid">✗</span></div>
+                    <div class="rule-item invalid"><span>Sum.12</span> <span class="badge invalid">✗</span></div>
+                </div>
+                <div>
+                    <div class="rule-item invalid"><span>@Sum</span> <span class="badge invalid">✗</span></div>
+                    <div class="rule-item invalid"><span>(Sum)</span> <span class="badge invalid">✗</span></div>
+                    <div class="rule-item invalid"><span>dept-name</span> <span class="badge invalid">✗</span></div>
+                    <div class="rule-item invalid"><span>%marks</span> <span class="badge invalid">✗</span></div>
+                </div>
+            </div>
+            <p style="font-size: 0.9rem; color: #666; margin-top: 10px;">Rule Broken: <code>$</code>, spaces, periods, <code>@</code>, parentheses, hyphens (<code>-</code>), and <code>%</code> are all illegal special characters.</p>
+        </article>
+
+        <!-- Feed Item 5: Keywords & Case Sensitivity -->
+        <article class="feed-card">
+            <h2>5. Testing Keywords & Case Sensitivity</h2>
+            
+            <h3>The Keyword Rule</h3>
+            <div class="code-block">
+                int float;  // ❌ INVALID
+            </div>
+            <p>You cannot use a keyword as an identifier. <code>float</code> is one of the 32 reserved keywords, so you cannot name an integer variable "float".</p>
+            
+            <div class="code-block">
+                int a;      // ✅ VALID
+            </div>
+            <p><code>a</code> is not a keyword. It is a perfectly valid identifier.</p>
+
+            <div class="whiteboard">
+                <div style="text-decoration: underline; margin-bottom: 10px;">Are these the same?</div>
+                1. Sum<br>
+                2. sum<br>
+                3. SUM
+            </div>
+            <p><strong>Answer: NO.</strong> Because C is case-sensitive, the compiler treats uppercase and lowercase letters uniquely. The compiler sees these as three completely different, separate variables.</p>
+        </article>
+
+        <!-- Feed Item 6: Function Identifiers -->
+        <article class="feed-card">
+            <h2>6. Identifiers aren't just for variables!</h2>
+            <p>The instructor points out that identifiers are also used to name <strong>Functions</strong>.</p>
+            
+            <div class="whiteboard">
+                void Sum();
+            </div>
+            
+            <p>In the whiteboard example above:</p>
+            <ul>
+                <li><code>void</code> is a <strong>Keyword</strong> (it tells the compiler the function returns nothing).</li>
+                <li><code>Sum</code> is the <strong>Identifier</strong> (the user-defined name of the function).</li>
+            </ul>
+        </article>
+
+        <!-- Feed Item 7: Viewer Homework -->
+        <article class="feed-card homework-card">
+            <h2>📝 Instructor's Viewer Question</h2>
+            <p>At the 6:56 mark, the instructor writes two specific examples on the board and asks the viewers to answer in the comments if they are valid or invalid.</p>
+            
+            <div class="whiteboard" style="background-color: white;">
+                1. _Sum_12<br>
+                2. Sum__12
+            </div>
+
+            <details style="margin-top: 1.5rem; cursor: pointer; background: white; padding: 1rem; border-radius: 8px; border: 1px solid #d8b4fe;">
+                <summary style="font-weight: 600; color: #6b21a8;">👉 Click here to reveal the Student Cheat Answer</summary>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e9d5ff;">
+                    <p><strong>Both are ✅ VALID.</strong></p>
+                    <p>1. <code>_Sum_12</code> is valid because an identifier <em>is</em> allowed to start with an underscore.</p>
+                    <p>2. <code>Sum__12</code> is valid because you are allowed to have multiple consecutive underscores inside an identifier.</p>
+                </div>
+            </details>
+        </article>
+
+    </main>
+
+</body>
+</html>

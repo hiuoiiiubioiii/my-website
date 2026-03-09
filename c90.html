@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming Notes: Functions</title>
+    <style>
+        /* === Global & Base Styles === */
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --primary: #3b82f6;
+            --secondary: #10b981;
+            --accent: #8b5cf6;
+            --danger: #ef4444;
+            --code-bg: #1e1e1e;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* === Vertical Feed Layout === */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px; /* Space between cards */
+        }
+
+        .feed-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+            transition: transform 0.2s ease;
+        }
+
+        .feed-card:hover {
+            transform: translateY(-2px);
+        }
+
+        /* === Typography === */
+        h1 { font-size: 2.5rem; color: var(--primary); margin-bottom: 10px; line-height: 1.2;}
+        h2 { font-size: 1.8rem; color: var(--text-main); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #e5e7eb;}
+        h3 { font-size: 1.3rem; color: var(--accent); margin: 20px 0 10px 0;}
+        p { margin-bottom: 15px; color: var(--text-muted); font-size: 1.05rem;}
+        ul { margin-left: 20px; margin-bottom: 15px; color: var(--text-muted); }
+        li { margin-bottom: 8px; }
+        strong { color: var(--text-main); }
+
+        /* === Callouts & Highlights === */
+        .callout {
+            background-color: #eff6ff;
+            border-left: 4px solid var(--primary);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+        
+        .analogy {
+            background-color: #ecfdf5;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .error-box {
+            background-color: #fef2f2;
+            border-left: 4px solid var(--danger);
+        }
+
+        .highlight {
+            background-color: #fef08a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #b45309;
+            font-weight: bold;
+        }
+
+        /* === Code Blocks === */
+        pre {
+            background: var(--code-bg);
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .kw { color: #569cd6; } /* Keyword */
+        .fn { color: #dcdcaa; } /* Function */
+        .str { color: #ce9178; } /* String */
+        .cmt { color: #6a9955; font-style: italic; } /* Comment */
+        .type { color: #4ec9b0; } /* Type */
+
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background: #e5e7eb;
+            color: #ef4444;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        /* === Interactive Memory Visualizer === */
+        .visualizer {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            color: white;
+            text-align: center;
+        }
+
+        .memory-area {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin: 20px 0;
+            min-height: 180px;
+        }
+
+        .function-block {
+            background: #334155;
+            border: 2px dashed #64748b;
+            border-radius: 8px;
+            padding: 15px;
+            width: 200px;
+            transition: all 0.3s ease;
+        }
+
+        .function-block h4 { margin-bottom: 15px; color: #94a3b8; border-bottom: 1px solid #475569; padding-bottom: 5px;}
+
+        .variable {
+            background: #0f172a;
+            border: 1px solid #3b82f6;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            font-family: monospace;
+        }
+
+        .val { color: #34d399; font-weight: bold; }
+        
+        .destroyed {
+            opacity: 0.3;
+            border-color: #ef4444;
+            text-decoration: line-through;
+        }
+
+        .vis-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+        button:hover { background: #2563eb; }
+        button:disabled { background: #64748b; cursor: not-allowed; }
+
+        .vis-status {
+            margin-top: 15px;
+            font-style: italic;
+            color: #cbd5e1;
+            min-height: 24px;
+        }
+
+        /* === Homework Cards === */
+        .hw-card {
+            background: linear-gradient(135deg, #fdf4ff, #fae8ff);
+            border: 1px solid #f0abfc;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+
+        <!-- Header Card -->
+        <article class="feed-card">
+            <h3 style="color: var(--text-muted); margin-top: 0;">Instructor: Jenny's Lectures</h3>
+            <h1>Function with Argument, Without Return Type</h1>
+            <p>This is the 3rd classification of user-defined functions in C programming. We will learn how to send data into a function, process it, and print the result directly inside the function without returning anything back to the caller.</p>
+        </article>
+
+        <!-- Syntax & Blueprint -->
+        <article class="feed-card">
+            <h2>1. General Syntax & Blueprint</h2>
+            <p>Before writing a full program, you must understand the three pillars of a function: Declaration, Definition, and Calling.</p>
+
+            <h3>1. Function Declaration (The Prototype)</h3>
+            <p>Tells the compiler the function exists, what it takes, and what it returns. Must be placed before <code>main()</code>.</p>
+            <pre><span class="kw">void</span> <span class="fn">fun</span>(<span class="kw">int</span>, <span class="kw">int</span>); <span class="cmt">// Declaration</span></pre>
+            <ul>
+                <li><code>void</code>: The function returns <strong>nothing</strong>.</li>
+                <li><code>(int, int)</code>: The function expects two arguments. <em>Note: You only need to specify the data types here, not the variable names!</em></li>
+            </ul>
+
+            <h3>2. Function Definition (The Logic)</h3>
+            <p>This is where the actual code of the function lives.</p>
+            <pre><span class="kw">void</span> <span class="fn">fun</span>(<span class="kw">int</span> x, <span class="kw">int</span> y) <span class="cmt">// x and y are "Formal Parameters"</span>
+{
+    <span class="cmt">// logic goes here</span>
+}</pre>
+            <ul>
+                <li>The return type and argument types <strong>must exactly match</strong> the declaration.</li>
+                <li>Here, you <strong>must</strong> provide variable names (like <code>x</code> and <code>y</code>) so you can use them inside the logic.</li>
+            </ul>
+
+            <h3>3. Function Calling</h3>
+            <p>This is how you trigger the function from inside <code>main()</code>.</p>
+            <pre><span class="fn">fun</span>(<span class="str">5</span>, <span class="str">7</span>); <span class="cmt">// 5 and 7 are "Actual Parameters (Arguments)"</span>
+<span class="cmt">// OR</span>
+<span class="fn">fun</span>(a, b);</pre>
+            <div class="callout error-box">
+                <strong>Crucial Rule:</strong> Do not write data types in the function call! Never write <code>fun(int a, int b);</code>. Only pass the values or the variable names.
+            </div>
+        </article>
+
+        <!-- Whiteboard Practical Code -->
+        <article class="feed-card">
+            <h2>2. The "Sum" Example (Whiteboard Code)</h2>
+            <p>Let's write a complete C program that takes two float numbers from the user, passes them to a function, and prints the sum.</p>
+
+            <pre>
+<span class="cmt">#include &lt;stdio.h&gt;</span>
+
+<span class="cmt">// 1. Declaration</span>
+<span class="kw">void</span> <span class="fn">sum</span>(<span class="kw">float</span>, <span class="kw">float</span>); 
+
+<span class="kw">void</span> <span class="fn">main</span>() 
+{
+    <span class="kw">float</span> a, b;
+    
+    <span class="fn">printf</span>(<span class="str">"Enter a & b: "</span>);
+    <span class="fn">scanf</span>(<span class="str">"%f %f"</span>, &amp;a, &amp;b);
+    
+    <span class="cmt">// 2. Function Call (Passing Actual Parameters)</span>
+    <span class="fn">sum</span>(a, b); 
+}
+
+<span class="cmt">// 3. Function Definition (Receiving Formal Parameters)</span>
+<span class="kw">void</span> <span class="fn">sum</span>(<span class="kw">float</span> x, <span class="kw">float</span> y) 
+{
+    <span class="kw">float</span> s = <span class="str">0</span>; <span class="cmt">// Local variable</span>
+    s = x + y;   <span class="cmt">// Processing</span>
+    <span class="fn">printf</span>(<span class="str">"Sum = %f"</span>, s); <span class="cmt">// Printing here because return type is void</span>
+}</pre>
+
+            <div class="callout analogy">
+                <h3>🏠 The "Neighbor's House" Analogy (Understanding Scope)</h3>
+                <p>Variables <code>a</code> and <code>b</code> belong exclusively to the <code>main()</code> function's house. Variables <code>x</code> and <code>y</code> belong exclusively to the <code>sum()</code> function's house.</p>
+                <p>If you wanted, you could name the variables inside sum <code>a</code> and <code>b</code> as well. It won't cause an error because they live in different houses. It's like two neighbors both having a child named Rohan; they are completely different kids in different houses.</p>
+            </div>
+        </article>
+
+        <!-- Interactive Memory Trace -->
+        <article class="feed-card">
+            <h2>3. Visualizing Computer Memory (RAM)</h2>
+            <p>Click the button below to see exactly how the computer creates and destroys memory blocks for this program step-by-step, just as Jenny drew on the board.</p>
+
+            <div class="visualizer">
+                <h3>RAM Simulator</h3>
+                <div class="memory-area">
+                    <!-- Main Function Block -->
+                    <div class="function-block" id="block-main" style="display: none;">
+                        <h4>main() Memory</h4>
+                        <div class="variable" id="var-a" style="display: none;"><span>a:</span> <span class="val">?</span></div>
+                        <div class="variable" id="var-b" style="display: none;"><span>b:</span> <span class="val">?</span></div>
+                    </div>
+
+                    <!-- Sum Function Block -->
+                    <div class="function-block" id="block-sum" style="display: none;">
+                        <h4>sum() Memory</h4>
+                        <div class="variable" id="var-x" style="display: none;"><span>x:</span> <span class="val">?</span></div>
+                        <div class="variable" id="var-y" style="display: none;"><span>y:</span> <span class="val">?</span></div>
+                        <div class="variable" id="var-s" style="display: none;"><span>s:</span> <span class="val">?</span></div>
+                    </div>
+                </div>
+
+                <div class="vis-status" id="vis-status">Click "Start Execution" to begin...</div>
+                
+                <div class="vis-controls">
+                    <button id="btn-reset" onclick="resetVis()">Reset</button>
+                    <button id="btn-next" onclick="nextStep()">Start Execution</button>
+                </div>
+            </div>
+        </article>
+
+        <!-- VS Code Execution Notes -->
+        <article class="feed-card">
+            <h2>4. VS Code Practical Execution Rules</h2>
+            <p>During the laptop demonstration, Jenny showed what happens if you break the rules of arguments. Here are the compiler errors you need to know:</p>
+
+            <ul>
+                <li><strong>Static Input Works:</strong> You can skip <code>scanf</code> and just type <code>sum(3.1, 4.1);</code>. The program calculates perfectly because actual parameters can be fixed numbers.</li>
+                <li><strong>Error 1: Too Many Arguments:</strong> If you write <code>sum(x, y, 8.1);</code>, the compiler throws an error: <br><code style="color:var(--danger)">error: too many arguments to function 'sum'</code>. The definition only has two slots!</li>
+                <li><strong>Error 2: Too Few Arguments:</strong> If you write <code>sum(x);</code>, the compiler throws an error: <br><code style="color:var(--danger)">error: too few arguments to function 'sum'</code>. You left a parameter empty!</li>
+            </ul>
+
+            <div class="callout highlight">
+                <strong>The Golden Rule:</strong> The number of arguments passed in the function call must <strong>exactly match</strong> the number of arguments established in the declaration and definition.
+            </div>
+        </article>
+
+        <!-- Homework Assignments -->
+        <article class="feed-card hw-card">
+            <h2 style="border-bottom-color: #f0abfc;">5. Homework Assignments</h2>
+            <p>Test your understanding by writing these two programs in your IDE:</p>
+
+            <h3>Assignment 1: Data Type Ordering</h3>
+            <p>Modify the sum program so the declaration is <code>void sum(int, float);</code>.</p>
+            <p><em>Hint:</em> Ensure your definition matches: <code>void sum(int a, float b)</code>. The order matters! The first argument passed will become the int, the second will become the float.</p>
+
+            <h3>Assignment 2: Even or Odd Program</h3>
+            <p>Write a completely new program to check if a number is Even or Odd using the "With Argument, No Return Type" classification.</p>
+            <p><em>Constraints & Hints:</em></p>
+            <ul>
+                <li>The function must take <strong>one argument</strong> (an integer).</li>
+                <li>It must have a <code>void</code> return type.</li>
+                <li>Take the user input in <code>main()</code>.</li>
+                <li>Pass that integer to the function.</li>
+                <li>Put the <code>if(num % 2 == 0)</code> logic and the <code>printf</code> statements <em>inside</em> the new function.</li>
+            </ul>
+        </article>
+
+    </div>
+
+    <script>
+        /* === Memory Visualizer Logic === */
+        let step = 0;
+        
+        const statusText = document.getElementById('vis-status');
+        const btnNext = document.getElementById('btn-next');
+        
+        // Main Elements
+        const bMain = document.getElementById('block-main');
+        const vA = document.getElementById('var-a');
+        const vB = document.getElementById('var-b');
+        
+        // Sum Elements
+        const bSum = document.getElementById('block-sum');
+        const vX = document.getElementById('var-x');
+        const vY = document.getElementById('var-y');
+        const vS = document.getElementById('var-s');
+
+        function resetVis() {
+            step = 0;
+            btnNext.innerText = "Start Execution";
+            btnNext.disabled = false;
+            statusText.innerText = "Click 'Start Execution' to begin...";
+            
+            // Hide everything and remove classes
+            [bMain, vA, vB, bSum, vX, vY, vS].forEach(el => {
+                el.style.display = 'none';
+                el.classList.remove('destroyed');
+            });
+            bSum.style.opacity = '1';
+            
+            // Reset values
+            vA.querySelector('.val').innerText = '?';
+            vB.querySelector('.val').innerText = '?';
+            vX.querySelector('.val').innerText = '?';
+            vY.querySelector('.val').innerText = '?';
+            vS.querySelector('.val').innerText = '?';
+        }
+
+        function nextStep() {
+            step++;
+            switch(step) {
+                case 1:
+                    bMain.style.display = 'block';
+                    vA.style.display = 'flex';
+                    vB.style.display = 'flex';
+                    statusText.innerText = "Step 1: Program starts at main(). Memory is allocated for variables 'a' and 'b'.";
+                    btnNext.innerText = "Next: User Input";
+                    break;
+                case 2:
+                    vA.querySelector('.val').innerText = '5.1';
+                    vB.querySelector('.val').innerText = '1.1';
+                    statusText.innerText = "Step 2: User enters 5.1 and 1.1 via scanf().";
+                    btnNext.innerText = "Next: Call sum()";
+                    break;
+                case 3:
+                    bSum.style.display = 'block';
+                    vX.style.display = 'flex';
+                    vY.style.display = 'flex';
+                    vS.style.display = 'flex';
+                    statusText.innerText = "Step 3: sum(a, b) is called. Execution pauses in main() and jumps to sum(). New memory is created for x, y, and s.";
+                    btnNext.innerText = "Next: Pass Arguments";
+                    break;
+                case 4:
+                    vX.querySelector('.val').innerText = '5.1';
+                    vY.querySelector('.val').innerText = '1.1';
+                    vS.querySelector('.val').innerText = '0';
+                    statusText.innerText = "Step 4: Values of actual parameters (a, b) are copied into formal parameters (x, y).";
+                    btnNext.innerText = "Next: Calculate Logic";
+                    break;
+                case 5:
+                    vS.querySelector('.val').innerText = '6.200000';
+                    statusText.innerText = "Step 5: s = x + y is processed. The printf() function displays 'Sum = 6.200000' to the screen.";
+                    btnNext.innerText = "Next: Function Ends";
+                    break;
+                case 6:
+                    bSum.classList.add('destroyed');
+                    statusText.innerHTML = "Step 6: Reached the closing brace <code>}</code> of sum(). Control returns to main(). <strong>sum() memory is destroyed/freed!</strong>";
+                    btnNext.innerText = "Finish";
+                    btnNext.disabled = true;
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>

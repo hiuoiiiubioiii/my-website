@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Variables in C | Study Notes</title>
+    <style>
+        /* --- GLOBAL STYLES --- */
+        :root {
+            --bg-color: #f3f6f9;
+            --text-main: #333;
+            --text-muted: #666;
+            --card-bg: #ffffff;
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #f72585;
+            --success: #2a9d8f;
+            --danger: #e76f51;
+            --code-bg: #1e1e24;
+            --memory-bg: #e9ecef;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* --- FEED LAYOUT --- */
+        .header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .feed-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .feed-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--bg-color);
+        }
+
+        .timestamp {
+            background-color: var(--primary);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-right: 15px;
+        }
+
+        h2 {
+            color: var(--secondary);
+            font-size: 1.6rem;
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+        }
+
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #856404;
+        }
+
+        /* --- CODE BLOCKS --- */
+        pre {
+            background-color: var(--code-bg);
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+
+        .keyword { color: #c678dd; }
+        .type { color: #e5c07b; }
+        .variable { color: #e06c75; }
+        .value { color: #d19a66; }
+        .comment { color: #7f848e; font-style: italic; }
+
+        /* --- VISUALIZATIONS --- */
+        .visualization-box {
+            background-color: var(--memory-bg);
+            border: 2px dashed #adb5bd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .vis-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        /* Memory Grid */
+        .memory-grid {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .memory-cell {
+            background-color: white;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            width: 120px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .mem-name {
+            background-color: var(--primary);
+            color: white;
+            font-weight: bold;
+            padding: 5px;
+        }
+
+        .mem-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            padding: 15px 0;
+            color: var(--text-main);
+        }
+
+        .mem-address {
+            background-color: #f8f9fa;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            padding: 5px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        /* Variables Vary Vis */
+        .vary-sequence {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .vary-step {
+            display: flex;
+            align-items: center;
+        }
+
+        .arrow {
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.5rem;
+            margin: 0 10px;
+        }
+
+        .crossed-out {
+            text-decoration: line-through;
+            color: var(--danger);
+            opacity: 0.6;
+        }
+
+        /* --- RULES & QUIZ TABLES --- */
+        .rules-list {
+            list-style: none;
+            margin: 15px 0;
+        }
+
+        .rules-list li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .rules-list li::before {
+            content: "👉";
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .quiz-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .quiz-table th, .quiz-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .quiz-table th {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .badge.valid { background-color: var(--success); }
+        .badge.invalid { background-color: var(--danger); }
+        .badge.hw { background-color: var(--accent); }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <h1>Variables in C</h1>
+        <p>Instructor: Jayanti Khatri Lamba | Complete Visual Study Notes</p>
+    </header>
+
+    <main class="feed-container">
+
+        <!-- Card 1 -->
+        <section class="feed-card">
+            <div class="card-header">
+                <span class="timestamp">0:00 - 2:32</span>
+                <h2>1. Why Do We Need Variables?</h2>
+            </div>
+            <p>If you just want a program to print "Hello World", you don't need variables. However, if you want the computer to perform computational tasks—like finding the maximum of three numbers—you need a way to store data.</p>
+            <p>Humans use their brains to store numbers temporarily; a computer uses its memory. To store data in the computer's memory so it can be processed later, we use variables.</p>
+            <div class="visualization-box">
+                <div class="vis-title">Computational Task Example</div>
+                <p style="font-size: 1.5rem; font-weight: bold; letter-spacing: 5px; color: var(--secondary);">10, 20, 30</p>
+                <p><i>We must store these numbers in memory to find the maximum (30).</i></p>
+            </div>
+        </section>
+
+        <!-- Card 2 -->
+        <section class="feed-card">
+            <div class="card-header">
+                <span class="timestamp">2:32 - 4:32</span>
+                <h2>2. What is a Variable? (The Core Concept)</h2>
+            </div>
+            <p>The computer has chunks of memory. When we want to store numbers, they are placed in random memory locations. Each location has a numeric memory address (like <code>1000</code> or <code>1024</code>).</p>
+            <p>Because humans cannot easily memorize random memory addresses, we give these locations <strong>names</strong> (like <i>a, b, c</i>). These names allow us to easily fetch or change the data inside.</p>
+            
+            <p class="highlight">🔑 Key Definition: A variable is a named memory location. It is a data name used to store the value of data.</p>
+
+            <div class="visualization-box">
+                <div class="vis-title">Whiteboard Visualization: Computer Memory</div>
+                <div class="memory-grid">
+                    <div class="memory-cell">
+                        <div class="mem-name">Variable: a</div>
+                        <div class="mem-value">10</div>
+                        <div class="mem-address">Address: 1000</div>
+                    </div>
+                    <div class="memory-cell">
+                        <div class="mem-name">Variable: c</div>
+                        <div class="mem-value">20</div>
+                        <div class="mem-address">Address: 1024</div>
+                    </div>
+                    <div class="memory-cell">
+                        <div class="mem-name">Variable: b</div>
+                        <div class="mem-value">30</div>
+                        <div class="mem-address">Address: 3000</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card 3 -->
+        <section class="feed-card">
+            <div class="card-header">
+                <span class="timestamp">4:32 - 5:50</span>
+                <h2>3. Best Practices: Meaningful Names</h2>
+            </div>
+            <p>While you can name your variables <code>a</code>, <code>b</code>, and <code>c</code>, it is better programming practice to give them meaningful names so anyone reading your code understands what the data represents.</p>
+            
+<pre><code><span class="comment">// Option 1: Bad Practice</span>
+<span class="type">int</span> <span class="variable">c</span> = <span class="variable">a</span> + <span class="variable">b</span>; <span class="comment">// Stores 40, but what does 'c' mean?</span>
+
+<span class="comment">// Option 2: Best Practice</span>
+<span class="type">int</span> <span class="variable">sum</span> = <span class="variable">a</span> + <span class="variable">b</span>; <span class="comment">// Clearly indicates this variable holds a sum!</span></code></pre>
+        </section>
+
+        <!-- Card 4 -->
+        <section class="feed-card">
+            <div class="card-header">
+                <span class="timestamp">5:50 - 6:35</span>
+                <h2>4. Variables "Vary" (They can change)</h2>
+            </div>
+            <p>As the name suggests, a variable's value can change during the execution of a program. The old value gets overwritten by the new value.</p>
+            <p><i>Exception: The only time a variable cannot change is if you put the keyword <code>const</code> in front of it.</i></p>
+            
+            <div class="visualization-box">
+                <div class="vis-title">Memory Update Visualization</div>
+                <div class="vary-sequence">
+                    <div class="vary-step">
+<pre style="margin:0;"><code><span class="variable">a</span> = <span class="value">10</span>;</code></pre>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="vary-step">
+<pre style="margin:0;"><code><span class="variable">a</span> = <span class="value">50</span>;</code></pre>
+                    </div>
+                    <div class="arrow">→</div>
+                    <div class="vary-step">
+<pre style="margin:0;"><code><span class="variable">a</span> = <span class="value">60</span>;</code></pre>
+                    </div>
+                </div>
+                <div class="memory-grid" style="margin-top: 15px;">
+                    <div class="memory-cell">
+                        <div class="mem-name">Variable: a</div>
+                        <div class="mem-value" style="font-size: 1.2rem;">
+                            <span class="crossed-out">10</span><br>
+                            <span class="crossed-out">50</span><br>
+                            <span style="color: var(--success); font-size: 1.8rem;">60</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Card 5 -->
+        <section class="feed-card">
+            <div class="card-header">
+                <span class="timestamp">6:36 - 9:08</span>
+                <h2>5. Declaration and Initialization</h2>
+            </div>
+            <p>Before you can use a variable, you must tell the compiler two things:</p>
+            <ul class="rules-list">
+                <li>What type of data it will hold (Datatype)</li>
+                <li>What its name is (Variable name)</li>
+            </ul>
+            <p>This process is called <strong>Declaration</strong>. Giving it an actual value is called <strong>Initialization</strong>.</p>
+
+<pre><code><span class="comment">// 1. Declaration Syntax: Datatype variablename;</span>
+<span class="type">int</span> <span class="variable">a</span>; 
+
+<span class="comment">// 2. Initialization Syntax:</span>
+<span class="variable">a</span> = <span class="value">10</span>;
+
+<span class="comment">// 3. Combined (Best Practice):</span>
+<span class="type">int</span> <span class="variable">a</span> = <span class="value">10</span>;</code></pre>
+            <p style="color: var(--danger); font-size: 0.9rem;"><b>⚠️ Note:</b> Writing <code>a = 10;</code> before declaring <code>int a;</code> is INCORRECT and will cause a compiler error!</p>
+        </section>
+
+        <!-- Card 6 -->
+        <section class="feed-card">
+            <div class="card-header">
+                <span class="timestamp">9:08 - 11:14</span>
+                <h2>6. Different Data Types</h2>
+            </div>
+            <p>Variables can hold different types of data. The datatype tells the computer how much memory space to reserve (e.g., an <code>int</code> usually takes 2 or 4 bytes depending on the compiler).</p>
+
+<pre><code><span class="comment">// Stores a decimal number</span>
+<span class="type">float</span> <span class="variable">a</span> = <span class="value">3.14</span>;
+
+<span class="comment">// Stores a single character</span>
+<span class="type">char</span> <span class="variable">a</span> = <span class="value">'a'</span>; 
+<span class="comment">/* Note: The variable name 'a' and character value 'a' are different. 
+   The char 'a' is stored as its ASCII number: 97 */</span>
+
+<span class="comment">// Declaring multiple variables at once</span>
+<span class="type">int</span> <span class="variable">a</span> = <span class="value">1</span>, <span class="variable">b</span> = <span class="value">2</span>;
+
+<span class="comment">// ❌ INVALID: A variable cannot be of type void</span>
+<span class="type">void</span> <span class="variable">a</span>; <span class="comment">// ERROR</span></code></pre>
+        </section>
+
+        <!-- Card 7 -->
+        <section class="feed-card">
+            <div class="card-header">
+                <span class="timestamp">11:14 - 13:54</span>
+                <h2>7. Rules for Constructing Variable Names</h2>
+            </div>
+            <p>The compiler is very strict about naming. Here are the golden rules:</p>
+            <ul class="rules-list">
+                <li><strong>Allowed Characters:</strong> Only Letters (A-Z, a-z), Digits (0-9), and Underscores (<code>_</code>) are allowed. No spaces, commas, or special symbols ($, %, @).</li>
+                <li><strong>Starting Character:</strong> MUST start with a letter or an underscore. It CANNOT start with a digit.</li>
+                <li><strong>No Keywords:</strong> You cannot use the 32 reserved C keywords (e.g., <code>float</code>, <code>if</code>, <code>break</code>).</li>
+                <li><strong>Case Sensitivity:</strong> C is highly case-sensitive. <code>Num</code>, <code>num</code>, and <code>NUM</code> are treated as completely different variables.</li>
+            </ul>
+        </section>
+
+        <!-- Card 8 -->
+        <section class="feed-card">
+            <div class="card-header">
+                <span class="timestamp">13:54 - 14:55</span>
+                <h2>8. Final Quiz!</h2>
+            </div>
+            <p>At the end of the video, the instructor provided a list of variable names. Here is the breakdown of which are valid and invalid based on the rules.</p>
+            
+            <table class="quiz-table">
+                <thead>
+                    <tr>
+                        <th>Variable Name</th>
+                        <th>Status</th>
+                        <th>Reasoning</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>SimpleInterest</code></td>
+                        <td><span class="badge valid">Valid</span></td>
+                        <td>Only uses letters.</td>
+                    </tr>
+                    <tr>
+                        <td><code>age</code></td>
+                        <td><span class="badge valid">Valid</span></td>
+                        <td>Only uses letters.</td>
+                    </tr>
+                    <tr>
+                        <td><code>int_type</code></td>
+                        <td><span class="badge hw">Valid (HW)</span></td>
+                        <td>Uses letters/underscore. Though "int" is a keyword, the whole word "int_type" is not.</td>
+                    </tr>
+                    <tr>
+                        <td><code>num12</code></td>
+                        <td><span class="badge valid">Valid</span></td>
+                        <td>Letters and numbers, starts with a letter.</td>
+                    </tr>
+                    <tr>
+                        <td><code>_b</code></td>
+                        <td><span class="badge valid">Valid</span></td>
+                        <td>Starts with an underscore (which is allowed).</td>
+                    </tr>
+                    <tr>
+                        <td><code>SUM</code></td>
+                        <td><span class="badge valid">Valid</span></td>
+                        <td>Only uses letters.</td>
+                    </tr>
+                    <tr>
+                        <td><code>__Jenny</code></td>
+                        <td><span class="badge valid">Valid</span></td>
+                        <td>Starts with underscores (allowed).</td>
+                    </tr>
+                    <tr>
+                        <td><code>Jenny's_lectures</code></td>
+                        <td><span class="badge invalid">Invalid</span></td>
+                        <td>Contains an apostrophe <code>'</code> (special symbol).</td>
+                    </tr>
+                    <tr>
+                        <td><code>float</code></td>
+                        <td><span class="badge invalid">Invalid</span></td>
+                        <td><code>float</code> is a reserved keyword in C.</td>
+                    </tr>
+                    <tr>
+                        <td><code>1ab</code></td>
+                        <td><span class="badge invalid">Invalid</span></td>
+                        <td>Starts with a digit.</td>
+                    </tr>
+                    <tr>
+                        <td><code>%</code></td>
+                        <td><span class="badge invalid">Invalid</span></td>
+                        <td>Special character.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>End of lesson notes. Keep scrolling to review or start practicing your code!</p>
+    </footer>
+
+    <!-- JavaScript for Scroll Animations -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const cards = document.querySelectorAll('.feed-card');
+            
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.15
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        // Optional: Unobserve after revealing to keep it visible
+                        // observer.unobserve(entry.target); 
+                    }
+                });
+            }, observerOptions);
+
+            cards.forEach(card => {
+                observer.observe(card);
+            });
+            
+            // Trigger first few cards immediately if they are in viewport on load
+            setTimeout(() => {
+                cards.forEach(card => {
+                    const rect = card.getBoundingClientRect();
+                    if(rect.top < window.innerHeight) {
+                        card.classList.add('visible');
+                    }
+                });
+            }, 100);
+        });
+    </script>
+</body>
+</html>

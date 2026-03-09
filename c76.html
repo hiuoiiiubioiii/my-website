@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pointer Arithmetic: Subtraction</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;600&display=swap');
+
+        :root {
+            --bg-color: #f4f7f9;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --primary: #4f46e5;
+            --secondary: #0ea5e9;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --card-bg: #ffffff;
+            --code-bg: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Feed Container Layout */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+
+        /* Content Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-top: 5px solid var(--primary);
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Rules Layout */
+        .rules-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .rule {
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .rule.valid { background: #d1fae5; color: #065f46; border: 1px solid var(--success); }
+        .rule.invalid { background: #fee2e2; color: #991b1b; border: 1px solid var(--danger); }
+
+        /* Memory Visualization (Visual Elements) */
+        .memory-wrapper {
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px dashed #cbd5e1;
+            overflow-x: auto;
+        }
+
+        .array-container {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .memory-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80px;
+        }
+
+        .cell-index {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .cell-box {
+            width: 100%;
+            height: 60px;
+            background: white;
+            border: 2px solid var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+        }
+
+        .cell-address {
+            font-size: 0.85rem;
+            color: var(--secondary);
+            font-family: 'Fira Code', monospace;
+            margin-top: 8px;
+        }
+
+        /* Pointers Visualization */
+        .pointers-row {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 10px;
+        }
+
+        .pointer-marker {
+            width: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Fira Code', monospace;
+            font-weight: bold;
+            color: var(--danger);
+            visibility: hidden; /* Hidden by default, toggled via utility class */
+        }
+
+        .pointer-marker.visible {
+            visibility: visible;
+        }
+
+        .pointer-marker i {
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
+        /* Math / Formula Blocks */
+        .formula-box {
+            background: #e0e7ff;
+            border-left: 4px solid var(--primary);
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+        }
+
+        .math-breakdown {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .math-breakdown p {
+            font-family: 'Fira Code', monospace;
+            margin-bottom: 5px;
+        }
+
+        /* Code Blocks */
+        pre {
+            background: var(--code-bg);
+            color: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            margin: 15px 0;
+        }
+
+        .code-comment { color: #64748b; }
+        .code-keyword { color: #c678dd; }
+        .code-type { color: #e5c07b; }
+        .code-var { color: #e06c75; }
+        .code-number { color: #d19a66; }
+
+        /* Terminal Output */
+        .terminal {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            font-family: 'Fira Code', monospace;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        /* Callouts */
+        .alert {
+            padding: 20px;
+            border-radius: 8px;
+            background: #fffbeb;
+            border-left: 5px solid var(--warning);
+            margin: 20px 0;
+        }
+
+        .cheat-sheet {
+            background: #1e293b;
+            color: white;
+            border-top: none;
+            background-image: linear-gradient(to bottom right, #1e293b, #0f172a);
+        }
+
+        .cheat-sheet h2 { color: #38bdf8; }
+        .cheat-sheet ul { list-style: none; }
+        .cheat-sheet li {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+        }
+        .cheat-sheet li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0;}
+        .cheat-type { font-family: 'Fira Code', monospace; color: #cbd5e1; }
+        .cheat-result { font-weight: bold; color: #10b981; }
+
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <header>
+            <h1>Pointer Arithmetic: Subtraction</h1>
+            <p>Complete Class Notes, Visualizations, & Formulas</p>
+        </header>
+
+        <!-- Section 1: The Rules -->
+        <section class="card">
+            <h2>📝 1. The "Rules" of Pointer Math</h2>
+            <p>Before doing math with memory addresses, the compiler has strict rules on what operations are valid. Let <strong>p</strong> and <strong>q</strong> be two pointer variables.</p>
+            <br>
+            <div class="rules-grid">
+                <div class="rule invalid">p + q <br><small>❌ INVALID (Cannot add pointers)</small></div>
+                <div class="rule valid">p - q <br><small>✅ VALID (Subtracting pointers)</small></div>
+                <div class="rule valid">q - p <br><small>✅ VALID (Order changes sign)</small></div>
+                <div class="rule valid">p - 2 <br><small>✅ VALID (Subtracting integer)</small></div>
+            </div>
+        </section>
+
+        <!-- Section 2: Visualizing Memory Setup -->
+        <section class="card">
+            <h2>🧠 2. Visualizing Memory: The Setup</h2>
+            <p>To understand subtraction, we must map out how an array is stored in memory. We assume an integer takes <strong>4 bytes</strong>.</p>
+            
+            <pre><span class="code-type">int</span> <span class="code-var">a</span>[<span class="code-number">5</span>] = {<span class="code-number">0</span>, <span class="code-number">1</span>, <span class="code-number">-1</span>, <span class="code-number">10</span>, <span class="code-number">11</span>};
+<span class="code-type">int</span> *<span class="code-var">p</span> = <span class="code-var">a</span>;       <span class="code-comment">// Points to base address (a[0])</span>
+<span class="code-type">int</span> *<span class="code-var">q</span> = &amp;<span class="code-var">a</span>[<span class="code-number">3</span>];  <span class="code-comment">// Points to 4th element</span></pre>
+
+            <!-- Memory Diagram -->
+            <div class="memory-wrapper">
+                <div class="array-container">
+                    <div class="memory-cell"><div class="cell-index">a[0]</div><div class="cell-box">0</div><div class="cell-address">1000</div></div>
+                    <div class="memory-cell"><div class="cell-index">a[1]</div><div class="cell-box">1</div><div class="cell-address">1004</div></div>
+                    <div class="memory-cell"><div class="cell-index">a[2]</div><div class="cell-box">-1</div><div class="cell-address">1008</div></div>
+                    <div class="memory-cell"><div class="cell-index">a[3]</div><div class="cell-box">10</div><div class="cell-address">1012</div></div>
+                    <div class="memory-cell"><div class="cell-index">a[4]</div><div class="cell-box">11</div><div class="cell-address">1016</div></div>
+                </div>
+                <div class="pointers-row">
+                    <div class="pointer-marker visible" style="color: #4f46e5;">↑<br>p</div>
+                    <div class="pointer-marker visible" style="visibility: hidden;"></div>
+                    <div class="pointer-marker visible" style="visibility: hidden;"></div>
+                    <div class="pointer-marker visible" style="color: #0ea5e9;">↑<br>q</div>
+                    <div class="pointer-marker visible" style="visibility: hidden;"></div>
+                </div>
+            </div>
+            <p><em>*Note: Pointers hold the addresses (1000 and 1012), not the values inside the boxes.</em></p>
+        </section>
+
+        <!-- Section 3: Pointer - Pointer -->
+        <section class="card">
+            <h2>🧮 3. Deep Dive 1: Pointer - Pointer (q - p)</h2>
+            <p>What happens if we calculate <code>d = q - p;</code>? <br>
+            <strong>The Wrong Way:</strong> Standard math says 1012 - 1000 = 12. This is incorrect! The compiler wants to know <strong>how many elements apart</strong> they are, not how many individual bytes apart they are.</p>
+
+            <div class="formula-box">
+                FORMULA: <br>
+                (Address 1 - Address 2) / Size of Data Type
+            </div>
+
+            <div class="math-breakdown">
+                <p><strong>Calculating q - p:</strong></p>
+                <p>Address of q: 1012</p>
+                <p>Address of p: 1000</p>
+                <p>(1012 - 1000) / 4 bytes = 12 / 4</p>
+                <p style="color: var(--success); font-weight: bold; font-size: 1.2rem; margin-top: 10px;">Result: 3</p>
+            </div>
+            
+            <p style="margin-top: 15px;"><strong>💡 Key Takeaway:</strong> Subtracting two pointers returns an <strong>INTEGER</strong> representing the number of elements between them.</p>
+        </section>
+
+        <!-- Section 4: Pointer - Integer -->
+        <section class="card">
+            <h2>🔙 4. Deep Dive 2: Pointer - Integer (q - 2)</h2>
+            <p>What happens if we calculate <code>q = q - 2;</code>? <br>
+            Subtracting an integer means moving the pointer <strong>backward</strong> by that many elements.</p>
+
+            <div class="formula-box">
+                FORMULA: <br>
+                Current Address - (Integer Value * Size of Data Type)
+            </div>
+
+            <div class="math-breakdown">
+                <p><strong>Calculating q - 2:</strong></p>
+                <p>Current Address of q: 1012</p>
+                <p>Move back 2 integers: 2 * 4 bytes = 8 bytes</p>
+                <p>1012 - 8</p>
+                <p style="color: var(--primary); font-weight: bold; font-size: 1.2rem; margin-top: 10px;">Result: Address 1004 (Index 1)</p>
+            </div>
+
+            <!-- Memory Diagram: Moved Pointer -->
+            <div class="memory-wrapper">
+                <div class="array-container">
+                    <div class="memory-cell"><div class="cell-index">a[0]</div><div class="cell-box" style="opacity: 0.5;">0</div><div class="cell-address">1000</div></div>
+                    <div class="memory-cell"><div class="cell-index">a[1]</div><div class="cell-box" style="border-color: #0ea5e9; background: #e0f2fe;">1</div><div class="cell-address">1004</div></div>
+                    <div class="memory-cell"><div class="cell-index">a[2]</div><div class="cell-box" style="opacity: 0.5;">-1</div><div class="cell-address">1008</div></div>
+                    <div class="memory-cell"><div class="cell-index">a[3]</div><div class="cell-box" style="opacity: 0.5;">10</div><div class="cell-address" style="text-decoration: line-through;">1012</div></div>
+                    <div class="memory-cell"><div class="cell-index">a[4]</div><div class="cell-box" style="opacity: 0.5;">11</div><div class="cell-address">1016</div></div>
+                </div>
+                <div class="pointers-row">
+                    <div class="pointer-marker visible" style="visibility: hidden;"></div>
+                    <div class="pointer-marker visible" style="color: #0ea5e9;">↑<br>q</div>
+                    <div class="pointer-marker visible" style="visibility: hidden;"></div>
+                    <div class="pointer-marker visible" style="color: var(--text-muted);">↑<br>q (old)</div>
+                    <div class="pointer-marker visible" style="visibility: hidden;"></div>
+                </div>
+            </div>
+
+            <div class="alert" style="border-left-color: var(--danger); background: #fef2f2;">
+                <strong>⚠️ Out of Bounds Warning:</strong> If you subtract too much (e.g., <code>q = q - 4</code> from index 1), the pointer will point to an address outside the array (like <code>988</code>). Accessing this address yields "Undefined Behavior" (garbage values).
+            </div>
+        </section>
+
+        <!-- Section 5: Same Array Rule -->
+        <section class="card">
+            <h2>🔗 5. The "Same Array" Rule</h2>
+            <div class="alert">
+                <p><strong>Rule:</strong> You can only subtract pointers if they point to the <em>same array</em>.</p>
+                <p style="margin-top: 10px;">If <code>p</code> points to <code>array_A</code> and <code>q</code> points to <code>array_B</code>, the compiler will allow <code>p - q</code> syntactically. However, because you don't know how far apart these two arrays are stored in your computer's RAM, the result will be a completely meaningless, garbage number.</p>
+            </div>
+        </section>
+
+        <!-- Section 6: Homework -->
+        <section class="card">
+            <h2>✍️ 6. Whiteboard Homework Problem</h2>
+            <p>The instructor wrote this code on the board. Trace it manually using the formulas above.</p>
+            <pre><span class="code-type">int</span> <span class="code-var">a</span>[] = {<span class="code-number">0</span>, <span class="code-number">1</span>, <span class="code-number">-1</span>, <span class="code-number">10</span>, <span class="code-number">11</span>};
+<span class="code-type">int</span> *<span class="code-var">p</span> = &amp;<span class="code-var">a</span>[<span class="code-number">0</span>];
+<span class="code-type">int</span> *<span class="code-var">q</span> = &amp;<span class="code-var">a</span>[<span class="code-number">4</span>];
+<span class="code-type">int</span> <span class="code-var">d</span>;
+
+<span class="code-var">d</span> = <span class="code-var">p</span> - <span class="code-var">q</span>;
+*<span class="code-var">q</span> = <span class="code-number">25</span>;
+<span class="code-var">d</span> = <span class="code-var">q</span> - <span class="code-var">p</span>;
+*<span class="code-var">p</span> = <span class="code-number">27</span>;
+<span class="code-var">q</span> = <span class="code-var">q</span> - <span class="code-number">3</span>;
+<span class="code-var">p</span> = <span class="code-var">p</span> + <span class="code-number">3</span>;
+<span class="code-var">d</span> = <span class="code-var">p</span> - <span class="code-var">q</span>;</pre>
+        </section>
+
+        <!-- Section 7: VS Code Demo -->
+        <section class="card">
+            <h2>💻 7. Practical Computer Demo (VS Code)</h2>
+            <p>Here is the exact code and output demonstrated in the IDE to prove the math.</p>
+            
+            <pre><span class="code-keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="code-type">void</span> <span class="code-var">main</span>() {
+    <span class="code-type">int</span> <span class="code-var">a</span>[] = {<span class="code-number">2</span>, <span class="code-number">4</span>, <span class="code-number">3</span>, <span class="code-number">0</span>, <span class="code-number">-7</span>};
+    <span class="code-type">int</span> *<span class="code-var">p</span> = <span class="code-var">a</span>;         <span class="code-comment">// index 0</span>
+    <span class="code-type">int</span> *<span class="code-var">q</span> = &amp;<span class="code-var">a</span>[<span class="code-number">3</span>];     <span class="code-comment">// index 3</span>
+
+    printf(<span class="code-number">"%d\n"</span>, <span class="code-var">q</span> - <span class="code-var">p</span>);
+    printf(<span class="code-number">"%d\n"</span>, <span class="code-var">p</span> - <span class="code-var">q</span>);
+
+    <span class="code-var">q</span> = <span class="code-var">q</span> - <span class="code-number">2</span>;          <span class="code-comment">// moves q to index 1</span>
+    printf(<span class="code-number">"value = %d\n"</span>, *<span class="code-var">q</span>);
+
+    <span class="code-var">q</span> = <span class="code-var">q</span> - <span class="code-number">2</span>;          <span class="code-comment">// moves q out of bounds (index -1)</span>
+    printf(<span class="code-number">"value = %d\n"</span>, *<span class="code-var">q</span>);
+}</pre>
+
+            <div class="terminal">
+                > Terminal Output<br>
+                3<br>
+                -3<br>
+                value = 4<br>
+                value = 54   // Garbage value due to out of bounds!
+            </div>
+        </section>
+
+        <!-- Section 8: Cheat Sheet -->
+        <section class="card cheat-sheet">
+            <h2>📌 Cheat Sheet: Pointer Math Rules</h2>
+            <p style="color: #94a3b8; margin-bottom: 20px;">Keep these rules memorized for exams!</p>
+            <ul>
+                <li>
+                    <span class="cheat-type">Pointer + Pointer</span>
+                    <span class="cheat-result" style="color: #ef4444;">ERROR (Invalid)</span>
+                </li>
+                <li>
+                    <span class="cheat-type">Pointer - Pointer</span>
+                    <span class="cheat-result">INTEGER (Elements between them)</span>
+                </li>
+                <li>
+                    <span class="cheat-type">Pointer + Integer</span>
+                    <span class="cheat-result">POINTER (Moves forward)</span>
+                </li>
+                <li>
+                    <span class="cheat-type">Pointer - Integer</span>
+                    <span class="cheat-result">POINTER (Moves backward)</span>
+                </li>
+            </ul>
+        </section>
+
+    </div>
+
+</body>
+</html>

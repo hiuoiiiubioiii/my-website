@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes: Pointer Arithmetic in C</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc; /* Slate 50 */
+        }
+
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569; 
+        }
+
+        /* Syntax Highlighting specific to this page */
+        .hl-type { color: #c678dd; } /* Purple */
+        .hl-var { color: #e06c75; } /* Pink */
+        .hl-num { color: #d19a66; } /* Orange */
+        .hl-comment { color: #64748b; font-style: italic; } /* Slate 500 */
+        .hl-func { color: #61afef; } /* Blue */
+
+        /* Memory Block Animations */
+        .memory-cell {
+            transition: all 0.3s ease;
+        }
+        .pointer-arrow {
+            animation: bounce 1s infinite alternate;
+        }
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-5px); }
+        }
+
+        /* Reading Progress Bar */
+        #progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(to right, #3b82f6, #10b981);
+            width: 0%;
+            z-index: 50;
+            transition: width 0.1s ease;
+        }
+    </style>
+</head>
+<body class="antialiased leading-relaxed">
+
+    <!-- Scroll Progress -->
+    <div id="progress-bar"></div>
+
+    <main class="max-w-3xl mx-auto px-6 py-16 space-y-16">
+        
+        <!-- Header -->
+        <header class="space-y-4 text-center border-b border-slate-700 pb-12">
+            <div class="inline-block bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm font-semibold tracking-wider mb-2 code-font">
+                C Programming
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight">Pointer Arithmetic <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">(Increment & Decrement)</span></h1>
+            <p class="text-slate-400 text-lg max-w-xl mx-auto">A complete, visual, scrollable breakdown of how pointers interact with arrays, memory, and increment operators.</p>
+        </header>
+
+        <!-- PREREQUISITES -->
+        <section class="bg-slate-800/50 border border-slate-700 rounded-2xl p-6 md:p-8">
+            <h2 class="text-xl font-bold text-emerald-400 mb-4 flex items-center gap-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Prerequisites (Before you start)
+            </h2>
+            <ul class="space-y-3 text-slate-300">
+                <li class="flex items-start gap-2"><span class="text-emerald-500">✓</span> Basic understanding of pointers (<code class="bg-slate-700 px-1 rounded text-sm">*p</code>, <code class="bg-slate-700 px-1 rounded text-sm">&a</code>)</li>
+                <li class="flex items-start gap-2"><span class="text-emerald-500">✓</span> Basic pointer addition/subtraction.</li>
+                <li class="flex items-start gap-2"><span class="text-emerald-500">✓</span> How standard increment works in C (Pre <code class="bg-slate-700 px-1 rounded text-sm">++i</code> vs. Post <code class="bg-slate-700 px-1 rounded text-sm">i++</code>).</li>
+            </ul>
+        </section>
+
+        <!-- PART 1: THE SETUP -->
+        <section class="space-y-6">
+            <h2 class="text-2xl font-bold border-l-4 border-blue-500 pl-4">1. The Setup & The Memory Map</h2>
+            <p class="text-slate-300">We begin with a baseline array and a pointer. This code setup will be used for all following examples.</p>
+            
+            <div class="bg-slate-900 rounded-xl p-5 font-mono text-sm border border-slate-800 shadow-xl overflow-x-auto">
+                <span class="hl-type">int</span> a[] = {<span class="hl-num">3</span>, <span class="hl-num">2</span>, <span class="hl-num">67</span>, <span class="hl-num">0</span>, <span class="hl-num">56</span>};<br>
+                <span class="hl-type">int</span> *p;<br>
+                p = a; <span class="hl-comment">// Valid: Assigns base address of array to pointer</span>
+            </div>
+
+            <!-- Memory Visualization -->
+            <div class="bg-slate-800 rounded-xl p-6 border border-slate-700 overflow-hidden">
+                <h3 class="text-sm uppercase tracking-wider text-slate-400 font-semibold mb-6">RAM Visualization (Assuming int = 4 bytes)</h3>
+                
+                <div class="flex gap-2 sm:gap-4 overflow-x-auto pb-6">
+                    <!-- Index 0 -->
+                    <div class="flex flex-col items-center min-w-[64px]">
+                        <span class="text-xs text-slate-400 mb-1 code-font">a[0]</span>
+                        <div class="w-16 h-16 bg-blue-600 rounded shadow-inner border border-blue-500 flex items-center justify-center text-2xl font-bold text-white memory-cell">3</div>
+                        <span class="text-xs text-emerald-400 mt-2 code-font">1000</span>
+                        <div class="h-8 mt-2 flex flex-col items-center">
+                            <span class="text-yellow-400 font-bold pointer-arrow">↑</span>
+                            <span class="text-yellow-400 text-sm font-bold code-font">p</span>
+                        </div>
+                    </div>
+                    <!-- Index 1 -->
+                    <div class="flex flex-col items-center min-w-[64px]">
+                        <span class="text-xs text-slate-400 mb-1 code-font">a[1]</span>
+                        <div class="w-16 h-16 bg-slate-700 rounded border border-slate-600 flex items-center justify-center text-2xl font-bold text-slate-300 memory-cell">2</div>
+                        <span class="text-xs text-emerald-400 mt-2 code-font">1004</span>
+                    </div>
+                    <!-- Index 2 -->
+                    <div class="flex flex-col items-center min-w-[64px]">
+                        <span class="text-xs text-slate-400 mb-1 code-font">a[2]</span>
+                        <div class="w-16 h-16 bg-slate-700 rounded border border-slate-600 flex items-center justify-center text-2xl font-bold text-slate-300 memory-cell">67</div>
+                        <span class="text-xs text-emerald-400 mt-2 code-font">1008</span>
+                    </div>
+                    <!-- Index 3 -->
+                    <div class="flex flex-col items-center min-w-[64px]">
+                        <span class="text-xs text-slate-400 mb-1 code-font">a[3]</span>
+                        <div class="w-16 h-16 bg-slate-700 rounded border border-slate-600 flex items-center justify-center text-2xl font-bold text-slate-300 memory-cell">0</div>
+                        <span class="text-xs text-emerald-400 mt-2 code-font">1012</span>
+                    </div>
+                    <!-- Index 4 -->
+                    <div class="flex flex-col items-center min-w-[64px]">
+                        <span class="text-xs text-slate-400 mb-1 code-font">a[4]</span>
+                        <div class="w-16 h-16 bg-slate-700 rounded border border-slate-600 flex items-center justify-center text-2xl font-bold text-slate-300 memory-cell">56</div>
+                        <span class="text-xs text-emerald-400 mt-2 code-font">1016</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Golden Rule Alert -->
+            <div class="bg-red-500/10 border border-red-500/30 rounded-xl p-5 flex gap-4">
+                <div class="text-red-400 text-2xl mt-1">⚠️</div>
+                <div>
+                    <h4 class="text-red-400 font-bold mb-1">The Golden Rule: Pointers vs. Array Names</h4>
+                    <p class="text-slate-300 text-sm leading-relaxed mb-2">You can write <code class="bg-red-900/50 px-1 rounded text-red-300 code-font">p = a;</code> but you <strong>cannot</strong> write <code class="bg-red-900/50 px-1 rounded text-red-300 code-font">a = p;</code></p>
+                    <p class="text-slate-400 text-sm leading-relaxed"><strong>Why?</strong> An array name (<code class="text-slate-300 code-font">a</code>) is a <em>Constant Pointer</em>. Its address is fixed in memory during compilation. You cannot modify <code class="text-slate-300 code-font">a</code>, <code class="text-slate-300 code-font">a++</code>, or <code class="text-slate-300 code-font">a--</code>. You <em>can</em> do these things to <code class="text-slate-300 code-font">p</code>.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PART 2: BASIC INCREMENT -->
+        <section class="space-y-6">
+            <h2 class="text-2xl font-bold border-l-4 border-blue-500 pl-4">2. Basic Pointer Increment (<code class="font-bold text-blue-400">p++</code>)</h2>
+            <p class="text-slate-300">What actually happens when you increment a pointer?</p>
+            
+            <div class="bg-slate-800 rounded-xl p-6 border border-slate-700">
+                <ul class="space-y-4 text-slate-300">
+                    <li><strong class="text-white">The Math:</strong> <code class="bg-slate-700 px-1 rounded code-font">p++</code> is evaluated as <code class="bg-slate-700 px-1 rounded code-font">p = p + 1</code>.</li>
+                    <li><strong class="text-white">Pointer Rule:</strong> It does <em>not</em> just add the integer 1 to the address 1000. It adds <strong>1 multiplied by the size of the data type</strong>.</li>
+                    <li>
+                        <strong class="text-white block mb-2">Calculation:</strong>
+                        <div class="bg-slate-900 p-3 rounded font-mono text-sm border border-slate-700 inline-block text-emerald-300">
+                            New p = 1000 + (1 * sizeof(int))<br>
+                            New p = 1000 + (1 * 4)<br>
+                            New p = 1004
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <p class="text-slate-300 italic">Result: <code class="code-font text-yellow-400">p</code> now points to index 1 (the value <strong>2</strong>).</p>
+        </section>
+
+        <!-- PART 3: THE 4 SCENARIOS -->
+        <section class="space-y-8">
+            <h2 class="text-2xl font-bold border-l-4 border-blue-500 pl-4">3. Combining Dereference <code class="text-blue-400">*</code> and Increment <code class="text-blue-400">++</code></h2>
+            <p class="text-slate-300">This is where most students get confused. Pay close attention to Pre vs. Post operations. <em>(Assume <code class="code-font text-yellow-400">p</code> starts at 1000 for A and B)</em></p>
+
+            <!-- Scenario A -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
+                <div class="bg-slate-900 px-5 py-3 border-b border-slate-700 flex justify-between items-center">
+                    <h3 class="font-bold text-lg text-white">A) Post-Increment</h3>
+                    <code class="text-purple-400 bg-purple-400/10 px-2 py-1 rounded code-font">*p++</code>
+                </div>
+                <div class="p-5 space-y-4">
+                    <p class="text-emerald-400 font-semibold bg-emerald-400/10 inline-block px-3 py-1 rounded text-sm">Rule: Use the value first, THEN increment.</p>
+                    <ol class="list-decimal list-inside space-y-2 text-slate-300 ml-2">
+                        <li><strong>Read Original Address:</strong> <code class="code-font">p</code> is <span class="text-emerald-300">1000</span>.</li>
+                        <li><strong>Dereference:</strong> What is <code class="code-font">*1000</code>? It is <strong class="text-white text-lg">3</strong>.</li>
+                        <li><strong>Print:</strong> The function prints <strong class="text-white text-lg">3</strong>.</li>
+                        <li><strong>Increment:</strong> Now increment <code class="code-font">p</code>. Address becomes <span class="text-emerald-300">1004</span>.</li>
+                    </ol>
+                    <div class="pt-2 border-t border-slate-700 flex items-center gap-4 text-sm text-slate-400">
+                        <span>End State: Printed <strong class="text-white">3</strong></span>
+                        <span>•</span>
+                        <span><code class="code-font text-yellow-400">p</code> is now at <span class="text-emerald-300">1004</span> (pointing to 2)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scenario B -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
+                <div class="bg-slate-900 px-5 py-3 border-b border-slate-700 flex justify-between items-center">
+                    <h3 class="font-bold text-lg text-white">B) Pre-Increment</h3>
+                    <code class="text-purple-400 bg-purple-400/10 px-2 py-1 rounded code-font">*++p</code>
+                </div>
+                <div class="p-5 space-y-4">
+                    <p class="text-emerald-400 font-semibold bg-emerald-400/10 inline-block px-3 py-1 rounded text-sm">Rule: Increment first, THEN use the value.</p>
+                    <p class="text-xs text-slate-400 italic mb-2">(Associativity is Right-to-Left. It reads ++ before *)</p>
+                    <ol class="list-decimal list-inside space-y-2 text-slate-300 ml-2">
+                        <li><strong>Increment:</strong> Increase <code class="code-font">p</code> immediately. Address goes from 1000 to <span class="text-emerald-300">1004</span>.</li>
+                        <li><strong>Dereference:</strong> What is <code class="code-font">*1004</code>? It is <strong class="text-white text-lg">2</strong>.</li>
+                        <li><strong>Print:</strong> The function prints <strong class="text-white text-lg">2</strong>.</li>
+                    </ol>
+                    <div class="pt-2 border-t border-slate-700 flex items-center gap-4 text-sm text-slate-400">
+                        <span>End State: Printed <strong class="text-white">2</strong></span>
+                        <span>•</span>
+                        <span><code class="code-font text-yellow-400">p</code> is now at <span class="text-emerald-300">1004</span> (pointing to 2)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decrement Setup Box -->
+            <div class="bg-blue-900/20 border border-blue-800 p-4 rounded-lg flex items-center gap-3">
+                <span class="text-xl">🔄</span>
+                <p class="text-sm text-blue-200"><strong>Reset for C & D:</strong> Assume we set <code class="code-font text-blue-300 bg-blue-950 px-1 rounded">p = &a[3];</code>. <br><code class="code-font text-yellow-400">p</code> now starts at address <strong class="text-emerald-300">1012</strong>, pointing to the value <strong>0</strong>.</p>
+            </div>
+
+            <!-- Scenario C -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
+                <div class="bg-slate-900 px-5 py-3 border-b border-slate-700 flex justify-between items-center">
+                    <h3 class="font-bold text-lg text-white">C) Post-Decrement</h3>
+                    <code class="text-pink-400 bg-pink-400/10 px-2 py-1 rounded code-font">*p--</code>
+                </div>
+                <div class="p-5 space-y-4">
+                    <p class="text-emerald-400 font-semibold bg-emerald-400/10 inline-block px-3 py-1 rounded text-sm">Rule: Use value first, THEN decrement.</p>
+                    <ol class="list-decimal list-inside space-y-2 text-slate-300 ml-2">
+                        <li><strong>Read Original Address:</strong> <code class="code-font">p</code> is <span class="text-emerald-300">1012</span>.</li>
+                        <li><strong>Dereference:</strong> What is <code class="code-font">*1012</code>? It is <strong class="text-white text-lg">0</strong>.</li>
+                        <li><strong>Print:</strong> Prints <strong class="text-white text-lg">0</strong>.</li>
+                        <li><strong>Decrement:</strong> Address becomes 1012 - 4 = <span class="text-emerald-300">1008</span>.</li>
+                    </ol>
+                    <div class="pt-2 border-t border-slate-700 flex items-center gap-4 text-sm text-slate-400">
+                        <span>End State: Printed <strong class="text-white">0</strong></span>
+                        <span>•</span>
+                        <span><code class="code-font text-yellow-400">p</code> is now at <span class="text-emerald-300">1008</span> (pointing to 67)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scenario D -->
+            <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
+                <div class="bg-slate-900 px-5 py-3 border-b border-slate-700 flex justify-between items-center">
+                    <h3 class="font-bold text-lg text-white">D) Pre-Decrement</h3>
+                    <code class="text-pink-400 bg-pink-400/10 px-2 py-1 rounded code-font">*--p</code>
+                </div>
+                <div class="p-5 space-y-4">
+                    <p class="text-emerald-400 font-semibold bg-emerald-400/10 inline-block px-3 py-1 rounded text-sm">Rule: Decrement first, THEN use the value.</p>
+                    <ol class="list-decimal list-inside space-y-2 text-slate-300 ml-2">
+                        <li><strong>Decrement:</strong> Decrease <code class="code-font">p</code> immediately. Goes from 1012 to <span class="text-emerald-300">1008</span>.</li>
+                        <li><strong>Dereference:</strong> What is <code class="code-font">*1008</code>? It is <strong class="text-white text-lg">67</strong>.</li>
+                        <li><strong>Print:</strong> Prints <strong class="text-white text-lg">67</strong>.</li>
+                    </ol>
+                    <div class="pt-2 border-t border-slate-700 flex items-center gap-4 text-sm text-slate-400">
+                        <span>End State: Printed <strong class="text-white">67</strong></span>
+                        <span>•</span>
+                        <span><code class="code-font text-yellow-400">p</code> is now at <span class="text-emerald-300">1008</span> (pointing to 67)</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PART 4: PRINTF EVALUATION ORDER -->
+        <section class="space-y-6 pt-8 border-t border-slate-800">
+            <h2 class="text-2xl font-bold border-l-4 border-yellow-500 pl-4">4. The Tricky Stuff: Multiple Operations</h2>
+            <p class="text-slate-300">What happens when you pass multiple pointer operations into a single function like <code class="code-font text-blue-400">printf</code>?</p>
+            
+            <div class="bg-slate-900 rounded-xl p-5 font-mono text-sm border border-slate-800 shadow-xl overflow-x-auto">
+                p = a; <span class="hl-comment">// Reset p back to 1000</span><br>
+                <span class="hl-func">printf</span>(<span class="hl-var">"%d %d"</span>, *p++, *p++);
+            </div>
+
+            <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-6">
+                <h4 class="text-yellow-400 font-bold mb-3 text-lg">The "Right-to-Left" Argument Rule</h4>
+                <p class="text-slate-300 mb-4">In C compilers like GCC, arguments passed to a function are evaluated from <strong>Right to Left</strong> before they are printed.</p>
+                
+                <div class="space-y-4">
+                    <!-- Step 1 -->
+                    <div class="bg-slate-900/50 p-4 rounded border border-slate-700/50 relative overflow-hidden">
+                        <div class="absolute right-0 top-0 bottom-0 w-2 bg-yellow-500/50"></div>
+                        <h5 class="text-white font-semibold code-font mb-2">1. Evaluate Right Argument First: <span class="text-purple-400">*p++</span></h5>
+                        <ul class="list-disc list-inside text-sm text-slate-400 space-y-1">
+                            <li>Current <code class="code-font text-yellow-400">p</code> = 1000.</li>
+                            <li>Dereference <span class="text-white">1000</span> = <strong class="text-white">3</strong> (Saved for the <em>second</em> %d slot).</li>
+                            <li>Increment <code class="code-font text-yellow-400">p</code> = 1004.</li>
+                        </ul>
+                    </div>
+                    <!-- Step 2 -->
+                    <div class="bg-slate-900/50 p-4 rounded border border-slate-700/50 relative overflow-hidden">
+                        <div class="absolute left-0 top-0 bottom-0 w-2 bg-blue-500/50"></div>
+                        <h5 class="text-white font-semibold code-font mb-2">2. Evaluate Left Argument Next: <span class="text-purple-400">*p++</span></h5>
+                        <ul class="list-disc list-inside text-sm text-slate-400 space-y-1">
+                            <li>Current <code class="code-font text-yellow-400">p</code> = 1004.</li>
+                            <li>Dereference <span class="text-white">1004</span> = <strong class="text-white">2</strong> (Saved for the <em>first</em> %d slot).</li>
+                            <li>Increment <code class="code-font text-yellow-400">p</code> = 1008.</li>
+                        </ul>
+                    </div>
+                    <!-- Result -->
+                    <div class="text-center p-4 bg-slate-800 rounded shadow-inner">
+                        <p class="text-slate-400 mb-1 text-sm uppercase tracking-wider">Final Output</p>
+                        <p class="text-3xl font-bold code-font text-white">2 3</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PART 5: HOMEWORK -->
+        <section class="space-y-6 pt-8 border-t border-slate-800">
+            <h2 class="text-2xl font-bold border-l-4 border-purple-500 pl-4">5. Homework & Tricky Combinations</h2>
+            <p class="text-slate-300">Dry-run these on paper first. Draw the memory blocks, use a pencil to track the address in <code class="code-font text-yellow-400">p</code>, and remember right-to-left evaluation!</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                    <code class="block text-blue-400 code-font mb-2 bg-slate-900 px-2 py-1 rounded inline-block">printf("%d %d %d", *--p, *--p, *--p);</code>
+                    <p class="text-sm text-slate-400">Evaluates right to left. Subtracts 4 from address, reads value, saves it. Does it three times.</p>
+                </div>
+
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                    <code class="block text-pink-400 code-font mb-2 bg-slate-900 px-2 py-1 rounded inline-block">--(*p)</code>
+                    <p class="text-sm text-slate-400">Decrements the <strong>VALUE</strong> the pointer is looking at, not the address. Modifies the array itself.</p>
+                </div>
+
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                    <code class="block text-purple-400 code-font mb-2 bg-slate-900 px-2 py-1 rounded inline-block">(*p)++</code>
+                    <p class="text-sm text-slate-400">Increments the <strong>VALUE</strong> (post-increment) the pointer is looking at. Array element increases by 1.</p>
+                </div>
+
+                <div class="bg-slate-800 p-4 rounded-xl border border-slate-700">
+                    <code class="block text-emerald-400 code-font mb-2 bg-slate-900 px-2 py-1 rounded inline-block">*p++ &nbsp;vs&nbsp; *(p++)</code>
+                    <p class="text-sm text-slate-400">These do the exact same thing. Post-increment pointer, evaluate original address.</p>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center pt-16 pb-8 text-slate-500 text-sm">
+            <p>End of notes. The only way to master pointer arithmetic is to draw the boxes!</p>
+        </footer>
+
+    </main>
+
+    <!-- Scroll Progress Script -->
+    <script>
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById("progress-bar").style.width = scrolled + "%";
+        });
+    </script>
+</body>
+</html>

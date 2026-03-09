@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2-D Arrays in C: Study Notes</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;600&display=swap');
+
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --primary: #4f46e5;
+            --primary-light: #e0e7ff;
+            --row0-color: #dbeafe;
+            --row0-border: #3b82f6;
+            --row1-color: #dcfce7;
+            --row1-border: #22c55e;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Vertical Feed Layout */
+        .feed-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Cards (Feed Items) */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-top: 4px solid var(--primary);
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card p {
+            margin-bottom: 1rem;
+        }
+
+        .highlight {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9em;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            margin: 1rem 0;
+            font-size: 0.95rem;
+        }
+        .code-keyword { color: #569cd6; }
+        .code-type { color: #4ec9b0; }
+        .code-number { color: #b5cea8; }
+        .code-comment { color: #6a9955; }
+
+        /* --- VISUALIZATIONS --- */
+        
+        /* 1. Human Matrix View */
+        .matrix-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 2rem 0;
+            font-family: 'Fira Code', monospace;
+        }
+        .matrix-row-labels {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .matrix {
+            display: grid;
+            grid-template-columns: auto repeat(3, 80px);
+            gap: 4px;
+            align-items: center;
+        }
+        .col-label {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding-bottom: 5px;
+        }
+        .row-label {
+            text-align: right;
+            padding-right: 15px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .matrix-cell {
+            background-color: #f9fafb;
+            border: 2px solid #d1d5db;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 6px;
+        }
+        .row-0-cell { background-color: var(--row0-color); border-color: var(--row0-border); }
+        .row-1-cell { background-color: var(--row1-color); border-color: var(--row1-border); }
+
+        /* 2. Linear Memory Tape View */
+        .memory-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            padding: 1rem 0;
+        }
+        .memory-tape {
+            display: flex;
+            min-width: max-content;
+            margin: 0 auto;
+            border-left: 2px solid #d1d5db;
+        }
+        .memory-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80px;
+        }
+        .memory-cell {
+            width: 100%;
+            height: 60px;
+            border: 2px solid #d1d5db;
+            border-left: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            font-family: 'Fira Code', monospace;
+        }
+        .memory-address {
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: 'Fira Code', monospace;
+        }
+        .memory-index {
+            margin-bottom: 8px;
+            font-size: 0.75rem;
+            color: var(--primary);
+            font-family: 'Fira Code', monospace;
+            font-weight: 600;
+        }
+        .row-0-tape { background-color: var(--row0-color); border-color: var(--row0-border); }
+        .row-1-tape { background-color: var(--row1-color); border-color: var(--row1-border); }
+
+        .tape-label-container {
+            display: flex;
+            justify-content: space-between;
+            width: 480px; /* 6 blocks * 80px */
+            margin-top: 10px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        .tape-label-0 { color: var(--row0-border); width: 50%; text-align: center; }
+        .tape-label-1 { color: var(--row1-border); width: 50%; text-align: center; }
+
+        /* Utilities */
+        ul {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        li {
+            margin-bottom: 0.5rem;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #e5e7eb;
+            margin: 2rem 0;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header -->
+        <header class="header">
+            <h1>2-D Arrays in C</h1>
+            <p>Memory Representation & Accessing Elements</p>
+        </header>
+
+        <!-- Section 1: Declaration -->
+        <section class="card">
+            <h2>📝 1. Declaration & Initialization</h2>
+            <p>A 2-D array is essentially a matrix containing rows and columns. In C, we declare it by specifying the data type, the name of the array, the number of rows, and the number of columns.</p>
+            
+            <pre><code><span class="code-type">int</span> a[<span class="code-number">2</span>][<span class="code-number">3</span>] = { {<span class="code-number">1</span>, <span class="code-number">2</span>, <span class="code-number">0</span>}, {<span class="code-number">-1</span>, <span class="code-number">5</span>, <span class="code-number">4</span>} };</code></pre>
+
+            <ul>
+                <li><span class="highlight">int</span> : The data type (Integer).</li>
+                <li><span class="highlight">a</span> : The name of our array.</li>
+                <li><span class="highlight">[2]</span> : Row size (It will have Row 0 and Row 1).</li>
+                <li><span class="highlight">[3]</span> : Column size (It will have Col 0, Col 1, Col 2).</li>
+            </ul>
+            <p><em>Instructor Note:</em> The inner braces `{}` group the data by rows. If you leave a space empty (like writing <code>{1, 2}</code> instead of <code>{1, 2, 0}</code>), the compiler automatically fills the empty spot with a <code>0</code>.</p>
+        </section>
+
+        <!-- Section 2: Human Visualization -->
+        <section class="card">
+            <h2>👁️ 2. How Humans Visualize It</h2>
+            <p>To make it easy for us to understand, we draw 2-D arrays as a 2D table or matrix. Notice how the indices for both rows and columns start at <strong>0</strong>.</p>
+            
+            <div class="matrix-container">
+                <div class="matrix">
+                    <div><!-- Empty corner --></div>
+                    <div class="col-label">Col 0</div>
+                    <div class="col-label">Col 1</div>
+                    <div class="col-label">Col 2</div>
+
+                    <div class="row-label">Row 0</div>
+                    <div class="matrix-cell row-0-cell">1</div>
+                    <div class="matrix-cell row-0-cell">2</div>
+                    <div class="matrix-cell row-0-cell">0</div>
+
+                    <div class="row-label">Row 1</div>
+                    <div class="matrix-cell row-1-cell">-1</div>
+                    <div class="matrix-cell row-1-cell">5</div>
+                    <div class="matrix-cell row-1-cell">4</div>
+                </div>
+            </div>
+            <p>This array holds a total of <strong>6 elements</strong> (2 rows × 3 columns).</p>
+        </section>
+
+        <!-- Section 3: Computer Memory Representation -->
+        <section class="card">
+            <h2>💻 3. How the Computer Actually Stores It</h2>
+            <p>Here is the core concept: <strong>Computer memory is linear.</strong> It is not a 2D grid; it's a long, continuous tape of memory slots. So, how does the computer fit our matrix into a straight line?</p>
+            
+            <p>It uses <strong>Contiguous Memory Allocation</strong> and stores the data using <strong>Row-Major Order</strong>. This means it lays down entire rows back-to-back.</p>
+            <ul>
+                <li>First, it stores all elements of <strong>Row 0</strong>.</li>
+                <li>Immediately after, it stores all elements of <strong>Row 1</strong>.</li>
+            </ul>
+
+            <div class="memory-wrapper">
+                <div style="width: max-content; margin: 0 auto;">
+                    <div class="memory-tape">
+                        <!-- Row 0 -->
+                        <div class="memory-block">
+                            <div class="memory-index">a[0][0]</div>
+                            <div class="memory-cell row-0-tape">1</div>
+                            <div class="memory-address">100</div>
+                        </div>
+                        <div class="memory-block">
+                            <div class="memory-index">a[0][1]</div>
+                            <div class="memory-cell row-0-tape">2</div>
+                            <div class="memory-address">104</div>
+                        </div>
+                        <div class="memory-block">
+                            <div class="memory-index">a[0][2]</div>
+                            <div class="memory-cell row-0-tape">0</div>
+                            <div class="memory-address">108</div>
+                        </div>
+                        
+                        <!-- Row 1 -->
+                        <div class="memory-block">
+                            <div class="memory-index">a[1][0]</div>
+                            <div class="memory-cell row-1-tape">-1</div>
+                            <div class="memory-address">112</div>
+                        </div>
+                        <div class="memory-block">
+                            <div class="memory-index">a[1][1]</div>
+                            <div class="memory-cell row-1-tape">5</div>
+                            <div class="memory-address">116</div>
+                        </div>
+                        <div class="memory-block">
+                            <div class="memory-index">a[1][2]</div>
+                            <div class="memory-cell row-1-tape">4</div>
+                            <div class="memory-address">120</div>
+                        </div>
+                    </div>
+                    <div class="tape-label-container">
+                        <div class="tape-label-0">← Row 0 →</div>
+                        <div class="tape-label-1">← Row 1 →</div>
+                    </div>
+                </div>
+            </div>
+
+            <p><strong>Understanding the Memory Math:</strong></p>
+            <p>Assume the Memory Manager assigns a <em>Base Address</em> of <code>100</code> to the very first element. Because an <code>int</code> data type takes up <strong>4 bytes</strong> of memory in this compiler, the address increases by 4 for every single element sequentially (100, 104, 108, 112...).</p>
+            <p><em>Conclusion:</em> A 2-D array is simply an <strong>"Array of 1-D Arrays"</strong>.</p>
+        </section>
+
+        <!-- Section 4: Accessing Elements -->
+        <section class="card">
+            <h2>🎯 4. Accessing Specific Elements</h2>
+            <p>To grab a specific piece of data via code, you must provide two indices: one for the row (usually variable <code>i</code>) and one for the column (usually variable <code>j</code>).</p>
+            
+            <pre><code><span class="code-comment">// Syntax to access an element</span>
+arrayName[rowIndex][columnIndex];</code></pre>
+
+            <p><strong>Examples from the whiteboard:</strong></p>
+            <ul>
+                <li>To print the <code>0</code> (Top right of the matrix):<br>
+                    <pre><code><span class="code-keyword">printf</span>(<span class="code-number">"%d"</span>, a[<span class="code-number">0</span>][<span class="code-number">2</span>]);</code></pre>
+                </li>
+                <li>To access the <code>-1</code>:<br>
+                    <span class="highlight">a[1][0]</span> <em>(Row 1, Column 0)</em>
+                </li>
+                <li>To access the <code>5</code>:<br>
+                    <span class="highlight">a[1][1]</span> <em>(Row 1, Column 1)</em>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Section 5: The Math Teaser -->
+        <section class="card">
+            <h2>🧮 5. Address Calculation (Teaser)</h2>
+            <p>If you ask the computer for <code>a[1][0]</code>, how does it instantly know to look at memory address <code>112</code>?</p>
+            
+            <p>For a standard 1-D Array, the compiler uses a simple formula:</p>
+            <pre><code>Address = BaseAddress + (Index * Size_of_DataType)</code></pre>
+            
+            <p>However, for a 2-D array, it's more complex because the formula must account for <em>both</em> the Row Index <code>i</code> and Column Index <code>j</code>, as well as the total number of columns in the array. <em>(The instructor states this complex math, for both Row-Major and Column-Major order, is covered in depth in her Data Structures (DSA) playlist).</em></p>
+
+            <hr>
+            <p><strong>⏭️ What's Next:</strong> In the nex

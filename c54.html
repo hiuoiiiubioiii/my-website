@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes: 2D Arrays in C</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --text-main: #2d3436;
+            --text-muted: #636e72;
+            --card-bg: #ffffff;
+            --primary: #0984e3;
+            --secondary: #00cec9;
+            --code-bg: #2d3436;
+            --code-text: #a29bfe;
+            --highlight: #fdcb6e;
+            --padding-zero: #ff7675; /* Color to show compiler-added zeros */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Feed Container */
+        .feed-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease forwards;
+        }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Typography */
+        h1 { font-size: 2.5rem; color: var(--primary); margin-bottom: 10px; }
+        h2 { font-size: 1.8rem; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--bg-color); }
+        h3 { font-size: 1.3rem; margin: 20px 0 10px 0; color: var(--primary); }
+        p { margin-bottom: 15px; font-size: 1.1rem; }
+        strong { color: var(--primary); }
+        
+        .tag {
+            display: inline-block;
+            background: var(--highlight);
+            color: #000;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        /* Code Blocks */
+        pre {
+            background: var(--code-bg);
+            color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            font-size: 1.05rem;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .keyword { color: #ff7675; }
+        .type { color: #81ecec; }
+        .num { color: #ffeaa7; }
+
+        /* Memory Grid Visualizations */
+        .grid-container {
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .memory-grid {
+            display: grid;
+            grid-template-columns: auto repeat(3, 100px);
+            gap: 5px;
+            text-align: center;
+        }
+
+        .grid-cell {
+            background: var(--bg-color);
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border: 2px solid #dfe6e9;
+            transition: all 0.3s ease;
+        }
+
+        .grid-header {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .padded-zero {
+            background: #ffeaa7;
+            color: #d35400;
+            border-color: var(--highlight);
+        }
+
+        /* Interactive Runtime Visualization */
+        #runtime-visual {
+            background: #2d3436;
+            padding: 20px;
+            border-radius: 12px;
+            color: white;
+            margin-top: 20px;
+        }
+        #runtime-grid .grid-cell {
+            background: #636e72;
+            border-color: #2d3436;
+            color: white;
+        }
+        #runtime-grid .active-cell {
+            background: var(--secondary);
+            color: #000;
+            transform: scale(1.05);
+            box-shadow: 0 0 15px var(--secondary);
+        }
+        .console-text {
+            font-family: 'Courier New', monospace;
+            color: #00cec9;
+            margin-top: 15px;
+            text-align: center;
+            font-size: 1.2rem;
+            min-height: 30px;
+        }
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+            transition: 0.2s;
+        }
+        button:hover { background: #0974c6; }
+
+        .homework-box {
+            background: #e3f2fd;
+            border-left: 5px solid var(--primary);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+
+        /* Animation delays for feed */
+        .card:nth-child(1) { animation-delay: 0.1s; }
+        .card:nth-child(2) { animation-delay: 0.3s; }
+        .card:nth-child(3) { animation-delay: 0.5s; }
+    </style>
+</head>
+<body>
+
+    <main class="feed-container">
+
+        <!-- Header -->
+        <div class="card">
+            <span class="tag">Lecture Notes</span>
+            <h1>2D Arrays in C: Initialization</h1>
+            <p>In the previous lesson, we learned the <em>need</em> for 2D arrays and how to declare them. Today, we learn how to put data into them. There are two main ways to initialize a 2D Array:</p>
+            <ul>
+                <li><strong>1. At Compile Time</strong> (Hardcoding values directly in the code)</li>
+                <li><strong>2. At Run Time</strong> (Taking input from the user during execution)</li>
+            </ul>
+        </div>
+
+        <!-- Section: Basic Syntax -->
+        <div class="card">
+            <h2>Part 1: Compile-Time Initialization</h2>
+            <p>Initializing at compile time means you give the array its values at the exact moment you declare it.</p>
+            
+            <h3>1. The Linear List Syntax</h3>
+            <pre><code><span class="type">int</span> a[<span class="num">2</span>][<span class="num">3</span>] = {<span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>, <span class="num">1</span>, <span class="num">1</span>, <span class="num">1</span>};</code></pre>
+            <p><strong>Memory Math:</strong> Total elements = 2 rows &times; 3 cols = 6 elements. <br>Size = 6 elements &times; 4 bytes (size of int) = <strong>24 bytes allocated</strong>.</p>
+            
+            <p>Here is how the compiler visually fills the memory row by row:</p>
+            <div class="grid-container">
+                <div class="memory-grid">
+                    <div class="grid-header"></div>
+                    <div class="grid-header">Col 0</div>
+                    <div class="grid-header">Col 1</div>
+                    <div class="grid-header">Col 2</div>
+                    
+                    <div class="grid-header">Row 0</div>
+                    <div class="grid-cell">0</div>
+                    <div class="grid-cell">0</div>
+                    <div class="grid-cell">0</div>
+                    
+                    <div class="grid-header">Row 1</div>
+                    <div class="grid-cell">1</div>
+                    <div class="grid-cell">1</div>
+                    <div class="grid-cell">1</div>
+                </div>
+            </div>
+
+            <h3>2. The Grouped & Matrix Syntax (Better Readability)</h3>
+            <p>To make the code easier for humans to read, group the rows using nested curly braces. You can even break it across multiple lines. The compiler treats it exactly the same.</p>
+            <pre><code><span class="type">int</span> a[<span class="num">2</span>][<span class="num">3</span>] = {
+    {<span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>},  <span class="text-muted">// Row 0</span>
+    {<span class="num">1</span>, <span class="num">1</span>, <span class="num">1</span>}   <span class="text-muted">// Row 1</span>
+};</code></pre>
+        </div>
+
+        <!-- Section: Rules and Padding -->
+        <div class="card">
+            <h2>⚠️ Crucial Rules & Padding Variations</h2>
+            <p>What happens if we don't provide all the numbers? The C compiler has strict padding rules.</p>
+            
+            <h3>Variation A: Partial Grouped Initialization</h3>
+            <pre><code><span class="type">int</span> a[<span class="num">2</span>][<span class="num">3</span>] = {{<span class="num">0</span>, <span class="num">0</span>}, {<span class="num">1</span>, <span class="num">1</span>}};</code></pre>
+            <p>We need 3 columns, but only gave 2 per row. <strong>Rule:</strong> The missing columns at the end of each row are automatically padded with <span class="highlight">0</span>.</p>
+            
+            <div class="grid-container">
+                <div class="memory-grid">
+                    <div class="grid-header"></div>
+                    <div class="grid-header">Col 0</div>
+                    <div class="grid-header">Col 1</div>
+                    <div class="grid-header">Col 2</div>
+                    
+                    <div class="grid-header">Row 0</div>
+                    <div class="grid-cell">0</div>
+                    <div class="grid-cell">0</div>
+                    <div class="grid-cell padded-zero">0</div>
+                    
+                    <div class="grid-header">Row 1</div>
+                    <div class="grid-cell">1</div>
+                    <div class="grid-cell">1</div>
+                    <div class="grid-cell padded-zero">0</div>
+                </div>
+            </div>
+
+            <h3>Variation B: Omitting the Row Size</h3>
+            <pre><code><span class="type">int</span> a[][<span class="num">3</span>] = {{<span class="num">0</span>, <span class="num">0</span>, <span class="num">0</span>}, {<span class="num">1</span>, <span class="num">1</span>, <span class="num">1</span>}};</code></pre>
+            <p><strong>Rule:</strong> You can leave the first bracket empty. The compiler counts the inner braces and knows there are 2 rows. <em>Note: You CANNOT omit the column size. `a[2][]` causes an error!</em></p>
+
+            <h3>Variation C: The "All Zeros" Trick</h3>
+            <pre><code><span class="type">int</span> a[<span class="num">2</span>][<span class="num">3</span>] = {<span class="num">0</span>};</code></pre>
+            <p>You only provided a single `0`. The compiler fills the remaining 5 elements with 0s, resulting in a fully empty grid.</p>
+
+            <div class="homework-box">
+                <strong>📝 Instructor's Homework:</strong><br>
+                Q1: <code>int a[][3] = {1, 1, 1};</code> &rarr; <em>Result: A 1x3 array. Values: 1, 1, 1.</em><br>
+                Q2: <code>int a[][3] = {1, 1, 1, 2};</code> &rarr; <em>Result: Compiler infers 2 rows. First row gets [1,1,1]. Second row gets [2,0,0].</em>
+            </div>
+        </div>
+
+        <!-- Section: Run Time -->
+        <div class="card">
+            <h2>Part 2: Run-Time Initialization</h2>
+            <p>Initializing at run time uses <code>scanf</code> inside <strong>nested loops</strong> so the user can type values when the program runs.</p>
+            <ul>
+                <li>The <strong>outer loop (i)</strong> controls the rows.</li>
+                <li>The <strong>inner loop (j)</strong> controls the columns.</li>
+            </ul>
+
+            <pre><code><span class="type">int</span> a[<span class="num">2</span>][<span class="num">3</span>]; <span class="text-muted">// Uninitialized array has Garbage Values</span>
+
+<span class="keyword">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i < <span class="num">2</span>; i++) {
+    <span class="keyword">for</span> (<span class="type">int</span> j = <span class="num">0</span>; j < <span class="num">3</span>; j++) {
+        scanf(<span class="type">"%d"</span>, &a[i][j]); 
+    }
+}</code></pre>
+
+            <h3>Interactive Dry Run 🧠</h3>
+            <p>Watch how the loops execute in real-time. This is exactly how the compiler visits memory to fill the array.</p>
+            
+            <div id="runtime-visual">
+                <div class="grid-container">
+                    <div class="memory-grid" id="runtime-grid">
+                        <div class="grid-header"></div>
+                        <div class="grid-header">j = 0</div>
+                        <div class="grid-header">j = 1</div>
+                        <div class="grid-header">j = 2</div>
+                        
+                        <div class="grid-header">i = 0</div>
+                        <div class="grid-cell" id="cell-0-0">?</div>
+                        <div class="grid-cell" id="cell-0-1">?</div>
+                        <div class="grid-cell" id="cell-0-2">?</div>
+                        
+                        <div class="grid-header">i = 1</div>
+                        <div class="grid-cell" id="cell-1-0">?</div>
+                        <div class="grid-cell" id="cell-1-1">?</div>
+                        <div class="grid-cell" id="cell-1-2">?</div>
+                    </div>
+                </div>
+                <div class="console-text" id="console-text">Click "Run Loop" to start dry run.</div>
+                <button onclick="startDryRun()">Run Nested Loops</button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // JS to handle the Interactive Dry Run Animation
+        let isRunning = false;
+
+        async function startDryRun() {
+            if(isRunning) return;
+            isRunning = true;
+            
+            const consoleText = document.getElementById('console-text');
+            const cells = document.querySelectorAll('#runtime-grid .grid-cell');
+            
+            // Reset grid
+            cells.forEach(cell => {
+                cell.innerText = '?';
+                cell.classList.remove('active-cell');
+            });
+
+            // Simulate the nested loop
+            let count = 10; // Dummy user input data
+            for (let i = 0; i < 2; i++) {
+                for (let j = 0; j < 3; j++) {
+                    const cellId = `cell-${i}-${j}`;
+                    const currentCell = document.getElementById(cellId);
+                    
+                    // Update Console Text
+                    consoleText.innerHTML = `Outer i=${i} &rarr; Inner j=${j} &rarr; Filling <code>a[${i}][${j}]</code>`;
+                    
+                    // Highlight cell
+                    currentCell.classList.add('active-cell');
+                    
+                    // Wait 800ms
+                    await new Promise(r => setTimeout(r, 1000));
+                    
+                    // Fill data
+                    currentCell.innerText = count++;
+                    
+                    // Remove highlight
+                    currentCell.classList.remove('active-cell');
+                }
+            }
+            
+            consoleText.innerHTML = "✅ Loops finished! Array is fully initialized.";
+            isRunning = false;
+        }
+
+        // Scroll animation observer for a smooth vertical feed feel
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.card').forEach(card => {
+            card.style.animationPlayState = 'paused';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

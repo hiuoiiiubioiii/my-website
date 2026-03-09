@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intro to C Programming - Study Feed</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-primary: #1c1e21;
+            --text-secondary: #65676b;
+            --accent-color: #2563eb;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        /* The Vertical Feed Container */
+        .feed-container {
+            max-width: 700px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px; /* Space between cards */
+        }
+
+        /* Generic Card Style */
+        .feed-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 24px;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+        }
+
+        .feed-card:hover {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Header Card */
+        .header-card {
+            text-align: center;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: white;
+        }
+        .header-card h1 { margin: 0 0 10px 0; font-size: 1.8rem; }
+        .header-card p { margin: 0; opacity: 0.9; }
+
+        /* Typography within cards */
+        h2 {
+            font-size: 1.25rem;
+            color: var(--accent-color);
+            margin-top: 0;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        p { margin-bottom: 15px; }
+        
+        strong { color: #000; font-weight: 600; }
+
+        /* Visualization: The Board Representation */
+        .whiteboard-viz {
+            background-color: #fff;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .viz-title {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        /* Binary Instruction Block */
+        .instruction-block {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .bit-group {
+            border: 1px solid #333;
+            background: #eee;
+            padding: 10px;
+            flex: 1;
+            text-align: center;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .bit-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        /* Flowchart Styles */
+        .flowchart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .flow-box {
+            border: 2px solid var(--accent-color);
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            background: #eff6ff;
+            width: 80%;
+            text-align: center;
+        }
+
+        .arrow-down {
+            width: 0; 
+            height: 0; 
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid var(--accent-color);
+        }
+
+        /* Code/Fact Lists */
+        ul.fact-list {
+            list-style: none;
+            padding: 0;
+        }
+        ul.fact-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        ul.fact-list li:last-child { border-bottom: none; }
+
+        .key-term {
+            background-color: #fef3c7;
+            color: #92400e;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        /* Footer */
+        .footer-note {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+
+    <!-- 1. HEADER CARD -->
+    <div class="feed-card header-card">
+        <h1>Introduction to Programming</h1>
+        <p>Lecturer: Jayanti Khatri Lamba</p>
+        <p style="font-size: 0.85rem; margin-top:5px;">Video Breakdown • Vertical Feed</p>
+    </div>
+
+    <!-- 2. THE PROBLEM CARD -->
+    <div class="feed-card">
+        <h2>💡 Why Do We Need Programming?</h2>
+        <p>A computer is a <strong>General Purpose Machine</strong> designed to perform computational tasks. However, it has a major limitation: <strong>Communication</strong>.</p>
+        
+        <div class="whiteboard-viz" style="text-align: center; background: #fafafa;">
+            <p><em>Human:</em> "Hey Computer, add 4 and 5!"</p>
+            <div style="font-size: 20px;">⬇️</div>
+            <p><em>Computer:</em> "❌ I don't understand English."</p>
+        </div>
+
+        <p>To solve this, we must provide a <strong>Sequence of Instructions</strong>. These sets of instructions are called <span class="key-term">Programs</span>.</p>
+    </div>
+
+    <!-- 3. SOFTWARE TYPES CARD -->
+    <div class="feed-card">
+        <h2>📂 Types of Programs (Software)</h2>
+        <p>Software is simply a collection of programs. They fall into two main categories:</p>
+        <ul class="fact-list">
+            <li><strong>1. System Software:</strong> Manages system resources and hardware (e.g., Operating Systems like Windows, Linux).</li>
+            <li><strong>2. Application Software:</strong> Performs specific tasks for the user (e.g., Web Browsers, MS Office, Text Editors).</li>
+        </ul>
+        <p><em>Note:</em> If you need a specific task done that isn't covered by existing software, you must write your own custom program.</p>
+    </div>
+
+    <!-- 4. THE LANGUAGE BARRIER VISUALIZATION -->
+    <div class="feed-card">
+        <h2>🤖 How Computers Think (Machine Language)</h2>
+        <p>Computers only understand <strong>Binary (0 and 1)</strong>. This is called Machine Level Language. We cannot write English; we must write streams of bits.</p>
+        
+        <p><strong>Example: Adding 1 + 2</strong></p>
+        <p>The instructor visualizes an "Instruction Register" on the board showing how a CPU sees this math problem:</p>
+
+        <div class="whiteboard-viz">
+            <span class="viz-title">Instruction Format (20 Bits example)</span>
+            <div class="instruction-block">
+                <div class="bit-group" style="background: #ffcccb;">
+                    <span class="bit-label">Opcode (Operation)</span>
+                    0010
+                </div>
+                <div class="bit-group" style="background: #cce5ff;">
+                    <span class="bit-label">Operand 1 (The number 1)</span>
+                    00000001
+                </div>
+                <div class="bit-group" style="background: #cce5ff;">
+                    <span class="bit-label">Operand 2 (The number 2)</span>
+                    00000010
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 10px;">⬇️ Sent to CPU</div>
+        </div>
+        
+        <p>Here, <code>0010</code> is a code meaning "PLUS". This string of numbers is extremely difficult for humans to memorize and write.</p>
+    </div>
+
+    <!-- 5. MACHINE DEPENDENCY CARD -->
+    <div class="feed-card">
+        <h2>⚠️ The Problem: Machine Dependency</h2>
+        <p>Writing in binary (Machine Language) has a huge flaw: <strong>Non-Portability</strong>.</p>
+        <div class="whiteboard-viz">
+            <p><strong>CPU Architecture A:</strong><br>
+            Plus = <code>0010</code></p>
+            <hr style="border-top: 1px dashed #ccc;">
+            <p><strong>CPU Architecture B:</strong><br>
+            Plus = <code>1101</code></p>
+        </div>
+        <p>A program written for Computer A <strong>will not work</strong> on Computer B because their internal wiring (Architecture) is different. You would have to rewrite the entire code for every new machine.</p>
+    </div>
+
+    <!-- 6. C LANGUAGE HISTORY CARD -->
+    <div class="feed-card">
+        <h2>📜 Enter C Language</h2>
+        <p>To solve the difficulty of Machine Language, High-Level languages were created. C is one of the most important ones.</p>
+        
+        <div style="background: #f0f9ff; padding: 15px; border-left: 4px solid #2563eb; border-radius: 4px;">
+            <h3>Key Facts:</h3>
+            <ul class="fact-list">
+                <li><strong>Developer:</strong> Dennis Ritchie</li>
+                <li><strong>Year:</strong> 1972</li>
+                <li><strong>Location:</strong> Bell Laboratories (AT&T), USA</li>
+                <li><strong>Predecessor:</strong> B Language (developed by Ken Thompson)</li>
+                <li><strong>Purpose:</strong> C was created specifically to write the <strong>UNIX Operating System</strong>.</li>
+            </ul>
+        </div>
+        <p style="margin-top:15px"><em>Note:</em> In 1989, the language was standardized by ANSI (American National Standards Institute) to ensure code worked the same everywhere.</p>
+    </div>
+
+    <!-- 7. COMPILATION PROCESS CARD -->
+    <div class="feed-card">
+        <h2>⚙️ How C Works: The Compiler</h2>
+        <p>C is a <strong>High-Level Language</strong>. We use English words like <code>printf</code>, <code>main</code>, and <code>include</code>. However, the CPU still only understands binary.</p>
+        <p>We use a translator program called a <span class="key-term">Compiler</span> to bridge this gap.</p>
+
+        <div class="whiteboard-viz">
+            <span class="viz-title">The Execution Flow</span>
+            <div class="flowchart">
+                <div class="flow-box">
+                    Source Code (.c)<br>
+                    <span style="font-weight:normal; font-size:0.8em;">(Human Readable: printf, main)</span>
+                </div>
+                <div class="arrow-down"></div>
+                <div class="flow-box" style="background: #fef3c7; border-color: #d97706;">
+                    COMPILER
+                </div>
+                <div class="arrow-down" style="border-top-color: #d97706;"></div>
+                <div class="flow-box" style="background: #333; color: #fff; border-color: #000;">
+                    Object Code / Machine Code<br>
+                    <span style="font-weight:normal; font-size:0.8em;">(0s and 1s)</span>
+                </div>
+            </div>
+        </div>
+
+        <p>This makes C <strong>Portable</strong>. You write the code once, and the compiler translates it for whatever machine you are using.</p>
+    </div>
+
+    <!-- 8. SUMMARY FOOTER -->
+    <div class="footer-note">
+        <p>End of Lecture 1 • Introduction to Programming</p>
+    </div>
+
+</div>
+
+</body>
+</html>

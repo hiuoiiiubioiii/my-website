@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Functions: No Argument with Return Type</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&family=Fira+Code:wght@400;500&display=swap');
+
+        :root {
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --primary: #4f46e5;
+            --primary-light: #e0e7ff;
+            --accent: #ec4899;
+            --danger: #ef4444;
+            --success: #10b981;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* Reading Progress Bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            width: 0%;
+            z-index: 1000;
+        }
+
+        /* Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 4rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Typography */
+        h1 { font-size: 2.5rem; font-weight: 800; color: #0f172a; line-height: 1.2; margin-bottom: 1rem; }
+        h2 { font-size: 1.75rem; font-weight: 700; color: #1e293b; margin-bottom: 1rem; border-bottom: 2px solid var(--primary-light); padding-bottom: 0.5rem; }
+        h3 { font-size: 1.25rem; font-weight: 700; color: var(--primary); margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        p { margin-bottom: 1rem; }
+        strong { color: #0f172a; }
+
+        /* Cards (Feed Items) */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .tag {
+            display: inline-block;
+            background-color: var(--primary-light);
+            color: var(--primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            font-family: 'Fira Code', monospace;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        code .keyword { color: #569cd6; }
+        code .type { color: #4ec9b0; }
+        code .string { color: #ce9178; }
+        code .comment { color: #6a9955; }
+        code .function { color: #dcdcaa; }
+
+        /* Visualizations */
+        .diagram {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        /* Syntax Breakdown Visual */
+        .syntax-visual {
+            display: flex;
+            gap: 1rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            background: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .syntax-part {
+            position: relative;
+            cursor: pointer;
+        }
+        .syntax-part::after {
+            content: attr(data-label);
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0.9;
+        }
+
+        /* Memory Flow Visual */
+        .memory-flow {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            position: relative;
+        }
+        .memory-box {
+            background: white;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            width: 40%;
+            padding: 1rem;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+        .memory-title {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+        .variable {
+            background: var(--bg-color);
+            border: 1px solid #cbd5e1;
+            padding: 0.5rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        .var-highlight {
+            border-color: var(--accent);
+            background: #fce7f3;
+            color: var(--accent);
+            font-weight: bold;
+        }
+        .arrow-path {
+            position: absolute;
+            top: 50%;
+            left: 40%;
+            width: 20%;
+            height: 2px;
+            background: var(--accent);
+            z-index: 1;
+        }
+        .arrow-path::after {
+            content: 'Returns 12';
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.8rem;
+            color: var(--accent);
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        .arrow-head {
+            position: absolute;
+            top: 50%;
+            left: 60%;
+            width: 0; 
+            height: 0; 
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+            border-right: 10px solid var(--accent);
+            transform: translateY(-50%) rotate(180deg);
+            z-index: 1;
+        }
+
+        /* Comma Operator Visual */
+        .comma-visual {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.25rem;
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+        .strike {
+            text-decoration: line-through;
+            color: var(--danger);
+            opacity: 0.6;
+        }
+        .circle {
+            border: 2px solid var(--success);
+            border-radius: 50%;
+            padding: 0.2rem 0.5rem;
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        /* Note Callout */
+        .callout {
+            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .callout-title { color: #b45309; font-weight: 700; margin-bottom: 0.25rem; }
+
+        /* Homework box */
+        .homework-box {
+            background: linear-gradient(135deg, #1e1e2f, #2a2a40);
+            color: white;
+            border-left: 5px solid var(--accent);
+        }
+        .homework-box h2, .homework-box p { color: white; border-color: rgba(255,255,255,0.1); }
+        .homework-box code .string { color: #f472b6; }
+    </style>
+</head>
+<body>
+
+    <div class="progress-bar" id="progressBar"></div>
+
+    <div class="feed-container">
+        
+        <!-- Header -->
+        <header style="text-align: center; margin-bottom: 2rem;">
+            <div class="tag">Lecture Breakdown</div>
+            <h1>Classification of Functions: <br><span style="color: var(--primary);">No Argument, With Return Type</span></h1>
+            <p style="color: var(--text-muted); font-size: 1.1rem;">In this session, we transition from strictly <code>void</code> functions to functions that calculate a value and send it back to <code>main()</code>.</p>
+        </header>
+
+        <!-- Syntax Section -->
+        <div class="card fade-in">
+            <span class="tag">1. Concept & Syntax</span>
+            <h2>The Anatomy of the Function</h2>
+            <p>Because the function takes <strong>no inputs</strong> from `main()`, we put <code>void</code> inside the parentheses. Because the function calculates something and sends a value <strong>back</strong> to `main()`, it must have a data type before its name.</p>
+            
+            <div class="diagram">
+                <p style="color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 1px;">Syntax Breakdown</p>
+                <div class="syntax-visual">
+                    <span class="syntax-part" style="color: #ef4444;" data-label="Return Type">int</span> 
+                    <span class="syntax-part" style="color: #3b82f6;" data-label="Function Name">fun</span>
+                    <span>(</span><span class="syntax-part" style="color: #10b981;" data-label="No Inputs passed">void</span><span>)</span>
+                </div>
+            </div>
+            
+            <p><strong>Rule of thumb:</strong> The data type on the left (`int`, `float`, `char`) dictates the type of data the `return` statement is allowed to spit out.</p>
+        </div>
+
+        <!-- The Program Logic -->
+        <div class="card fade-in">
+            <span class="tag">2. The Complete Program</span>
+            <h2>Building the <code>sum()</code> Function</h2>
+            <p>Let's build a program to calculate the sum of two numbers to demonstrate this concept. Pay close attention to how `main()` catches the returned value.</p>
+            
+<pre><code><span class="comment">/* Step 1: Function Declaration */</span>
+<span class="type">int</span> <span class="function">sum</span>(<span class="type">void</span>);
+
+<span class="type">void</span> <span class="function">main</span>() {
+    <span class="comment">// We need a variable to "catch" the returned value</span>
+    <span class="type">int</span> s; 
+    
+    <span class="comment">// Jump to sum(), get the result, store in 's'</span>
+    s = <span class="function">sum</span>(); 
+    
+    <span class="function">printf</span>(<span class="string">"sum = %d"</span>, s);
+}
+
+<span class="comment">/* Step 3: Function Definition */</span>
+<span class="type">int</span> <span class="function">sum</span>() {
+    <span class="type">int</span> a, b, sum = 0;
+    
+    <span class="function">printf</span>(<span class="string">"Enter a & b: "</span>);
+    <span class="function">scanf</span>(<span class="string">"%d %d"</span>, &a, &b);
+    
+    sum = a + b;
+    
+    <span class="comment">// Send the answer back to main()</span>
+    <span class="keyword">return</span> sum;
+}</code></pre>
+            
+            <div class="callout">
+                <div class="callout-title">Why ask for input inside the function?</div>
+                <p>Because the function has <em>no arguments</em>! <code>main()</code> is not sending it any numbers. Therefore, the <code>sum()</code> function must ask the user for the numbers internally using <code>scanf</code>.</p>
+            </div>
+        </div>
+
+        <!-- Memory Execution Flow -->
+        <div class="card fade-in">
+            <span class="tag">3. Memory & Execution Flow</span>
+            <h2>How Variables Scoping Works</h2>
+            <p>A crucial concept taught on the whiteboard: The variables <code>a</code>, <code>b</code>, and <code>sum</code> only exist <em>inside</em> the function block. Once the function hits <code>return</code>, those variables are destroyed!</p>
+            <p>You cannot print the variable <code>sum</code> directly inside <code>main()</code>. This is why <code>main()</code> creates its own variable <code>s</code> to "catch" the answer.</p>
+
+            <div class="diagram">
+                <div class="memory-flow">
+                    <div class="memory-box">
+                        <div class="memory-title">main() Memory</div>
+                        <div class="variable var-highlight">s = 12</div>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">Waiting to catch return value</p>
+                    </div>
+                    
+                    <div class="arrow-path"></div>
+                    <div class="arrow-head"></div>
+
+                    <div class="memory-box">
+                        <div class="memory-title">sum() Memory</div>
+                        <div class="variable">a = 5</div>
+                        <div class="variable">b = 7</div>
+                        <div class="variable" style="color: var(--danger); text-decoration: line-through;">sum = 12</div>
+                        <p style="font-size: 0.8rem; color: var(--danger); margin-top: 0.5rem;">Variables destroyed after return</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crucial Concepts -->
+        <div class="card fade-in">
+            <span class="tag">4. Whiteboard Deep Dive</span>
+            <h2>Two Crucial 'Return' Rules</h2>
+
+            <h3>1. Unreachable Code</h3>
+            <p>What happens if you write code <em>after</em> the <code>return</code> statement?</p>
+<pre><code><span class="keyword">return</span> sum;
+<span class="comment">// Everything below is DEAD code</span>
+<span class="function">printf</span>(<span class="string">"Inside sum function"</span>); </code></pre>
+            <p>As soon as the compiler executes a <code>return</code> statement, it <strong>immediately exits the function</strong> and goes back to <code>main()</code>. The <code>printf</code> line is unreachable and will never execute.</p>
+
+            <h3>2. The Comma Operator</h3>
+            <p>What happens if you try to return multiple variables?</p>
+            
+            <div class="diagram">
+                <div class="comma-visual">
+                    <span class="keyword">return</span>
+                    <span>(</span>
+                    <span class="strike">sum</span>,
+                    <span class="strike">a</span>,
+                    <span class="circle">b</span>
+                    <span>);</span>
+                </div>
+                <p style="text-align: center; max-width: 80%;">The compiler evaluates from left to right. It looks at <code>sum</code>, discards it. Looks at <code>a</code>, discards it. Looks at <code>b</code>, and returns it. <strong>It always returns the right-most value.</strong></p>
+            </div>
+        </div>
+
+        <!-- Practical Demo Results -->
+        <div class="card fade-in">
+            <span class="tag">5. VS Code Execution</span>
+            <h2>Practical Demonstrations</h2>
+            <p>During the practical segment, the instructor verified the rules by running different scenarios:</p>
+            <ul style="margin-left: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                <li><strong>Proving Unreachable Code:</strong> She typed <code>printf("hi");</code> immediately after the return statement. Output was just the sum. "hi" never printed.</li>
+                <li><strong>Proving Comma Operator:</strong> She ran <code>return sum, a, b;</code> with inputs 5 and 7. The output printed was <strong>7</strong> (the value of 'b').</li>
+                <li><strong>Proving the 'Void' Rule:</strong> She tried to call the function with arguments: <code>sum(4, 6);</code>. The compiler threw a strict error: <em>"Too many arguments in function call"</em> because the declaration strictly stated <code>void</code>.</li>
+                <li><strong>Different Data Types:</strong> She successfully changed the return type to <code>float sum(void)</code> (outputting 12.000000) and <code>char sum(void)</code> (outputting the letter 'a').</li>
+            </ul>
+        </div>
+
+        <!-- Homework -->
+        <div class="card fade-in homework-box">
+            <span class="tag" style="background: var(--accent); color: white;">Homework Assignment</span>
+            <h2>Test Your Knowledge</h2>
+            <p>At the end of the video, the instructor provided this code snippet to test your understanding of the comma operator with characters. What will be the output stored in the catching variable?</p>
+
+<pre style="background: rgba(0,0,0,0.3); box-shadow: none;"><code><span class="type">char</span> <span class="function">sum</span>(<span class="type">void</span>) {
+    <span class="type">int</span> a = 5, b = 7, sum = 0;
+    sum = a + b;
+    <span class="keyword">return</span> <span class="string">'a'</span>, <span class="string">'0'</span>, <span class="string">'1'</span>;
+}</code></pre>
+
+            <details style="cursor: pointer; padding: 1rem; background: rgba(255,255,255,0.1); border-radius: 8px; margin-top: 1.5rem;">
+                <summary style="font-weight: bold; color: #fbcfe8;">Click here to reveal the answer</summary>
+                <p style="margin-top: 1rem; color: #e2e8f0;"><strong>Answer:</strong> It will return the character <code>'1'</code>. Because of the comma operator, the compiler evaluates left to right, discarding 'a' and '0', and returning the right-most value.</p>
+            </details>
+        </div>
+
+    </div>
+
+    <!-- JavaScript for Scroll Feed Effects -->
+    <script>
+        // Reading Progress Bar logic
+        window.onscroll = function() {
+            let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            let scrolled = (winScroll / height) * 100;
+            document.getElementById("progressBar").style.width = scrolled + "%";
+        };
+
+        // Intersection Observer for scroll-triggered fade-ins (Vertical Feed feel)
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.15
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target); // only animate once
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(card => {
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes: Transpose of a Matrix in C</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;600&display=swap');
+
+        :root {
+            --bg-color: #f4f7f6;
+            --text-color: #2c3e50;
+            --accent-color: #00b894; /* Inspired by the instructor's green shirt */
+            --card-bg: #ffffff;
+            --code-bg: #2d3436;
+            --code-text: #dfe6e9;
+            --highlight: #ffeaa7;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .feed-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: #636e72;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--accent-color);
+        }
+
+        h2 {
+            color: var(--accent-color);
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        h3 {
+            color: #34495e;
+            margin-top: 25px;
+        }
+
+        /* Matrix Visualization Styles */
+        .visualization-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .matrix-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .matrix {
+            display: grid;
+            gap: 15px 25px;
+            padding: 10px 20px;
+            border-left: 3px solid var(--text-color);
+            border-right: 3px solid var(--text-color);
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.2rem;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .matrix::before, .matrix::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            border-top: 3px solid var(--text-color);
+            border-bottom: 3px solid var(--text-color);
+        }
+        
+        .matrix::before { left: 0; top: 0; bottom: 0; }
+        .matrix::after { right: 0; top: 0; bottom: 0; }
+
+        .m-2x3 { grid-template-columns: repeat(3, 1fr); }
+        .m-3x2 { grid-template-columns: repeat(2, 1fr); }
+
+        .arrow {
+            font-size: 2rem;
+            color: var(--accent-color);
+            font-weight: bold;
+        }
+
+        .matrix-label {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            font-weight: 600;
+        }
+
+        .highlight-row { background-color: var(--highlight); padding: 2px 5px; border-radius: 3px;}
+
+        /* Code Block Styles */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        code span.comment { color: #636e72; font-style: italic; }
+        code span.keyword { color: #ff7675; }
+        code span.function { color: #74b9ff; }
+        code span.string { color: #55efc4; }
+        code span.highlight-code { 
+            background-color: rgba(255, 234, 167, 0.2); 
+            border-left: 3px solid #fdcb6e;
+            padding-left: 5px;
+            display: block;
+        }
+
+        /* Dry Run Table Styles */
+        .dry-run-step {
+            background: #fdfbf7;
+            border-left: 4px solid var(--accent-color);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 0 8px 8px 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+
+        .callout {
+            background: #e1f5fe;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #03a9f4;
+            margin: 20px 0;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+    <header>
+        <h1>To Print Transpose of a Matrix</h1>
+        <p>In-Depth Breakdown of Jenny's Lectures (2D Arrays in C)</p>
+    </header>
+
+    <!-- SECTION 1 -->
+    <section class="card">
+        <h2>1. The Concept: What is a Transpose?</h2>
+        <p>The instructor begins by explaining the fundamental mathematical rule of transposing a matrix:</p>
+        <div class="callout">
+            <strong>Rule:</strong> To find the transpose of a matrix, you change its <strong>Rows into Columns</strong> and its <strong>Columns into Rows</strong>.
+        </div>
+        <p>If you have a matrix of size <code>2 x 3</code> (2 rows, 3 columns), its transpose will be of size <code>3 x 2</code> (3 rows, 2 columns).</p>
+
+        <div class="visualization-container">
+            <div class="matrix-wrapper">
+                <div class="matrix m-2x3">
+                    <div class="highlight-row">1</div><div class="highlight-row">2</div><div class="highlight-row">3</div>
+                    <div>4</div><div>5</div><div>6</div>
+                </div>
+                <div class="matrix-label">Original Matrix (2x3)<br>Row 0 is [1, 2, 3]</div>
+            </div>
+            
+            <div class="arrow">➔</div>
+
+            <div class="matrix-wrapper">
+                <div class="matrix m-3x2">
+                    <div class="highlight-row">1</div><div>4</div>
+                    <div class="highlight-row">2</div><div>5</div>
+                    <div class="highlight-row">3</div><div>6</div>
+                </div>
+                <div class="matrix-label">Transposed Matrix (3x2)<br>Col 0 is now [1, 2, 3]</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 2 -->
+    <section class="card">
+        <h2>2. Writing the Logic: The "Index Swap" Trick</h2>
+        <p>We need to read the <code>2x3</code> matrix from the user, and then print it as a <code>3x2</code> matrix. Here is how she explains the loop logic on the whiteboard.</p>
+        
+        <h3>Step A: Reading the Original Matrix</h3>
+        <p>We use standard nested loops. The outer loop handles the 2 rows, and the inner loop handles the 3 columns.</p>
+<pre><code><span class="keyword">for</span>(i=<span class="keyword">0</span>; i&lt;<span class="keyword">2</span>; i++) {
+    <span class="keyword">for</span>(j=<span class="keyword">0</span>; j&lt;<span class="keyword">3</span>; j++) {
+        <span class="function">scanf</span>(<span class="string">"%d"</span>, &a[i][j]);
+    }
+}</code></pre>
+
+        <h3>Step B: Printing the Transpose</h3>
+        <p>To print the transpose, <strong>we do not need to alter the original array in memory</strong>. We just change how we pull data out of it.</p>
+        <ul>
+            <li><strong>Change Loop Limits:</strong> The new matrix has 3 rows and 2 columns. So, the outer loop runs 3 times, and the inner loop runs 2 times.</li>
+            <li><strong>The Core Trick:</strong> Instead of printing <code>a[i][j]</code>, we print <code>a[j][i]</code>. This forces the program to read down the column of the original matrix and print it across the row of the console.</li>
+        </ul>
+
+<pre><code><span class="comment">// Notice the outer loop is now 3, inner is 2</span>
+<span class="keyword">for</span>(i=<span class="keyword">0</span>; i&lt;<span class="keyword">3</span>; i++) {
+    <span class="keyword">for</span>(j=<span class="keyword">0</span>; j&lt;<span class="keyword">2</span>; j++) {
+<span class="highlight-code">        <span class="function">printf</span>(<span class="string">"%d\t"</span>, a[j][i]);  <span class="comment">// Indices swapped here!</span></span>    }
+    <span class="function">printf</span>(<span class="string">"\n"</span>);
+}</code></pre>
+    </section>
+
+    <!-- SECTION 3 -->
+    <section class="card">
+        <h2>3. Whiteboard Dry Run (Code Tracing)</h2>
+        <p>To prove the logic works, the instructor traces the code manually. Let's trace the printing loop using the original matrix containing <code>1 2 3 4 5 6</code>.</p>
+
+        <div class="dry-run-step">
+            <strong>Outer Loop: i = 0</strong> (We are printing the 1st row of the new matrix)<br><br>
+            ➔ Inner Loop: j = 0<br>
+            &nbsp;&nbsp;&nbsp;Print <code>a[j][i]</code> ➔ <code>a[0][0]</code> ➔ <strong>Prints: 1</strong><br><br>
+            ➔ Inner Loop: j = 1<br>
+            &nbsp;&nbsp;&nbsp;Print <code>a[j][i]</code> ➔ <code>a[1][0]</code> ➔ <strong>Prints: 4</strong><br><br>
+            ➔ Inner Loop ends. Print <code>\n</code> (New line).<br>
+            <em>Output on screen:</em> <code>1 &nbsp;&nbsp;&nbsp; 4</code>
+        </div>
+
+        <div class="dry-run-step">
+            <strong>Outer Loop: i = 1</strong> (We are printing the 2nd row of the new matrix)<br><br>
+            ➔ Inner Loop: j = 0<br>
+            &nbsp;&nbsp;&nbsp;Print <code>a[j][i]</code> ➔ <code>a[0][1]</code> ➔ <strong>Prints: 2</strong><br><br>
+            ➔ Inner Loop: j = 1<br>
+            &nbsp;&nbsp;&nbsp;Print <code>a[j][i]</code> ➔ <code>a[1][1]</code> ➔ <strong>Prints: 5</strong><br><br>
+            ➔ Inner Loop ends. Print <code>\n</code>.<br>
+            <em>Output on screen:</em><br>
+            <code>1 &nbsp;&nbsp;&nbsp; 4</code><br>
+            <code>2 &nbsp;&nbsp;&nbsp; 5</code>
+        </div>
+
+        <div class="dry-run-step">
+            <strong>Outer Loop: i = 2</strong> (We are printing the 3rd row of the new matrix)<br><br>
+            ➔ Inner Loop: j = 0<br>
+            &nbsp;&nbsp;&nbsp;Print <code>a[j][i]</code> ➔ <code>a[0][2]</code> ➔ <strong>Prints: 3</strong><br><br>
+            ➔ Inner Loop: j = 1<br>
+            &nbsp;&nbsp;&nbsp;Print <code>a[j][i]</code> ➔ <code>a[1][2]</code> ➔ <strong>Prints: 6</strong><br><br>
+            ➔ Inner Loop ends. Print <code>\n</code>.<br>
+            <em>Final Output:</em><br>
+            <code>1 &nbsp;&nbsp;&nbsp; 4</code><br>
+            <code>2 &nbsp;&nbsp;&nbsp; 5</code><br>
+            <code>3 &nbsp;&nbsp;&nbsp; 6</code>
+        </div>

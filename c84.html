@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes: Functions in C</title>
+    <style>
+        /* Base Styles & Vertical Feed Layout */
+        :root {
+            --bg-color: #f8fafc;
+            --text-color: #334155;
+            --accent-blue: #2563eb;
+            --accent-green: #16a34a;
+            --accent-red: #dc2626;
+            --code-bg: #1e1e1e;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .feed-container {
+            max-width: 800px;
+            width: 100%;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 3rem; /* Space between topics in the feed */
+        }
+
+        h1, h2, h3 {
+            color: #0f172a;
+            margin-top: 0;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            text-align: center;
+            border-bottom: 4px solid var(--accent-blue);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .topic-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .topic-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent-blue);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Code Block Styling */
+        pre {
+            background-color: var(--code-bg);
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .code-keyword { color: #569cd6; } /* blue */
+        .code-type { color: #4ec9b0; } /* teal */
+        .code-string { color: #ce9178; } /* orange */
+        .code-comment { color: #6a9955; font-style: italic; } /* green */
+
+        /* Visualizations */
+        .visual-box {
+            background-color: #f1f5f9;
+            border: 2px dashed #cbd5e1;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        /* Control Flow Visualization */
+        .control-flow {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .code-snippet-box {
+            background: var(--code-bg);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            position: relative;
+        }
+
+        .code-snippet-box .highlight {
+            background: rgba(37, 99, 235, 0.4);
+            padding: 2px 4px;
+            border-radius: 4px;
+            border: 1px solid var(--accent-blue);
+        }
+
+        .arrow-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-blue);
+            font-weight: bold;
+            padding-top: 2rem;
+        }
+
+        .arrow-right {
+            width: 100px;
+            height: 2px;
+            background-color: var(--accent-blue);
+            position: relative;
+        }
+        .arrow-right::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: -5px;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+            border-left: 8px solid var(--accent-blue);
+        }
+
+        /* RAM Visualization */
+        .ram-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .ram-phase {
+            border: 2px solid #64748b;
+            border-radius: 8px;
+            padding: 1rem;
+            background: white;
+        }
+
+        .ram-title {
+            font-weight: bold;
+            margin-bottom: 1rem;
+            color: #334155;
+        }
+
+        .memory-block {
+            border: 2px solid var(--accent-blue);
+            border-radius: 4px;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: #eff6ff;
+        }
+
+        .memory-block.main {
+            border-color: #64748b;
+            background: #f1f5f9;
+        }
+
+        .memory-block.freed {
+            border-color: var(--accent-red);
+            background: #fef2f2;
+            text-decoration: line-through;
+            color: var(--accent-red);
+            position: relative;
+        }
+
+        .variables-container {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .var-box {
+            border: 1px solid #94a3b8;
+            padding: 2px 6px;
+            font-size: 0.8rem;
+            background: white;
+        }
+
+        /* Lists */
+        .benefits-list {
+            list-style: none;
+            padding: 0;
+        }
+        .benefits-list li {
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+            position: relative;
+        }
+        .benefits-list li::before {
+            content: '✅';
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        /* Quiz Box */
+        .quiz-box {
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .quiz-box h3 {
+            color: #fbbf24;
+        }
+    </style>
+</head>
+<body>
+
+    <main class="feed-container">
+        <header>
+            <h1>C Programming: Introduction to Functions</h1>
+            <p style="text-align: center; color: #64748b;">Complete lecture breakdown, whiteboard visualizations, and code notes.</p>
+        </header>
+
+        <!-- Section 1: The Problem -->
+        <article class="topic-card">
+            <h2 class="topic-title">1. The Core Question: Why do we need functions?</h2>
+            <p>Whenever you learn a new concept in programming, you must ask <strong>"Why?"</strong> If we can write all our code directly inside the <code>main()</code> function, why invent other functions?</p>
+            
+            <h3>The Problem: Repetitive Code</h3>
+            <p>Imagine a simple block of code designed to add two numbers together:</p>
+<pre><code><span class="code-type">int</span> a, b, sum = 0;
+<span class="code-keyword">printf</span>(<span class="code-string">"Enter two numbers: "</span>);
+<span class="code-keyword">scanf</span>(<span class="code-string">"%d %d"</span>, &a, &b);
+sum = a + b;
+<span class="code-keyword">printf</span>(<span class="code-string">"sum = %d"</span>, sum);</code></pre>
+            
+            <p><strong>The Scenario:</strong> If you put this inside <code>main()</code>, it runs perfectly once. But what if your program requires you to calculate the sum of two numbers <strong>5 separate times</strong> at different points in your program?</p>
+            <p><strong>The Bad Solution:</strong> You would have to copy and paste those 5 lines of code five times. Your code becomes massive, highly repetitive, and incredibly difficult to read and debug.</p>
+        </article>
+
+        <!-- Section 2: The Solution -->
+        <article class="topic-card">
+            <h2 class="topic-title">2. The Solution: Definition & Calling</h2>
+            <p>Instead of writing the code over and over, we wrap that block of logic inside a named container. This is a <strong>Function</strong>.</p>
+
+            <div class="visual-box">
+                <h3 style="text-align: center; margin-top: 0;">Whiteboard Visualization: Control Flow</h3>
+                <div class="control-flow">
+                    <!-- Main Calling -->
+                    <div class="code-snippet-box">
+                        <span class="code-comment">// 1. Function Calling</span><br>
+                        <span class="code-type">void</span> main() {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="highlight">sum();</span> <span class="code-comment">← Compiler jumps</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">printf</span>(<span class="code-string">"Hello"</span>);<br>
+                        }
+                    </div>
+
+                    <!-- Flow Arrow -->
+                    <div class="arrow-container">
+                        <span>Control transfers</span>
+                        <div class="arrow-right"></div>
+                    </div>
+
+                    <!-- Definition -->
+                    <div class="code-snippet-box">
+                        <span class="code-comment">// 2. Function Definition</span><br>
+                        <span class="highlight"><span class="code-type">void</span> sum()</span> {<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-type">int</span> a, b, s;<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-comment">// ... logic ...</span><br>
+                        } <span class="code-comment">← Control returns</span>
+                    </div>
+                </div>
+            </div>
+
+            <p><strong>Function Definition:</strong> Tells the compiler <em>what</em> the function does and <em>how</em> it does it. It contains the actual logic (the curly braces with the math).</p>
+            <p><strong>Function Calling:</strong> The compiler has no mind of its own. Inside <code>main()</code>, you must explicitly write <code>sum();</code> to tell the compiler to pause, go execute the sum block, and then come back.</p>
+        </article>
+
+        <!-- Section 3: Deep Dive RAM -->
+        <article class="topic-card">
+            <h2 class="topic-title">3. Deep Dive: How Functions Execute in Memory (RAM)</h2>
+            <p><em>This is the most critical concept for understanding why functions make programs highly efficient.</em></p>
+
+            <div class="visual-box">
+                <h3 style="text-align: center; margin-top: 0;">Whiteboard Visualization: RAM Allocation</h3>
+                <div class="ram-grid">
+                    <!-- Phase 1 -->
+                    <div class="ram-phase">
+                        <div class="ram-title">1. Program Starts</div>
+                        <div class="memory-block main">
+                            main() Memory
+                        </div>
+                        <p style="font-size: 0.85rem; color: #64748b;"><code>main()</code> is loaded into RAM.</p>
+                    </div>
+                    <!-- Phase 2 -->
+                    <div class="ram-phase">
+                        <div class="ram-title">2. sum() is Called</div>
+                        <div class="memory-block main">
+                            main() Memory (Paused)
+                        </div>
+                        <div class="memory-block">
+                            sum() Memory
+                            <div class="variables-container">
+                                <div class="var-box">a</div>
+                                <div class="var-box">b</div>
+                                <div class="var-box">sum</div>
+                            </div>
+                        </div>
+                        <p style="font-size: 0.85rem; color: #64748b;">Local variables get memory temporarily.</p>
+                    </div>
+                    <!-- Phase 3 -->
+                    <div class="ram-phase">
+                        <div class="ram-title">3. sum() Finishes</div>
+                        <div class="memory-block main">
+                            main() Memory (Resumes)
+                        </div>
+                        <div class="memory-block freed">
+                            sum() Memory<br>(Destroyed)
+                        </div>
+                        <p style="font-size: 0.85rem; color: #64748b;">Memory is instantly released back to the PC!</p>
+                    </div>
+                </div>
+            </div>
+
+            <p><strong>Why is this important?</strong> If you copy-pasted the math logic 5 times directly inside <code>main()</code>, the variables (a, b, sum) would exist in RAM for the <em>entire duration</em> of the program. By using functions, variables are <strong>local</strong>. They take up memory only when <code>sum()</code> is running, and give that memory back immediately when finished.</p>
+        </article>
+
+        <!-- Section 4: Advantages -->
+        <article class="topic-card">
+            <h2 class="topic-title">4. Four Major Advantages of Functions</h2>
+            <ul class="benefits-list">
+                <li><strong>Reusability:</strong> Write the logic once (Definition) and call it as many times as you want (Calling). <em>(e.g., 5 times sum, 3 times prime, 10 times even_odd)</em>.</li>
+                <li><strong>Easy Debugging & Testing:</strong> If there is a math error, you only have to fix it in <em>one place</em> (the definition), rather than hunting down 5 copy-pasted blocks.</li>
+                <li><strong>Better Memory Utilization:</strong> As shown in the RAM diagram, functions free up local memory the exact second they hit the closing <code>}</code> brace.</li>
+                <li><strong>Modularity:</strong> You can break a massive, complicated software project down into smaller, manageable "modules" (sub-programs).</li>
+            </ul>
+        </article>
+
+        <!-- Section 5: Types of Functions -->
+        <article class="topic-card">
+            <h2 class="topic-title">5. Types of Functions in C</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                <div style="background: #f8fafc; padding: 1rem; border: 1px solid #cbd5e1; border-radius: 8px;">
+                    <h3 style="color: var(--accent-blue); margin-top:0;">Predefined Functions</h3>
+                    <p>Library functions already written by the creators of C. Their definitions live in header files (like <code>&lt;stdio.h&gt;</code>).</p>
+                    <p><strong>Examples:</strong> <code>printf()</code>, <code>scanf()</code>, <code>clrscr()</code>. You only <em>call</em> them.</p>
+                </div>
+                <div style="background: #f8fafc; padding: 1rem; border: 1px solid #cbd5e1; border-radius: 8px;">
+                    <h3 style="color: var(--accent-blue); margin-top:0;">User-Defined Functions</h3>
+                    <p>Functions where <em>you</em> (the programmer) write the custom logic and definition.</p>
+                    <p><strong>Examples:</strong> <code>sum()</code>, <code>is_prime()</code>, <code>sub()</code>.</p>
+                </div>
+            </div>
+            <div style="background: #fffbeb; border-left: 4px solid #f59e0b; padding: 1rem; margin-top: 1.5rem;">
+                <strong>⚠️ The Golden Rule of C:</strong> A C program must have <em>at least one</em> function to run, and that function must be named <code>main()</code>.
+            </div>
+        </article>
+
+        <!-- Section 6: Practical Demo -->
+        <article class="topic-card">
+            <h2 class="topic-title">6. Practical Demonstration (VS Code)</h2>
+            <p>Here is the exact code trace demonstrated in the editor. Note the crucial syntax rule at the bottom.</p>
+
+<pre><code><span class="code-keyword">#include</span> <span class="code-string">&lt;stdio.h&gt;</span>
+
+<span class="code-comment">// 1. User-Defined Function</span>
+<span class="code-type">void</span> sum() {
+    <span class="code-type">int</span> a, b, sum = 0;
+    <span class="code-keyword">printf</span>(<span class="code-string">"Enter two numbers: "</span>);
+    <span class="code-keyword">scanf</span>(<span class="code-string">"%d %d"</span>, &a, &b);
+    sum = a + b;
+    <span class="code-keyword">printf</span>(<span class="code-string">"sum=%d\n"</span>, sum);
+}
+
+<span class="code-type">void</span> main() {
+    sum(); <span class="code-comment">// Ask user for numbers & print</span>
+    <span class="code-keyword">printf</span>(<span class="code-string">"hello\n"</span>);
+    sum(); <span class="code-comment">// Ask user for numbers & print again</span>
+    sum(); <span class="code-comment">// Ask user for numbers & print a 3rd time</span>
+}</code></pre>
+
+            <div style="background: #fee2e2; border-left: 4px solid var(--accent-red); padding: 1rem; margin-top: 1.5rem; color: #991b1b;">
+                <strong>🚫 Strict Syntax Rule Demonstrated:</strong> You can define functions above or below <code>main()</code>, but <strong>you cannot define a function INSIDE another function.</strong> Placing the <code>void sub() { ... }</code> logic inside the curly braces of <code>main()</code> will cause a compiler error.
+            </div>
+        </article>
+
+        <!-- Section 7: Homework / Quiz -->
+        <article class="quiz-box">
+            <h3>📝 Instructor's Question for Students</h3>
+            <p style="font-size: 1.2rem; margin-bottom: 0.5rem;"><strong>"Is the <code>main()</code> function a pre-defined function, or a user-defined function?"</strong></p>
+            <p style="font-size: 0.9rem; opacity: 0.9;"><em>Hint for your studies: Think about who writes the actual code inside the <code>{ }</code> of main.</em></p>
+        </article>
+
+    </main>
+
+</body>
+</html>

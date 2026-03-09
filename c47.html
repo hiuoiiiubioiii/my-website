@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Arrays: Initialization - Lecture Notes</title>
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --primary: #2563eb;
+            --secondary: #eff6ff;
+            --success: #16a34a;
+            --success-bg: #dcfce7;
+            --error: #dc2626;
+            --error-bg: #fee2e2;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --border: #e5e7eb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Header / Hero */
+        .header {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-top: 6px solid var(--primary);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Feed Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+        }
+
+        .card h2 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--secondary);
+        }
+
+        .card h3 {
+            font-size: 1.3rem;
+            margin: 1.5rem 0 1rem 0;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            font-size: 1.05rem;
+        }
+
+        ul {
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .keyword { color: #569cd6; }
+        .type { color: #4ec9b0; }
+        .string { color: #ce9178; }
+        .number { color: #b5cea8; }
+        .comment { color: #6a9955; font-style: italic; }
+
+        /* Badges */
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: auto;
+        }
+        .badge.correct { background: var(--success-bg); color: var(--success); }
+        .badge.error { background: var(--error-bg); color: var(--error); }
+
+        /* --- VISUALIZATIONS (Whiteboard Recreations) --- */
+        
+        .visual-container {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            padding: 2rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .visual-title {
+            font-weight: bold;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        /* Arrays */
+        .memory-array {
+            display: flex;
+            gap: 0;
+            border: 2px solid var(--text-main);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .memory-slot {
+            width: 70px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-right: 2px solid var(--text-main);
+            position: relative;
+            background: white;
+        }
+
+        .memory-slot:last-child {
+            border-right: none;
+        }
+
+        .memory-slot.garbage {
+            color: var(--error);
+            font-size: 0.8rem;
+            font-style: italic;
+            background: #fff5f5;
+        }
+
+        .memory-slot.auto-fill {
+            color: var(--primary);
+            background: #eff6ff;
+        }
+
+        /* Addresses & Indices */
+        .slot-index {
+            position: absolute;
+            top: -25px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .slot-address {
+            position: absolute;
+            bottom: -25px;
+            font-size: 0.75rem;
+            color: var(--primary);
+            font-family: monospace;
+        }
+
+        /* Single Variables (like 'i') */
+        .memory-var {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .var-box {
+            width: 60px;
+            height: 60px;
+            border: 2px solid var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            background: white;
+            border-radius: 4px;
+        }
+        .var-name { font-weight: bold; color: var(--text-main); }
+        .var-address { font-size: 0.75rem; color: var(--primary); font-family: monospace; }
+
+        .memory-layout {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 4rem;
+            margin-top: 1rem;
+        }
+
+        .highlight-text {
+            background-color: #fef08a;
+            padding: 0 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+
+        <!-- Header -->
+        <header class="header">
+            <h1>Arrays in C: Initialization</h1>
+            <p><strong>Instructor:</strong> Jayanti Khatri Lamba | <strong>Topic:</strong> 1D Arrays</p>
+        </header>
+
+        <!-- Intro -->
+        <section class="card">
+            <h2>1. Introduction</h2>
+            <p>Once you have declared an array, you need to put data into it. The instructor outlines that there are <strong>two ways</strong> to initialize an array in C:</p>
+            <ul>
+                <li><strong>At Compile-Time:</strong> Values are hardcoded into the program when you write the code.</li>
+                <li><strong>At Run-Time:</strong> Values are entered by the user while the program is actually running.</li>
+            </ul>
+        </section>
+
+        <!-- Compile-Time Section -->
+        <section class="card">
+            <h2>2. Compile-Time Initialization</h2>
+            <p>You initialize the array at the exact moment you declare it in your code. You define exactly what numbers go into the array before compiling. The instructor demonstrates 8 variants on the whiteboard.</p>
+
+            <h3>Variant 1: Standard Initialization <span class="badge correct">Correct ✅</span></h3>
+            <p>Declare size and provide the exact number of elements.</p>
+<pre>
+<span class="type">int</span> a[<span class="number">5</span>] = {<span class="number">0</span>, <span class="number">-1</span>, <span class="number">11</span>, <span class="number">10</span>, <span class="number">2</span>};
+</pre>
+
+            <h3>Variant 2: Omitting the Size <span class="badge correct">Correct ✅</span></h3>
+            <p>If you leave the brackets <code>[]</code> empty but provide values, the compiler automatically counts the elements (7 here) and sets the size behind the scenes.</p>
+<pre>
+<span class="type">int</span> a[] = {<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">0</span>, <span class="number">-1</span>, <span class="number">6</span>, <span class="number">7</span>};
+</pre>
+
+            <h3>Variant 3: Partial Initialization <span class="badge correct">Correct ✅</span></h3>
+            <p>You declared space for 5 items but only provided 3. <strong>The remaining empty slots are automatically filled with zeros.</strong></p>
+<pre>
+<span class="type">int</span> a[<span class="number">5</span>] = {<span class="number">0</span>, <span class="number">1</span>, <span class="number">-1</span>};
+</pre>
+            
+            <div class="visual-container">
+                <div class="visual-title">Whiteboard Visualization: Partial Initialization</div>
+                <div class="memory-array">
+                    <div class="memory-slot">0</div>
+                    <div class="memory-slot">1</div>
+                    <div class="memory-slot">-1</div>
+                    <div class="memory-slot auto-fill">0</div>
+                    <div class="memory-slot auto-fill">0</div>
+                </div>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">*Blue zeros are auto-filled by the compiler.</p>
+            </div>
+
+            <h3>Variant 4: Declaration Only <span class="badge error">Risky ⚠️</span></h3>
+            <p>If you declare an array but do <em>not</em> initialize it, the memory slots are filled with unpredictable <strong>"Garbage Values"</strong>.</p>
+<pre>
+<span class="type">int</span> a[<span class="number">5</span>];
+</pre>
+            <div class="visual-container">
+                <div class="visual-title">Whiteboard Visualization: Garbage Values</div>
+                <div class="memory-array">
+                    <div class="memory-slot garbage">garbage</div>
+                    <div class="memory-slot garbage">garbage</div>
+                    <div class="memory-slot garbage">garbage</div>
+                    <div class="memory-slot garbage">garbage</div>
+                    <div class="memory-slot garbage">garbage</div>
+                </div>
+            </div>
+
+            <h3>Variant 5: Too Many Elements <span class="badge error">Error ❌</span></h3>
+            <p>You declared a size of 5 but tried to force 7 elements into it. The compiler throws an error.</p>
+<pre>
+<span class="type">int</span> a[<span class="number">5</span>] = {<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>}; <span class="comment">// ERROR</span>
+</pre>
+
+            <h3>Variant 6: Individual Index Initialization <span class="badge correct">Correct ✅</span></h3>
+            <p>Declaring first, then assigning index by index. (Valid, but tedious and not preferred).</p>
+<pre>
+<span class="type">int</span> a[<span class="number">5</span>];
+a[<span class="number">0</span>] = <span class="number">1</span>;
+a[<span class="number">1</span>] = <span class="number">2</span>;
+a[<span class="number">2</span>] = <span class="number">-1</span>;
+a[<span class="number">3</span>] = <span class="number">11</span>;
+a[<span class="number">4</span>] = <span class="number">10</span>;
+</pre>
+
+            <h3>Variant 7: The "All Zeros" Shortcut <span class="badge correct">Correct ✅</span></h3>
+            <p>Relying on the rule from Variant 3, providing a single <code>0</code> fills the rest of the array with zeros. A great trick to clear garbage values!</p>
+<pre>
+<span class="type">int</span> a[<span class="number">5</span>] = {<span class="number">0</span>};
+</pre>
+
+            <h3>Variant 8: Empty Braces <span class="badge error">Error ❌</span></h3>
+            <p>You cannot leave braces completely blank. You must provide at least one data item.</p>
+<pre>
+<span class="type">int</span> a[<span class="number">5</span>] = {}; <span class="comment">// ERROR</span>
+</pre>
+
+            <hr style="border: 0; border-top: 1px solid var(--border); margin: 2rem 0;">
+
+            <h3>📝 Note on Other Data Types</h3>
+            <p>This syntax works identically for other types, like <code>float</code> or <code>char</code>. Note that characters must use single quotes.</p>
+<pre>
+<span class="type">char</span> b[] = {<span class="string">'j'</span>, <span class="string">'e'</span>, <span class="string">'n'</span>, <span class="string">'n'</span>, <span class="string">'y'</span>};
+</pre>
+        </section>
+
+        <!-- Run-Time Section -->
+        <section class="card">
+            <h2>3. Run-Time Initialization</h2>
+            <p>Instead of hardcoding numbers, ask the user to type them in while the program is running. Because you need to accept multiple inputs sequentially, you must use a <strong>Loop</strong> combined with the <code>scanf</code> function.</p>
+
+            <p><strong>The Code:</strong></p>
+<pre>
+<span class="type">int</span> a[<span class="number">5</span>];
+<span class="type">int</span> i; <span class="comment">// Loop counter</span>
+
+<span class="keyword">printf</span>(<span class="string">"Enter the elements of array: "</span>);
+
+<span class="keyword">for</span>(i = <span class="number">0</span>; i < <span class="number">5</span>; i++) {
+    <span class="keyword">scanf</span>(<span class="string">"%d"</span>, &a[i]);
+}
+</pre>
+
+            <div class="visual-container">
+                <div class="visual-title">Whiteboard Visualization: Memory & The Loop</div>
+                <p style="text-align: center; font-size: 0.9rem; color: var(--text-muted); max-width: 500px;">When the code runs, memory is allocated. Integers take 4 bytes, so the array addresses jump by 4. <code>scanf</code> looks at the current value of <code>i</code> to know which address to store the user's input in.</p>
+                
+                <div class="memory-layout">
+                    <!-- Variable i -->
+                    <div class="memory-var">
+                        <span class="var-name">i</span>
+                        <div class="var-box">0</div>
+                        <span class="var-address">1000</span>
+                    </div>
+
+                    <!-- Array a -->
+                    <div class="memory-var">
+                        <span class="var-name">Array 'a'</span>
+                        <div class="memory-array" style="margin-top: 5px;">
+                            <div class="memory-slot">
+                                <span class="slot-index">0</span>
+                                10
+                                <span class="slot-address">2000</span>
+                            </div>
+                            <div class="memory-slot">
+                                <span class="slot-index">1</span>
+                                11
+                                <span class="slot-address">2004</span>
+                            </div>
+                            <div class="memory-slot garbage">
+                                <span class="slot-index">2</span>
+                                garb
+                                <span class="slot-address">2008</span>
+                            </div>
+                            <div class="memory-slot garbage">
+                                <span class="slot-index">3</span>
+                                garb
+                                <span class="slot-address">2012</span>
+                            </div>
+                            <div class="memory-slot garbage">
+                                <span class="slot-index">4</span>
+                                garb
+                                <span class="slot-address">2016</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p><strong>Tracing the Loop:</strong></p>
+            <ul>
+                <li><strong>Loop 1:</strong> <code>i = 0</code>. <code>scanf</code> stores input at <code>&a[0]</code> (Address 2000). User types "10", it goes into slot 0.</li>
+                <li><strong>Loop 2:</strong> <code>i++</code> makes <code>i = 1</code>. <code>scanf</code> stores input at <code>&a[1]</code> (Address 2004). User types "11", it goes into slot 1.</li>
+                <li><em>Repeats until <code>i</code> reaches 5, then the loop terminates.</em></li>
+            </ul>
+
+            <p><em>Note:</em> To print the array back to the screen, use the exact same <code>for</code> loop, but replace <code>scanf</code> with <code>printf("%d", a[i]);</code> (removing the <code>&</code> symbol).</p>
+        </section>
+
+        <!-- Use Cases Section -->
+        <section class="card">
+            <h2>4. When to Use Which Method?</h2>
+            
+            <p><span class="highlight-text">Use Compile-Time Initialization when:</span> The array size is very small (like 5 or 10 elements) AND you already know exactly what the values are going to be.</p>
+            
+            <p><span class="highlight-text">Use Run-Time Initialization when:</span></p>
+            <ul>
+                <li>The array is large (e.g., <code>int a[100];</code>). You don't want to type 100 numbers inside <code>{}</code> manually.</li>
+                <li>You want the program to be dynamic (different users will enter different data).</li>
+                <li>You want to populate an array based on specific logic or rules.</li>
+            </ul>
+
+            <h3>Advanced Run-Time Logic Example</h3>
+            <p>Imagine you have an array of 100 slots. You want the first 30 slots to hold the number <code>1</code>, and the remaining 70 slots to hold the number <code>0</code>. You can place <code>if/else</code> statements inside your run-time loop to build complex arrays instantly:</p>
+
+<pre>
+<span class="type">int</span> a[<span class="number">100</span>], i;
+
+<span class="keyword">for</span>(i = <span class="number">0</span>; i < <span class="number">100</span>; i++) {
+    <span class="keyword">if</span> (i < <span class="number">30</span>) {
+        a[i] = <span class="number">1</span>;
+    } <span class="keyword">else</span> {
+        a[i] = <span class="number">0</span>;
+    }
+}
+</pre>
+            <p><strong>Up Next:</strong> In the next lecture, the instructor will cover how to access array elements and do a deeper dive into memory representation.</p>
+        </section>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes: Arrays in C</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --primary: #4F46E5;
+            --primary-light: #E0E7FF;
+            --success: #10B981;
+            --danger: #EF4444;
+            --code-bg: #1E1E1E;
+            --code-text: #D4D4D4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            padding-bottom: 50px;
+        }
+
+        /* Header Styling */
+        header {
+            text-align: center;
+            padding: 40px 0 20px 0;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Card Styling for Feed */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-top: 4px solid var(--primary);
+            transition: transform 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h2 span {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .card p {
+            margin-bottom: 15px;
+        }
+
+        /* Typography & Highlights */
+        strong {
+            color: var(--primary);
+        }
+
+        .warning-box {
+            background-color: #FEF3C7;
+            border-left: 4px solid #F59E0B;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            margin: 15px 0;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background-color: #f1f5f9;
+            color: #b91c1c;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        /* Visualizations: Memory Arrays */
+        .visualization-box {
+            background-color: var(--bg-color);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .array-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 4px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .memory-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .cell-box {
+            width: 60px;
+            height: 60px;
+            border: 2px solid var(--primary);
+            background-color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            box-shadow: 2px 2px 0px var(--primary-light);
+        }
+
+        .cell-address {
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: 'Fira Code', monospace;
+        }
+
+        .cell-index {
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Tables for Valid/Invalid Rules */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .valid { color: var(--success); font-weight: bold; }
+        .invalid { color: var(--danger); font-weight: bold; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Arrays in C</h1>
+        <p>Complete In-Depth Video Lecture Notes • Vertical Feed</p>
+    </header>
+
+    <main class="feed-container">
+
+        <!-- Block 1 -->
+        <article class="card">
+            <h2><span>Part 1</span> Prerequisites & Warnings</h2>
+            <div class="warning-box">
+                <strong>Instructor's Advice:</strong> Do not treat this lecture like a movie. To truly learn C programming, you must have an IDE (like VS Code) open on your laptop. Practice these concepts immediately as you scroll through!
+            </div>
+            <p><strong>Topics covered in this module:</strong></p>
+            <ul>
+                <li>Need for Arrays</li>
+                <li>Definition of Arrays</li>
+                <li>Declaration Rules & Memory Allocation</li>
+            </ul>
+        </article>
+
+        <!-- Block 2 -->
+        <article class="card">
+            <h2><span>Part 2</span> The "Need" for Arrays</h2>
+            <p>Why use arrays when we have standard variables like <code>int</code>, <code>float</code>, and <code>char</code>?</p>
+            
+            <p>If you declare a standard variable:</p>
+            <pre><code>int a = 5;</code></pre>
+            
+            <div class="visualization-box">
+                <p><strong>Memory representation of a single variable:</strong></p>
+                <div class="array-container">
+                    <div class="memory-cell">
+                        <span class="cell-index">a</span>
+                        <div class="cell-box">5</div>
+                        <span class="cell-address">1000</span>
+                    </div>
+                </div>
+            </div>
+
+            <p><strong>The Problem:</strong> A single variable holds <strong>one value at a time</strong>. If you write <code>a = 6;</code>, the 5 is overwritten and lost forever.</p>
+            <p>What if a teacher needs to store the roll numbers of 60 students? Creating 60 separate variables (<code>int a, b, c...</code>) is messy, tedious, and bad programming practice. We need a way to store multiple values under a <strong>single variable name</strong>.</p>
+        </article>
+
+        <!-- Block 3 -->
+        <article class="card">
+            <h2><span>Part 3</span> Introduction & Memory Allocation</h2>
+            <p>The solution is the <strong>Array</strong>. Under one variable name, we can store 60 numbers.</p>
+            
+            <pre><code>int rollno[60];</code></pre>
+            <p><strong>Breakdown:</strong></p>
+            <ul>
+                <li><code>int</code> = The data type.</li>
+                <li><code>rollno</code> = The name of the array.</li>
+                <li><code>[60]</code> = The size (holds 60 items).</li>
+            </ul>
+
+            <div class="visualization-box">
+                <p><strong>How Memory is Allocated (Contiguous Memory):</strong></p>
+                <p style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">Assuming an int takes 4 bytes: 60 items × 4 bytes = 240 bytes total.</p>
+                
+                <div class="array-container" style="gap: 0;">
+                    <!-- Simulating continuous tape -->
+                    <div class="memory-cell"><div class="cell-box" style="width:80px; border-right:none;">...</div><span class="cell-address">1000</span></div>
+                    <div class="memory-cell"><div class="cell-box" style="width:80px; border-right:none;">...</div><span class="cell-address">1004</span></div>
+                    <div class="memory-cell"><div class="cell-box" style="width:80px; border-right:none;">...</div><span class="cell-address">1008</span></div>
+                    <div class="memory-cell"><div class="cell-box" style="width:80px; border-right:none;">...</div><span class="cell-address">1012</span></div>
+                    <div class="memory-cell"><div class="cell-box" style="width:80px;">...</div><span class="cell-address">1236</span></div>
+                </div>
+                <p style="margin-top: 15px; font-size: 0.9rem;"><strong>Crucial Rule:</strong> These 240 bytes are allocated back-to-back. They are not scattered around the computer's memory.</p>
+            </div>
+        </article>
+
+        <!-- Block 4 -->
+        <article class="card">
+            <h2><span>Part 4</span> The Strict Definition of an Array</h2>
+            <p>Based on the whiteboarding, an array must follow two strict rules:</p>
+            <ol>
+                <li><strong>Multiple Items:</strong> A collection of more than one data item under one name.</li>
+                <li><strong>Homogeneous Data:</strong> All items in the array <em>must</em> be of the exact same data type.</li>
+            </ol>
+
+            <div class="visualization-box" style="text-align: left;">
+                <p><strong>Testing the Homogeneous Rule for <code>int a[5]</code>:</strong></p>
+                <ul style="list-style: none; margin-top: 10px;">
+                    <li style="margin-bottom: 10px;"><span class="valid">✅ Valid:</span> <code>1, 2, 3, 4, 5</code> (All positive integers)</li>
+                    <li style="margin-bottom: 10px;"><span class="valid">✅ Valid:</span> <code>10, 20, 0, -1, 0</code> (Negatives and zeros are integers)</li>
+                    <li><span class="invalid">❌ Invalid:</span> <code>10, 20, 1.2, 0, 2.2</code> (Cannot mix integers with floating-point decimals!)</li>
+                </ul>
+            </div>
+
+            <p><strong>The Final Definition:</strong><br>
+            <em>"An array is a collection of homogeneous data items stored in contiguous memory locations."</em></p>
+        </article>
+
+        <!-- Block 5 -->
+        <article class="card">
+            <h2><span>Part 5</span> Visualizing 1D Array Memory</h2>
+            <p>Let's declare a simple 5-element integer array and see exactly what it looks like in the computer's memory.</p>
+            <pre><code>int a[5];</code></pre>
+
+            <div class="visualization-box">
+                <p><strong>Memory Blocks for <code>a[5]</code></strong></p>
+                <div class="array-container">
+                    <div class="memory-cell">
+                        <span class="cell-index">a[0]</span>
+                        <div class="cell-box"></div>
+                        <span class="cell-address">1000</span>
+                    </div>
+                    <div class="memory-cell">
+                        <span class="cell-index">a[1]</span>
+                        <div class="cell-box"></div>
+                        <span class="cell-address">1004</span>
+                    </div>
+                    <div class="memory-cell">
+                        <span class="cell-index">a[2]</span>
+                        <div class="cell-box"></div>
+                        <span class="cell-address">1008</span>
+                    </div>
+                    <div class="memory-cell">
+                        <span class="cell-index">a[3]</span>
+                        <div class="cell-box"></div>
+                        <span class="cell-address">1012</span>
+                    </div>
+                    <div class="memory-cell">
+                        <span class="cell-index">a[4]</span>
+                        <div class="cell-box"></div>
+                        <span class="cell-address">1016</span>
+                    </div>
+                </div>
+                <p style="margin-top: 15px; font-size: 0.9rem;"><em>Notice how the addresses jump by exactly 4 bytes each time. This is what "contiguous" means!</em></p>
+            </div>
+        </article>
+
+        <!-- Block 6 -->
+        <article class="card">
+            <h2><span>Part 6</span> Syntax & Declaration Rules</h2>
+            <p>General Syntax: <code>Datatype name_of_array[size_of_array];</code></p>
+            
+            <p>The instructor tested several variations on the whiteboard to show what the C compiler will accept for the size inside the brackets <code>[]</code>.</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Declaration Written</th>
+                        <th>Valid?</th>
+                        <th>Instructor's Explanation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>int a[];</code></td>
+                        <td class="invalid">❌ No</td>
+                        <td>You must specify a size if you are only declaring the array without initializing it instantly.</td>
+                    </tr>
+                    <tr>
+                        <td><code>int a[-5];</code></td>
+                        <td class="invalid">❌ No</td>
+                        <td>Array size cannot be a negative number.</td>
+                    </tr>
+                    <tr>
+                        <td><code>int a[2+2];</code></td>
+                        <td class="valid">✅ Yes</td>
+                        <td>Expressions are allowed! The compiler evaluates <code>2+2</code> to a constant size of <code>4</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>int a[3*2];</code></td>
+                        <td class="valid">✅ Yes</td>
+                        <td>Evaluates to a constant size of <code>6</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><code>int a[11/2];</code></td>
+                        <td class="valid">✅ Yes</td>
+                        <td>Evaluates to <code>5</code> (integer division drops the decimal).</td>
+                    </tr>
+                    <tr>
+                        <td><code>int b = 11/2;</code><br><code>int a[b];</code></td>
+                        <td class="invalid">❌ No</td>
+                        <td><em>Standard C Rule:</em> You cannot pass a variable as the size during declaration. The size must be a constant at compile time.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </article>
+
+        <!-- Block 7 -->
+        <article class="card">
+            <h2><span>Part 7</span> Best Practices: Using Macros</h2>
+            <p>Since passing a standard variable as an array size (like <code>int n; int a[n];</code>) is traditionally invalid or bad practice in C, how do we make our code flexible so we don't have to hardcode numbers everywhere?</p>
+            
+            <p><strong>Answer: Use Preprocessor Macros.</strong></p>
+
+            <pre><code>#include &lt;stdio.h&gt;
+#define N 5   // Define the macro here
+
+int main() {
+    int a[N]; // The compiler sees this as int a[5];
+    return 0;
+}</code></pre>
+            
+            <p><strong>Why this works:</strong> The C preprocessor finds every instance of <code>N</code> and replaces it with <code>5</code> <em>before</em> the code actually compiles. Therefore, the compiler sees a constant number, which perfectly satisfies the rules of array declaration!</p>
+        </article>
+
+        <!-- Block 8 -->
+        <article class="card" style="border-top-color: #F59E0B;">
+            <h2><span>Homework</span> Try it Yourself!</h2>
+            <p>The instructor ends the video by challenging you to open your IDE (VS Code) and test these edge cases to see how your specific compiler reacts.</p>
+            
+            <div class="visualization-box" style="text-align: left; border: 1px dashed #F59E0B; background-color: #FEF3C7;">
+                <ol style="margin-left: 20px;">
+                    <li style="margin-bottom: 15px;">
+                        <strong>Variable Length Arrays:</strong> <br>
+                        <code>int b = 11/2; int a[b];</code> <br>
+                        <em>Does your modern compiler throw an error, or does it allow it? (C99 standards introduced Variable Length Arrays, test it out!)</em>
+                    </li>
+                    <li>
+                        <strong>Zero Size:</strong><br>
+                        <code>int a[0];</code> <br>
+                        <em>Is an array of size zero valid in your C compiler? Write the code, run it, and find out!</em>
+                    </li>
+                </ol>
+            </div>
+        </article>
+
+    </main>
+
+</body>
+</html>

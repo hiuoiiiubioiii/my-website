@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>While Loop in C - Study Notes Feed</title>
+    <style>
+        /* Global Styles */
+        :root {
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --primary: #2b6cb0;
+            --secondary: #4299e1;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --code-bg: #1a202c;
+            --code-text: #e2e8f0;
+            --accent: #ed8936;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 2rem 1rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Vertical Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Card Styles */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--secondary);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .card h2 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h3 {
+            color: var(--text-main);
+            margin: 1.5rem 0 0.5rem 0;
+        }
+
+        .card p, .card ul {
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .card ul {
+            padding-left: 1.5rem;
+        }
+
+        .card li {
+            margin-bottom: 0.5rem;
+        }
+
+        .highlight {
+            background-color: #feebc8;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+            color: #c05621;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.05rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--accent);
+        }
+
+        code.inline {
+            background-color: #e2e8f0;
+            color: #c53030;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        /* --- VISUALIZATIONS --- */
+        
+        /* 1. Comparison Board */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .comp-box {
+            background: #edf2f7;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #cbd5e0;
+        }
+        .comp-box h4 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 0.5rem;
+        }
+
+        /* 2. Flowchart CSS */
+        .flowchart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 2rem 0;
+            font-weight: bold;
+        }
+        .flow-node {
+            background: var(--card-bg);
+            border: 2px solid var(--primary);
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-align: center;
+            width: 250px;
+            position: relative;
+            z-index: 2;
+        }
+        .flow-diamond {
+            background: #ebf8ff;
+            border: 2px solid var(--secondary);
+            padding: 1.5rem;
+            border-radius: 12px;
+            transform: rotate(45deg);
+            width: 150px;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        .flow-diamond span {
+            transform: rotate(-45deg); /* Correct text rotation */
+            text-align: center;
+        }
+        .flow-arrow {
+            width: 2px;
+            height: 40px;
+            background: var(--text-muted);
+            position: relative;
+        }
+        .flow-arrow::after {
+            content: '▼';
+            position: absolute;
+            bottom: -5px;
+            left: -5px;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+        .loop-back {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 400px;
+            justify-content: center;
+            margin-top: -20px;
+        }
+        .loop-line-up {
+            border-left: 2px dashed var(--accent);
+            border-bottom: 2px dashed var(--accent);
+            border-top: 2px dashed var(--accent);
+            height: 250px;
+            width: 100px;
+            margin-left: -50px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-200px) translateY(-150px);
+            z-index: 1;
+        }
+        .loop-text {
+            color: var(--accent);
+            position: absolute;
+            left: 50%;
+            transform: translateX(-230px) translateY(-280px);
+            font-size: 0.9rem;
+        }
+
+        /* 3. Memory Box Dry Run */
+        .memory-visual {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+            padding: 2rem;
+            background: #2d3748;
+            border-radius: 12px;
+            color: white;
+        }
+        .ram-box {
+            border: 3px solid #63b3ed;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            min-width: 150px;
+        }
+        .ram-title {
+            color: #90cdf4;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .ram-variable {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .ram-value {
+            font-size: 2rem;
+            font-family: monospace;
+            color: #fbd38d;
+        }
+        .crossed-out {
+            text-decoration: line-through;
+            color: #a0aec0;
+            font-size: 1.2rem;
+            display: block;
+        }
+        .output-screen {
+            background: #000;
+            border: 5px solid #4a5568;
+            padding: 1rem;
+            border-radius: 8px;
+            width: 200px;
+            font-family: monospace;
+            color: #48bb78;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+            .memory-visual {
+                flex-direction: column;
+                align-items: center;
+            }
+            .loop-line-up {
+                display: none; /* Hide complex arrow on small screens */
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>The `while` Loop in C</h1>
+        <p>Comprehensive Study Notes & Visualizations based on Jenny's Lectures</p>
+    </header>
+
+    <main class="feed-container">
+
+        <!-- Card 1: Introduction -->
+        <article class="card">
+            <h2>📌 1. Introduction to the `while` Loop</h2>
+            <p>The <code>while</code> loop is used to repeat a block of code as long as a specified condition remains true. It is almost identical in function to a <code>for</code> loop, but the way we write it (the syntax) is different.</p>
+            <ul>
+                <li><strong>Key Concept:</strong> It is an <span class="highlight">Entry-Controlled Loop</span>.</li>
+                <li><strong>What this means:</strong> The condition is checked <em>first</em>, before entering the loop body. If the condition is false from the very beginning, the code inside the loop will <strong>never execute</strong>. Control exits immediately.</li>
+            </ul>
+        </article>
+
+        <!-- Card 2: Syntax & Structure -->
+        <article class="card">
+            <h2>✍️ 2. General Syntax & Rules</h2>
+            <p>In a <code>for</code> loop, initialization, condition, and updating all happen on one line. In a <code>while</code> loop, they are separated into three different places.</p>
+            
+            <pre>
+Initialization;              // 1. Setup before the loop starts
+
+while (Condition)            // 2. The Termination Condition
+{
+    // Body of the loop
+    Statement 1;             // 3. What the loop actually does
+    Statement 2;
+    
+    Update/Modify;           // 4. Increment/Decrement (e.g., i++)
+}</pre>
+
+            <h3>Important Rules:</h3>
+            <ul>
+                <li><strong>Condition is Mandatory:</strong> You must put a termination condition inside the <code>()</code>. Without it, or without a proper update statement, you will create an infinite loop.</li>
+                <li><strong>Curly Braces <code>{}</code>:</strong> If you have only <em>one</em> statement in the loop body, curly braces are optional. If you have multiple statements, they are <strong>required</strong>.</li>
+            </ul>
+
+            <div class="comparison-grid">
+                <div class="comp-box">
+                    <h4>For Loop</h4>
+                    <code class="inline">for(i=1; i<=10; i++)</code><br><br>
+                    Everything is clustered in one neat package at the top.
+                </div>
+                <div class="comp-box">
+                    <h4>While Loop</h4>
+                    <code class="inline">i = 1;</code><br>
+                    <code class="inline">while(i<=10)</code><br>
+                    <code class="inline">{ ... i++; }</code><br><br>
+                    Spread out. Good for when you don't know the exact number of iterations.
+                </div>
+            </div>
+        </article>
+
+        <!-- Card 3: Flowchart Visualization -->
+        <article class="card">
+            <h2>🔀 3. The Flowchart (How the compiler reads it)</h2>
+            <p>Here is exactly how the computer thinks when it encounters a <code>while</code> loop, recreating the flowchart drawn on the whiteboard:</p>
+
+            <div class="flowchart">
+                <div class="flow-node">Initialization (e.g., i = 1)</div>
+                <div class="flow-arrow"></div>
+                
+                <div class="flow-diamond">
+                    <span>Condition<br>(e.g., i <= 10)</span>
+                </div>
+                
+                <div style="display: flex; width: 100%; justify-content: center; position: relative;">
+                    <!-- True path -->
+                    <div style="text-align: center; margin-right: 20px;">
+                        <span style="color: green; font-size: 0.9rem;">True ▼</span>
+                        <div class="flow-node" style="margin-top: 10px;">Block of Statements<br>(e.g., printf)</div>
+                        <div class="flow-arrow" style="margin: 0 auto;"></div>
+                        <div class="flow-node">Modify / Update<br>(e.g., i++)</div>
+                        
+                        <!-- Loop Back Visual -->
+                        <div class="loop-text">Loop Back to Condition ↑</div>
+                        <div class="loop-line-up"></div>
+                    </div>
+                    
+                    <!-- False path -->
+                    <div style="position: absolute; right: 10%;">
+                        <span style="color: red; font-size: 0.9rem;">False ►</span><br>
+                        <div class="flow-arrow" style="height: 100px; transform: rotate(-90deg); margin-top: 20px;"></div>
+                        <div class="flow-node" style="margin-top: 40px;">Exit Loop<br>(Statement abc)</div>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Card 4: The Practical Program -->
+        <article class="card">
+            <h2>💻 4. Practical Example: Printing 1 to 10</h2>
+            <p>We don't need user input for this. We know exactly where to start (1), where to end (10), and the step (+1). Because <code>i</code> is the standard "loop girlfriend", we will use <code>i</code> as our variable.</p>
+
+            <pre>
+#include &lt;stdio.h&gt;
+#include &lt;conio.h&gt;
+
+void main()
+{
+    int i = 1;              // Initialization
+    
+    while (i <= 10)         // Condition Check
+    {
+        printf("%d \n", i); // Statement (Print current value, \n for new line)
+        i++;                // Update (Increase by 1)
+    }
+    
+    getch();                // Wait for key press to close
+}</pre>
+        </article>
+
+        <!-- Card 5: The "Dry Run" Visualization -->
+        <article class="card">
+            <h2>🧠 5. The "Dry Run" (Memory Visualization)</h2>
+            <p>A "Dry Run" is when you trace how variables change in the computer's memory (RAM) line by line. Let's see what happens inside the computer when running the code above.</p>
+
+            <div class="memory-visual">
+                <!-- RAM Block -->
+                <div class="ram-box">
+                    <div class="ram-title">Memory Address: 1000</div>
+                    <div class="ram-variable">int i;</div>
+                    <div class="ram-value">
+                        <span class="crossed-out">1</span>
+                        <span class="crossed-out">2</span>
+                        <span class="crossed-out">3</span>
+                        <span style="font-size: 1rem; color: #a0aec0; display:block;">... skips to ...</span>
+                        <span class="crossed-out">10</span>
+                        <span>11</span>
+                    </div>
+                </div>
+
+                <!-- Console Output -->
+                <div class="output-screen">
+                    <div style="color: white; border-bottom: 1px solid #718096; margin-bottom: 5px;">Console Output:</div>
+                    1<br>2<br>3<br>...<br>9<br>10<br>
+                    <span style="color: #e53e3e; font-size: 0.8rem;">(Loop breaks when i=11)</span>
+                </div>
+            </div>
+
+            <h3>Step-by-Step Breakdown:</h3>
+            <ul>
+                <li><strong>Start:</strong> Compiler reads <code>int i = 1;</code>. It creates a box in memory and puts <code>1</code> inside.</li>
+                <li><strong>Check 1:</strong> <code>while (1 <= 10)</code>. <strong>TRUE</strong>. Prints <code>1</code>. <code>i++</code> changes memory from 1 to <code>2</code>.</li>
+                <li><strong>Check 2:</strong> <code>while (2 <= 10)</code>. <strong>TRUE</strong>. Prints <code>2</code>. <code>i++</code> changes memory to <code>3</code>.</li>
+                <li><em>(Fast forward...)</em></li>
+                <li><strong>Check 10:</strong> <code>while (10 <= 10)</code>. <strong>TRUE</strong>. Prints <code>10</code>. <code>i++</code> changes memory to <code>11</code>.</li>
+                <li><strong>Check 11:</strong> <code>while (11 <= 10)</code>. <strong>FALSE!</strong> The loop instantly terminates. Control goes to <code>getch()</code>.</li>
+            </ul>
+        </article>
+
+        <!-- Card 6: Logic Building & Pro Tips -->
+        <article class="card">
+            <h2>🎓 6. Logic Building Tips for Students</h2>
+            <p>How do you approach a looping problem when you are a beginner? The instructor gave excellent advice for building logic:</p>
+            
+            <ul>
+                <li><strong>Analyze the desired output first:</strong> Look at what needs to be printed (e.g., 1 to 10). From this, identify your 3 pillars:
+                    <ul>
+                        <li><em>Where do I start?</em> (Initialization)</li>
+                        <li><em>Where do I end?</em> (Condition)</li>
+                        <li><em>What is the step?</em> (Increment/Decrement)</li>
+                    </ul>
+                </li>
+                <li><strong>Why use loops?</strong> If you want to print 1 to 10, you *could* write <code>printf</code> ten times. But for repetition, loops save time and lines of code.</li>
+                <li><span class="highlight">The Golden Rule:</span> <strong>Do not type directly into the computer immediately!</strong> 
+                    Get a pen and paper. Write the logic down manually. "Dry run" it with your own hands. This is vital for university exams and placement interviews, where you will be asked to write logic on a whiteboard or paper without a computer!</li>
+                <li><strong>Start Simple:</strong> Try simple programs first before jumping to complex loop tricks and nested loops.</li>
+            </ul>
+        </article>
+
+    </main>
+
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes: Unformatted Input Functions in C</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;600;700&display=swap');
+
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --accent-blue: #007bff;
+            --accent-green: #28a745;
+            --accent-red: #dc3545;
+            --accent-purple: #6f42c1;
+            --console-bg: #1e1e1e;
+            --console-text: #00ff00;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Cards (Feed Items) */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--accent-blue);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        /* Staggered animation for cards */
+        .card:nth-child(2) { animation-delay: 0.1s; border-left-color: var(--accent-purple); }
+        .card:nth-child(3) { animation-delay: 0.2s; border-left-color: var(--accent-green); }
+        .card:nth-child(4) { animation-delay: 0.3s; border-left-color: var(--accent-red); }
+        .card:nth-child(5) { animation-delay: 0.4s; border-left-color: var(--accent-blue); }
+        .card:nth-child(6) { animation-delay: 0.5s; border-left-color: var(--accent-purple); }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #111;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tag {
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background-color: #e9ecef;
+            color: #495057;
+            font-weight: 600;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            margin: 20px 0 10px;
+            color: var(--accent-blue);
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        strong {
+            color: #000;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            color: #d63384; /* syntax color simulation */
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background-color: #f1f3f5;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #d63384;
+        }
+
+        /* Console Visualization */
+        .console-container {
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .console-header {
+            background-color: #333;
+            color: #fff;
+            padding: 8px 15px;
+            font-size: 0.85rem;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .console-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .dot.r { background-color: #ff5f56; }
+        .dot.y { background-color: #ffbd2e; }
+        .dot.g { background-color: #27c93f; }
+
+        .console-body {
+            background-color: var(--console-bg);
+            color: var(--console-text);
+            padding: 20px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            min-height: 120px;
+        }
+
+        .user-input { color: #fff; }
+        .comment { color: #6c757d; font-size: 0.85rem; font-style: italic;}
+
+        /* Table Styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        tr:hover {
+            background-color: #f1f3f5;
+        }
+
+        .badge-yes { color: var(--accent-green); font-weight: bold; }
+        .badge-no { color: var(--accent-red); font-weight: bold; }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .card { padding: 20px; }
+            h2 { font-size: 1.5rem; }
+            table { font-size: 0.85rem; }
+            th, td { padding: 8px 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header -->
+        <header>
+            <h1>Unformatted Input Functions in C</h1>
+            <p>Based on Jenny's Lectures | Comprehensive Visual Notes</p>
+        </header>
+
+        <!-- Topic 1: Intro -->
+        <article class="card">
+            <h2>1. Formatted vs. Unformatted Functions</h2>
+            <p>Before writing code, the instructor establishes the context of input functions in C.</p>
+            <ul>
+                <li><strong>Formatted Input/Output:</strong> Functions like <code>scanf()</code> and <code>printf()</code>. They require <strong>Format Specifiers</strong> (e.g., <code>%d</code> for integers, <code>%f</code> for floats, <code>%c</code> for chars). You can format exactly how the data looks and mix data types.</li>
+                <li><strong>Unformatted Input/Output:</strong> Functions that do <em>not</em> use format specifiers during input. They are rigid, primarily working with <strong>character data types</strong> (a single character or a string).</li>
+            </ul>
+            <p>The instructor lists 4 unformatted input functions on the board, which we will deeply analyze below:</p>
+            <p><code>getchar()</code>, <code>getch()</code>, <code>getche()</code>, and <code>gets()</code>.</p>
+        </article>
+
+        <!-- Topic 2: getchar() -->
+        <article class="card">
+            <h2>2. getchar() <span class="tag">&lt;stdio.h&gt;</span></h2>
+            <p><strong>What it does:</strong> Reads a single character from the standard input device (keyboard).</p>
+            <ul>
+                <li><strong>Waits for Enter:</strong> It will buffer your input and will not process it until you press the "Enter" key.</li>
+                <li><strong>Echoes:</strong> The character you type <em>will</em> be visible on the output screen.</li>
+                <li><strong>Buffering behavior:</strong> If you type multiple characters (e.g., "JKLMNO") and hit Enter, it only reads and stores the <em>very first</em> character ("J").</li>
+            </ul>
+            
+            <h3>Instructor's Code:</h3>
+<pre>#include &lt;stdio.h&gt;
+
+void main() {
+    char ch;
+    ch = getchar();        // Takes input, no arguments needed inside ()
+    printf("ch=%c", ch);   // Prints the input to verify
+}</pre>
+
+            <h3>Visual Output Simulation:</h3>
+            <div class="console-container">
+                <div class="console-header">
+                    <div class="console-dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+                    <span>Console - getchar.exe</span>
+                </div>
+                <div class="console-body">
+                    <span class="user-input">J</span> <span class="comment">// User types 'J' (Echoed on screen)</span><br>
+                    <span class="comment">// User presses [ENTER] key</span><br>
+                    ch=J <span class="comment">// Program prints the stored character</span><br>
+                    <span class="comment">_</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- Topic 3: getch() -->
+        <article class="card">
+            <h2>3. getch() <span class="tag">&lt;conio.h&gt;</span></h2>
+            <p><strong>What it does:</strong> Reads a single alphanumeric character from the keyboard.</p>
+            <ul>
+                <li><strong>Immediate Execution:</strong> As soon as you press a key, the function executes instantly. It does <strong>NOT</strong> wait for the Enter key.</li>
+                <li><strong>NO Echo:</strong> The character you type is hidden. It will <strong>NOT</strong> be displayed on the screen.</li>
+                <li><strong>Common Use Cases:</strong> Taking passwords securely, or placing it at the very end of <code>main()</code> to "hold the output screen" until the user presses any key to exit.</li>
+            </ul>
+            
+            <h3>Instructor's Code:</h3>
+<pre>#include &lt;conio.h&gt;
+
+void main() {
+    char ch;
+    ch = getch();          // Takes input instantly
+    printf("ch=%c", ch);   // Prints the input to verify
+}</pre>
+
+            <h3>Visual Output Simulation:</h3>
+            <div class="console-container">
+                <div class="console-header">
+                    <div class="console-dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+                    <span>Console - getch.exe</span>
+                </div>
+                <div class="console-body">
+                    <span class="comment">// User presses 'a' key</span><br>
+                    <span class="comment">// Notice: 'a' is NOT shown on screen (No Echo)</span><br>
+                    <span class="comment">// Program immediately jumps to next line without waiting for Enter</span><br>
+                    ch=a <br>
+                    <span class="comment">_</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- Topic 4: getche() -->
+        <article class="card">
+            <h2>4. getche() <span class="tag">&lt;conio.h&gt;</span></h2>
+            <p><strong>What it does:</strong> Exactly the same as <code>getch()</code>, but the <strong>'e' stands for "Echo"</strong>.</p>
+            <ul>
+                <li><strong>Immediate Execution:</strong> Executes as soon as you press a key (No Enter needed).</li>
+                <li><strong>Echoes:</strong> The character you type <em>WILL</em> be displayed on the screen instantly.</li>
+            </ul>
+            
+            <h3>Instructor's Code:</h3>
+<pre>#include &lt;conio.h&gt;
+
+void main() {
+    char ch;
+    ch = getche();         // Takes input instantly AND echoes it
+    printf("ch=%c", ch);
+}</pre>
+
+            <h3>Visual Output Simulation:</h3>
+            <div class="console-container">
+                <div class="console-header">
+                    <div class="console-dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+                    <span>Console - getche.exe</span>
+                </div>
+                <div class="console-body">
+                    <span class="user-input">a</span><span class="comment"> // User presses 'a' (Echoes on screen instantly)</span><br>
+                    ch=a <span class="comment">// Program immediately executes print statement right next to it</span><br>
+                    <span class="comment">_</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- Topic 5: gets() -->
+        <article class="card">
+            <h2>5. gets() <span class="tag">&lt;stdio.h&gt;</span></h2>
+            <p><strong>What it does:</strong> Reads a complete string (sequence of characters) from standard input until the Enter key is pressed.</p>
+            <ul>
+                <li><strong>Why use it over scanf?</strong> If you use <code>scanf("%s")</code>, it stops reading as soon as it encounters a space. <code>gets()</code> reads the entire line, <em>including spaces</em>.</li>
+                <li>Requires a character array (string declaration) rather than a single character variable.</li>
+            </ul>
+            
+            <h3>Instructor's Code:</h3>
+<pre>#include &lt;stdio.h&gt;
+
+void main() {
+    char ch[30];           // Declares a string (char array) to hold the words
+    gets(ch);              // Reads string WITH spaces. Pass variable name inside ()
+    printf("ch=%s", ch);   // Uses %s to print the string
+}</pre>
+
+            <h3>Visual Output Simulation:</h3>
+            <div class="console-container">
+                <div class="console-header">
+                    <div class="console-dots"><div class="dot r"></div><div class="dot y"></div><div class="dot g"></div></div>
+                    <span>Console - gets.exe</span>
+                </div>
+                <div class="console-body">
+                    <span class="user-input">Jenny's lectures</span> <span class="comment">// User types string with a space</span><br>
+                    <span class="comment">// User presses [ENTER] key</span><br>
+                    ch=Jenny's lectures <span class="comment">// Whole string is captured and printed</span><br>
+                    <span class="comment">_</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- Topic 6: Cheat Sheet -->
+        <article class="card">
+            <h2>6. Final Cheat Sheet Summary</h2>
+            <p>A quick comparison of the single-character unformatted input functions to lock in your memory:</p>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>Function</th>
+                        <th>Header File</th>
+                        <th>Reads...</th>
+                        <th>Shows typing on screen? (Echo)</th>
+                        <th>Waits for "Enter" key?</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>getchar()</code></td>
+                        <td>&lt;stdio.h&gt;</td>
+                        <td>Single Char</td>
+                        <td class="badge-yes">YES</td>
+                        <td class="badge-yes">YES</td>
+                    </tr>
+                    <tr>
+                        <td><code>getch()</code></td>
+                        <td>&lt;conio.h&gt;</td>
+                        <td>Single Char</td>
+                        <td class="badge-no">NO (Hidden)</td>
+                        <td class="badge-no">NO (Instant)</td>
+                    </tr>
+                    <tr>
+                        <td><code>getche()</code></td>
+                        <td>&lt;conio.h&gt;</td>
+                        <td>Single Char</td>
+                        <td class="badge-yes">YES</td>
+                        <td class="badge-no">NO (Instant)</td>
+                    </tr>
+                    <tr>
+                        <td><code>gets()</code></td>
+                        <td>&lt;stdio.h&gt;</td>
+                        <td>Full String</td>
+                        <td class="badge-yes">YES</td>
+                        <td class="badge-yes">YES</td>
+                    </tr>
+                </tbody>
+            </table>
+        </article>
+
+    </div>
+
+    <!-- Simple Intersection Observer script for scroll-reveal animations -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.card');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting) {
+                        entry.target.style.opacity = "1";
+                        entry.target.style.transform = "translateY(0)";
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            cards.forEach(card => observer.observe(card));
+        });
+    </script>
+</body>
+</html>

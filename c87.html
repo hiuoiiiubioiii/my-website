@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: Call by Value vs Call by Reference</title>
+    <style>
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --accent: #3b82f6;
+            --accent-light: #eff6ff;
+            --code-bg: #1e1e1e;
+            --border-color: #e5e7eb;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Feed Layout */
+        .feed-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .feed-header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .feed-header h1 {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .feed-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .feed-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-top: 4px solid var(--accent);
+        }
+
+        .feed-card h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h3 {
+            margin: 1.5rem 0 0.5rem 0;
+            color: var(--accent);
+        }
+
+        p, ul {
+            margin-bottom: 1rem;
+        }
+
+        ul {
+            padding-left: 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.95rem;
+            margin: 1.5rem 0;
+        }
+
+        code .keyword { color: #569cd6; }
+        code .type { color: #4ec9b0; }
+        code .string { color: #ce9178; }
+        code .comment { color: #6a9955; }
+
+        /* Terminals */
+        .terminal {
+            background-color: #000;
+            color: #10b981;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: monospace;
+            margin: 1rem 0;
+            border-left: 4px solid var(--success);
+        }
+
+        .terminal.error {
+            color: #ef4444;
+            border-left: 4px solid var(--danger);
+        }
+
+        /* Memory Visualizations (RAM) */
+        .ram-diagram {
+            display: flex;
+            gap: 2rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .memory-scope {
+            flex: 1;
+            min-width: 250px;
+            background: var(--accent-light);
+            border: 2px dashed var(--accent);
+            border-radius: 8px;
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .scope-title {
+            position: absolute;
+            top: -12px;
+            left: 15px;
+            background: var(--card-bg);
+            padding: 0 10px;
+            font-weight: bold;
+            color: var(--accent);
+            font-size: 0.9rem;
+            border: 2px dashed var(--accent);
+            border-radius: 4px;
+        }
+
+        .memory-row {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 1rem;
+        }
+
+        .var-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .var-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .var-box {
+            width: 60px;
+            height: 60px;
+            background: #fff;
+            border: 2px solid var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 2px 2px 0px var(--text-main);
+            transition: all 0.3s ease;
+        }
+
+        .var-box.crossed {
+            text-decoration: line-through;
+            color: var(--danger);
+        }
+
+        .var-address {
+            margin-top: 5px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        .pointer-info {
+            font-size: 0.8rem;
+            color: var(--accent);
+            margin-top: 8px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .callout {
+            background-color: #fef2f2;
+            border-left: 4px solid var(--danger);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .callout strong {
+            color: var(--danger);
+        }
+
+        .highlight {
+            background-color: #fef08a;
+            padding: 0 4px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<main class="feed-container">
+    
+    <!-- Header -->
+    <header class="feed-header">
+        <h1>C Programming Notes</h1>
+        <p>In-Depth Breakdown: Call by Value vs. Call by Reference</p>
+    </header>
+
+    <!-- SECTION 1 -->
+    <section class="feed-card">
+        <h2>📌 1. Introduction to Function Calling</h2>
+        <p>Before diving into memory logic, let's recap the basics of function calling in C. To safely use a function, you must either <strong>define</strong> it before calling it, or <strong>declare</strong> it at the top of your program.</p>
+        
+        <h3>Ways to Pass Arguments</h3>
+        <p>You can pass arguments to a function in two ways:</p>
+        <ul>
+            <li><strong>Direct Values:</strong> <code>Sum(5, 7);</code></li>
+            <li><strong>Variables:</strong> <code>int x = 5, y = 7; Sum(x, y);</code></li>
+        </ul>
+        <p>When dealing with variables, we encounter two distinct methods of passing data: <strong>Call by Value</strong> and <strong>Call by Reference</strong>.</p>
+    </section>
+
+    <!-- SECTION 2 -->
+    <section class="feed-card">
+        <h2>📄 2. Deep Dive: Call by Value</h2>
+        <p>In this method, you pass the actual <em>values</em> (or a copy of the variables) to the function. Let's look at the code written on the whiteboard.</p>
+
+<pre><code><span class="type">void</span> <span class="keyword">fun</span>(<span class="type">int</span> x, <span class="type">int</span> y); <span class="comment">// Function Declaration</span>
+
+<span class="type">void</span> <span class="keyword">main</span>() {
+    <span class="type">int</span> x = 5, y = 7;
+    fun(x, y);          <span class="comment">// Function Call (Actual Parameters)</span>
+    printf(<span class="string">"x=%d, y=%d"</span>, x, y); 
+}
+
+<span class="type">void</span> <span class="keyword">fun</span>(<span class="type">int</span> x, <span class="type">int</span> y) { <span class="comment">// Function Definition (Formal Parameters)</span>
+    x = 7;
+    y = 5;
+    printf(<span class="string">"x=%d, y=%d\n"</span>, x, y);
+}</code></pre>
+
+        <h3>🧠 How Memory Works Here (RAM Visualization)</h3>
+        <p>When <code>main()</code> runs, it gets its own memory scope. When <code>fun()</code> is called, it gets a <strong>completely separate</strong> memory scope. The values from <code>main</code> are simply <em>copied</em> over.</p>
+
+        <!-- Visualization 1 -->
+        <div class="ram-diagram">
+            <!-- Main Scope -->
+            <div class="memory-scope">
+                <div class="scope-title">main() Memory Scope</div>
+                <div class="memory-row">
+                    <div class="var-container">
+                        <span class="var-name">x</span>
+                        <div class="var-box">5</div>
+                        <span class="var-address">Addr: 1000</span>
+                    </div>
+                    <div class="var-container">
+                        <span class="var-name">y</span>
+                        <div class="var-box">7</div>
+                        <span class="var-address">Addr: 1046</span>
+                    </div>
+                </div>
+                <p style="text-align: center; margin-top: 1rem; font-size: 0.85rem; color: #666;">*Original variables remain untouched.</p>
+            </div>
+
+            <!-- Fun Scope -->
+            <div class="memory-scope">
+                <div class="scope-title">fun() Memory Scope</div>
+                <div class="memory-row">
+                    <div class="var-container">
+                        <span class="var-name">x (copy)</span>
+                        <div class="var-box"><span class="var-box crossed">5</span>&nbsp;7</div>
+                        <span class="var-address">Addr: 2000</span>
+                    </div>
+                    <div class="var-container">
+                        <span class="var-name">y (copy)</span>
+                        <div class="var-box"><span class="var-box crossed">7</span>&nbsp;5</div>
+                        <span class="var-address">Addr: 2046</span>
+                    </div>
+                </div>
+                <p style="text-align: center; margin-top: 1rem; font-size: 0.85rem; color: #666;">*Changes happen only in this local scope.</p>
+            </div>
+        </div>
+
+        <h3>The Drawback</h3>
+        <p>Because <code>fun()</code> only alters the <em>copies</em> stored in its own local memory scope, the original variables in <code>main()</code> are never touched. Once <code>fun()</code> finishes executing, its memory vanishes. Therefore, the <code>printf</code> in <code>main()</code> will still output: <span class="highlight">x=5, y=7</span>.</p>
+    </section>
+
+    <!-- SECTION 3 -->
+    <section class="feed-card">
+        <h2>🔗 3. Deep Dive: Call by Reference</h2>
+        <p>To fix the drawback of Call by Value, we use Call by Reference. Instead of passing a copy of the value, we pass the <strong>address in memory</strong> where the original value lives using pointers (<code>*</code>) and the address-of operator (<code>&</code>).</p>
+
+<pre><code><span class="type">void</span> <span class="keyword">fun</span>(<span class="type">int</span> *x, <span class="type">int</span> *y); <span class="comment">// Declaration updated with pointers</span>
+
+<span class="type">void</span> <span class="keyword">main</span>() {
+    <span class="type">int</span> x = 5, y = 7;
+    fun(&x, &y);          <span class="comment">// Passing Addresses instead of values</span>
+    printf(<span class="string">"x=%d, y=%d"</span>, x, y); 
+}
+
+<span class="type">void</span> <span class="keyword">fun</span>(<span class="type">int</span> *x, <span class="type">int</span> *y) { <span class="comment">// Receives memory addresses</span>
+    *x = 7;               <span class="comment">// Modifies value at address directly</span>
+    *y = 5;
+    printf(<span class="string">"x=%d, y=%d\n"</span>, *x, *y);
+}</code></pre>
+
+        <h3>🧠 Pointer Memory Visualization</h3>
+        <p>This time, <code>fun()</code> creates Pointer Variables. The line <code>*x = 7;</code> literally translates to: <em>"Go to the memory address stored in x (1000) and change the value at that exact location to 7."</em></p>
+
+        <!-- Visualization 2 -->
+        <div class="ram-diagram">
+            <!-- Main Scope -->
+            <div class="memory-scope">
+                <div class="scope-title">main() Memory Scope</div>
+                <div class="memory-row">
+                    <div class="var-container">
+                        <span class="var-name">x</span>
+                        <div class="var-box" style="border-color: var(--accent);"><span class="var-box crossed">5</span>&nbsp;7</div>
+                        <span class="var-address">Addr: 1000</span>
+                    </div>
+                    <div class="var-container">
+                        <span class="var-name">y</span>
+                        <div class="var-box" style="border-color: var(--accent);"><span class="var-box crossed">7</span>&nbsp;5</div>
+                        <span class="var-address">Addr: 1046</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fun Scope -->
+            <div class="memory-scope">
+                <div class="scope-title">fun() Memory Scope (Pointers)</div>
+                <div class="memory-row">
+                    <div class="var-container">
+                        <span class="var-name">*x</span>
+                        <div class="var-box" style="font-size: 1rem;">1000</div>
+                        <span class="var-address">Addr: 2000</span>
+                        <div class="pointer-info">↳ Accesses main's 'x'</div>
+                    </div>
+                    <div class="var-container">
+                        <span class="var-name">*y</span>
+                        <div class="var-box" style="font-size: 1rem;">1046</div>
+                        <span class="var-address">Addr: 2046</span>
+                        <div class="pointer-info">↳ Accesses main's 'y'</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="callout">
+            <strong>⚠️ Common Student Mistake:</strong> 
+            If you change your function call to pass addresses (<code>&x</code>), you <strong>must</strong> also change the function declaration at the very top of your file to expect pointers (<code>int *</code>). If you leave it as <code>void fun(int, int)</code>, the compiler will throw an error!
+        </div>
+    </section>
+
+    <!-- SECTION 4 -->
+    <section class="feed-card">
+        <h2>💻 4. Practical Demonstration (VS Code)</h2>
+        <p>When the instructor runs this code live in Visual Studio Code, here is exactly what happens in the terminal.</p>
+        
+        <h3>Output: Call by Value</h3>
+        <div class="terminal">
+            > inside fun(called function) x=7, y=5<br>
+            > inside main(calling function) x=5, y=7
+        </div>
+        <p><em>Proof: The values in main did not change.</em></p>
+
+        <h3>Output: Forgetting the Declaration Update</h3>
+        <p>If you switch to <code>&x, &y</code> but forget to update the declaration at the top:</p>
+        <div class="terminal error">
+            error: conflicting types for 'fun'<br>
+            note: expected 'int' but argument is of type 'int *'
+        </div>
+
+        <h3>Output: Correct Call by Reference</h3>
+        <p>After fixing the declaration to <code>void fun(int *x, int *y)</code>:</p>
+        <div class="terminal">
+            > inside fun(called function) x=7, y=5<br>
+            > inside main(calling function) x=7, y=5
+        </div>
+        <p><em>Proof: The pointers successfully reached into main's memory and permanently altered the original variables globally!</em></p>
+    </section>
+
+    <!-- SECTION 5 -->
+    <section class="feed-card" style="border-top-color: var(--success);">
+        <h2>🎓 5. Key Takeaways Summary</h2>
+        <ul>
+            <li><strong>Call by Value:</strong> Passes a <em>copy</em> of the variable. Changes made inside the function are <strong>local</strong> and do not affect the original variables. Safe to use when you just need to calculate something without altering original data.</li>
+            <li><strong>Call by Reference:</strong> Passes the <em>memory address</em> of the variable using pointers (<code>*</code>) and address-of operators (<code>&</code>). Changes made inside the function alter the <strong>original</strong> variables in memory.</li>
+            <li><strong>Terminology:</strong> Variables passed in the function call are <em>Actual Parameters</em>. Variables received in the function definition are <em>Formal Parameters</em>.</li>
+        </ul>
+    </section>
+
+</main>
+
+</body>
+</html>

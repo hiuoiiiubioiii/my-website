@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dangling Pointers in C - Study Notes</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap');
+
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-red: #f43f5e;
+            --accent-green: #10b981;
+            --code-bg: #0b1120;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Header Sticky */
+        header {
+            position: sticky;
+            top: 0;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+            z-index: 100;
+        }
+
+        header h1 {
+            color: var(--accent-blue);
+            font-weight: 800;
+            font-size: 1.8rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        /* Feed Cards */
+        .feed-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #334155;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease forwards;
+        }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .feed-card:nth-child(2) { animation-delay: 0.1s; }
+        .feed-card:nth-child(3) { animation-delay: 0.2s; }
+        .feed-card:nth-child(4) { animation-delay: 0.3s; }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .tag.concept { background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); }
+        .tag.cause { background: rgba(244, 63, 94, 0.2); color: var(--accent-red); }
+        .tag.fix { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+
+        h2 {
+            font-size: 1.6rem;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        /* Code Blocks */
+        pre {
+            background: var(--code-bg);
+            padding: 20px;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            margin: 20px 0;
+            border: 1px solid #1e293b;
+        }
+
+        .keyword { color: #c678dd; }
+        .type { color: #e5c07b; }
+        .func { color: #61afef; }
+        .string { color: #98c379; }
+        .comment { color: #5c6370; font-style: italic; }
+
+        /* Memory Visualizations */
+        .visualization {
+            background: #151e2e;
+            padding: 30px 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            border: 1px dashed #334155;
+            position: relative;
+        }
+
+        .vis-label {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .mem-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .mem-box {
+            width: 100px;
+            height: 60px;
+            background: #28334a;
+            border: 2px solid var(--accent-blue);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Fira Code', monospace;
+            font-weight: bold;
+            font-size: 1.2rem;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .mem-address {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .mem-title {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .arrow {
+            color: var(--text-muted);
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Freed/Destroyed States */
+        .mem-box.freed {
+            border-color: var(--accent-red);
+            background: rgba(244, 63, 94, 0.1);
+        }
+
+        .mem-box.freed::after {
+            content: 'X';
+            position: absolute;
+            font-size: 4rem;
+            color: rgba(244, 63, 94, 0.6);
+            line-height: 0;
+        }
+
+        .scope-box {
+            border: 2px dashed #94a3b8;
+            padding: 20px;
+            border-radius: 12px;
+            position: relative;
+        }
+        
+        .scope-box.destroyed {
+            border-color: var(--accent-red);
+            opacity: 0.6;
+        }
+
+        .scope-label {
+            position: absolute;
+            top: -12px;
+            background: #151e2e;
+            padding: 0 10px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Analogy Box */
+        .analogy-box {
+            background: rgba(56, 189, 248, 0.1);
+            border-left: 4px solid var(--accent-blue);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        /* Terminal Mockup */
+        .terminal {
+            background: #000;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            color: #fff;
+            border-left: 4px solid #334155;
+        }
+
+        .terminal span.err { color: var(--accent-red); }
+        .terminal span.warn { color: #e5c07b; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Dangling Pointers in C</h1>
+        <p>Complete breakdown from Jenny's Lectures | Scroll to Study</p>
+    </header>
+
+    <div class="feed-container">
+
+        <!-- Feed Item 1: Core Concept -->
+        <div class="feed-card">
+            <span class="tag concept">Core Concept</span>
+            <h2>What is a Dangling Pointer?</h2>
+            <p>A dangling pointer is a pointer that points to a memory location that has been <strong>freed, deleted, or is no longer valid.</strong></p>
+            <p>It is "hanging" or "dangling" because it holds an address that no longer belongs to the program. Dereferencing (using) it leads to <strong>undefined behavior</strong>, garbage values, or program crashes.</p>
+            
+            <div class="analogy-box">
+                <strong>Jenny's Phone Analogy:</strong><br>
+                Imagine you have your friend's phone number saved. Your friend changes their number. You still have the old number saved (the pointer), but if you call it, you will either get a disconnected line or a total stranger (garbage value).
+            </div>
+        </div>
+
+        <!-- Feed Item 2: Cause 1 -->
+        <div class="feed-card">
+            <span class="tag cause">Cause #1</span>
+            <h2>De-allocation of Dynamic Memory</h2>
+            <p>This is the most common cause. It happens when you allocate memory dynamically on the Heap using <code>malloc()</code>, point to it, and then <code>free()</code> that memory <strong>without updating the pointer.</strong></p>
+            
+            <pre><code><span class="type">int</span> *ptr = (<span class="type">int</span> *)<span class="func">malloc</span>(<span class="keyword">sizeof</span>(<span class="type">int</span>));
+*ptr = <span class="keyword">10</span>;
+
+<span class="comment">// Memory is deleted here!</span>
+<span class="func">free</span>(ptr);  
+
+<span class="comment">// ptr is now a DANGLING POINTER</span>
+<span class="func">printf</span>(<span class="string">"%d"</span>, *ptr); <span class="comment">// Undefined behavior!</span></code></pre>
+
+            <!-- Visualization 1 -->
+            <div class="visualization">
+                <div class="vis-label">Whiteboard Visual: After free()</div>
+                <div class="mem-node">
+                    <span class="mem-title">Stack (ptr)</span>
+                    <div class="mem-box">100</div>
+                    <span class="mem-address">Address: 50</span>
+                </div>
+                <div class="arrow">⟶</div>
+                <div class="mem-node">
+                    <span class="mem-title">Heap Memory</span>
+                    <div class="mem-box freed">10</div>
+                    <span class="mem-address">Address: 100 (Freed)</span>
+                </div>
+            </div>
+            <p><em>As Jenny explains:</em> The memory block goes back to the free pool. But <code>ptr</code> still holds the address <code>100</code>. It hasn't been erased.</p>
+
+            <span class="tag fix" style="margin-top: 15px;">The Fix</span>
+            <p>Immediately after freeing a pointer, set it to <code>NULL</code>.</p>
+            <pre><code><span class="func">free</span>(ptr);
+ptr = <span class="keyword">NULL</span>; <span class="comment">// It is no longer dangling; it is a Null Pointer.</span></code></pre>
+        </div>
+
+        <!-- Feed Item 3: Cause 2 -->
+        <div class="feed-card">
+            <span class="tag cause">Cause #2</span>
+            <h2>Variable Going Out of Scope</h2>
+            <p>Variables declared inside curly braces <code>{ }</code> have "local scope." They are destroyed from the Stack as soon as the program exits those braces.</p>
+
+            <pre><code><span class="type">int</span> main() {
+    <span class="type">int</span> *ptr; 
+    
+    { <span class="comment">// Inner Block starts</span>
+        <span class="type">int</span> a = <span class="keyword">9</span>;
+        ptr = &a; 
+    } <span class="comment">// Block ends. 'a' is destroyed!</span>
+    
+    <span class="comment">// ptr is now a DANGLING POINTER</span>
+    <span class="func">printf</span>(<span class="string">"%d"</span>, *ptr); 
+}</code></pre>
+
+            <!-- Visualization 2 -->
+            <div class="visualization">
+                <div class="vis-label">Whiteboard Visual: Scope Exit</div>
+                <div class="mem-node">
+                    <span class="mem-title">Global to main</span>
+                    <div class="mem-box">200</div>
+                    <span class="mem-address">ptr</span>
+                </div>
+                <div class="arrow">⟶</div>
+                
+                <div class="scope-box destroyed">
+                    <div class="scope-label">Inner { Scope }</div>
+                    <div class="mem-node">
+                        <span class="mem-title">Local Variable</span>
+                        <div class="mem-box freed">9</div>
+                        <span class="mem-address">a (Addr: 200)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="analogy-box">
+                <strong>Practical Demo Note:</strong><br>
+                When Jenny ran this in VS Code, it actually still printed <code>9</code>. Why? Because the OS hasn't overwritten that specific spot in memory yet. However, this is fundamentally unsafe and is technically a bug.
+            </div>
+        </div>
+
+        <!-- Feed Item 4: Cause 3 -->
+        <div class="feed-card">
+            <span class="tag cause">Cause #3</span>
+            <h2>Returning Local Variables from Functions</h2>
+            <p>This happens when a function returns the memory address of a variable created locally inside that function.</p>
+
+            <pre><code><span class="type">int</span>* <span class="func">f</span>() {
+    <span class="type">int</span> a = <span class="keyword">10</span>;
+    <span class="keyword">return</span> &a; <span class="comment">// Returning address of local var!</span>
+}
+
+<span class="type">int</span> main() {
+    <span class="type">int</span> *ptr = <span class="func">f</span>(); 
+    <span class="comment">// ptr is now a DANGLING POINTER</span>
+}</code></pre>
+
+            <div class="terminal">
+                <span class="warn">warning:</span> function returns address of local variable [-Wreturn-local-addr]
+            </div>
+
+            <p style="margin-top: 15px;">When <code>f()</code> finishes executing, its entire Stack frame is destroyed. <code>ptr</code> in main is now pointing to a destroyed memory location.</p>
+
+            <span class="tag fix" style="margin-top: 15px;">The Fix</span>
+            <p>If you must return a local variable's address, declare the variable as <code>static</code>. Static variables have a global lifespan and survive until the program completely finishes.</p>
+            <pre><code><span class="type">int</span>* <span class="func">f</span>() {
+    <span class="keyword">static int</span> a = <span class="keyword">10</span>; <span class="comment">// Survives function exit!</span>
+    <span class="keyword">return</span> &a; 
+}</code></pre>
+        </div>
+
+        <!-- Feed Item 5: Summary -->
+        <div class="feed-card" style="border-color: var(--accent-blue);">
+            <span class="tag concept">Summary</span>
+            <h2>Key Takeaways</h2>
+            <ul>
+                <li style="margin-bottom: 10px;"><strong>Definition:</strong> Pointers pointing to freed or out-of-scope memory.</li>
+                <li style="margin-bottom: 10px;"><strong>Risk:</strong> Causes undefined behavior, garbage values (e.g., <code>20448080</code>), or crashes.</li>
+                <li style="margin-bottom: 10px;"><strong>Prevention:</strong> 
+                    <ul>
+                        <li>Set pointers to <code>NULL</code> immediately after using <code>free()</code>.</li>
+                        <li>Understand variable scope (lifespan of <code>{ }</code>).</li>
+                        <li>Use <code>static</code> variables if returning local addresses from functions.</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    <script>
+        // Simple JS to handle subtle scroll animations if needed, 
+        // though CSS keyframes handle initial load nicely.
+        // Adding an IntersectionObserver to fade cards in as you scroll down.
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.feed-card').forEach((card) => {
+            // Reset for scroll animation
+            card.style.opacity = 0; 
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'all 0.6s ease';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

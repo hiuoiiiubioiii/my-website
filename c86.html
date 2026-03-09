@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: Functions Definition & Call</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --accent-blue: #2563eb;
+            --accent-green: #059669;
+            --accent-red: #dc2626;
+            --accent-yellow: #d97706;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --border-color: #e5e7eb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 0 20px;
+        }
+
+        /* Vertical Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        /* Top Header */
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Card Styles */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .card-header .icon {
+            font-size: 1.8rem;
+        }
+
+        .card-header h2 {
+            font-size: 1.8rem;
+            color: var(--text-main);
+        }
+
+        /* Typography */
+        h3 {
+            font-size: 1.3rem;
+            margin: 20px 0 10px;
+            color: var(--accent-blue);
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        strong {
+            color: var(--text-main);
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            margin: 20px 0;
+            line-height: 1.5;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background-color: #e5e7eb;
+            color: #b91c1c;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        .code-comment { color: #6a9955; }
+        .code-keyword { color: #569cd6; }
+        .code-func { color: #dcdcaa; }
+        .code-string { color: #ce9178; }
+
+        /* Flow Diagram Visualization */
+        .flow-diagram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #f8fafc;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+            border: 1px dashed #cbd5e1;
+        }
+
+        .flow-box {
+            background: var(--card-bg);
+            border: 2px solid var(--accent-blue);
+            color: var(--text-main);
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+            width: 80%;
+            max-width: 400px;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.1);
+            position: relative;
+        }
+
+        .flow-box.definition {
+            border-color: var(--accent-green);
+            background: #ecfdf5;
+        }
+
+        .flow-arrow {
+            height: 40px;
+            width: 2px;
+            background-color: var(--accent-blue);
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .flow-arrow::after {
+            content: '▼';
+            position: absolute;
+            bottom: -10px;
+            left: -5px;
+            color: var(--accent-blue);
+            font-size: 12px;
+        }
+
+        .flow-arrow-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-left: 20px;
+            font-style: italic;
+        }
+
+        /* Syntax Visualization Box */
+        .syntax-box {
+            background-color: #eff6ff;
+            border-left: 4px solid var(--accent-blue);
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+
+        .syntax-pill {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            margin: 4px;
+            font-weight: 600;
+        }
+        .pill-blue { background: #dbeafe; color: #1e3a8a; }
+        .pill-green { background: #d1fae5; color: #064e3b; }
+        .pill-purple { background: #f3e8ff; color: #581c87; }
+
+        /* Comparison Grid */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .comp-card {
+            background: #f9fafb;
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .comp-card.decl { border-top: 4px solid var(--accent-yellow); }
+        .comp-card.call { border-top: 4px solid var(--accent-blue); }
+        .comp-card.defn { border-top: 4px solid var(--accent-green); }
+
+        .rule-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+
+        .rule-list li {
+            position: relative;
+            padding-left: 25px;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .rule-list li::before {
+            content: '👉';
+            position: absolute;
+            left: 0;
+            top: 2px;
+        }
+
+        /* Vocabulary Highlight */
+        .vocab-grid {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .vocab-box {
+            flex: 1;
+            padding: 20px;
+            border-radius: 8px;
+            background: var(--code-bg);
+            color: var(--code-text);
+        }
+
+        .highlight-param { color: #f472b6; font-weight: bold; border-bottom: 2px dashed #f472b6;}
+        .highlight-arg { color: #34d399; font-weight: bold; border-bottom: 2px dashed #34d399;}
+
+        /* Homework Section */
+        .hw-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .hw-item {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .hw-item pre {
+            margin: 0 0 15px 0;
+            padding: 10px;
+        }
+
+        .answer-reveal {
+            background: #e0f2fe;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #0ea5e9;
+            font-size: 0.95rem;
+        }
+
+        .status-error { color: var(--accent-red); font-weight: bold; }
+        .status-ok { color: var(--accent-green); font-weight: bold; }
+
+        @media (min-width: 768px) {
+            .comparison-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <header>
+            <h1>Functions in C</h1>
+            <p>Complete Visual Study Guide: Definition, Call, and Flow Control</p>
+        </header>
+
+        <!-- Section 1: Anatomy & Flow -->
+        <article class="card">
+            <div class="card-header">
+                <span class="icon">🗺️</span>
+                <h2>1. The Big Picture & Execution Flow</h2>
+            </div>
+            <p>When you write a C program, the compiler always looks for the <code>main()</code> function first. When a function asks another function to run, control <strong>jumps</strong> to that function, executes it, and then <strong>returns</strong>.</p>
+            
+            <pre>
+<span class="code-comment">// 1. Function Declaration (Prototype)</span>
+<span class="code-keyword">void</span> <span class="code-func">sum</span>();
+
+<span class="code-keyword">void</span> <span class="code-func">main</span>() {       
+    <span class="code-comment">// 2. Calling Function</span>
+    <span class="code-func">sum</span>();          <span class="code-comment">// 3. Function Call</span>
+}
+
+<span class="code-comment">// 4. Function Definition</span>
+<span class="code-keyword">void</span> <span class="code-func">sum</span>() {        
+    <span class="code-keyword">int</span> a, b, total = <span class="code-string">0</span>;
+    <span class="code-func">printf</span>(<span class="code-string">"Enter a & b:"</span>);
+    <span class="code-func">scanf</span>(<span class="code-string">"%d %d"</span>, &a, &b);
+    total = a + b;
+    <span class="code-func">printf</span>(<span class="code-string">"Sum = %d"</span>, total);
+}
+            </pre>
+
+            <h3>Visualizing Program Control</h3>
+            <p>Here is exactly how the compiler reads your code step-by-step:</p>
+
+            <div class="flow-diagram">
+                <div class="flow-box">Step 1: main() begins execution</div>
+                <div class="flow-arrow"><span class="flow-arrow-label">Hits sum() call</span></div>
+                <div class="flow-box">Step 2: sum() is called</div>
+                <div class="flow-arrow"><span class="flow-arrow-label">Compiler jumps to Definition</span></div>
+                <div class="flow-box definition">Step 3: void sum() { ... } executes<br><span style="font-weight: normal; font-size: 0.9em; color: #4b5563;">Asks for input, calculates, prints</span></div>
+                <div class="flow-arrow"><span class="flow-arrow-label">Hits closing '}' and returns</span></div>
+                <div class="flow-box">Step 4: main() resumes and ends</div>
+            </div>
+        </article>
+
+        <!-- Section 2: General Syntax -->
+        <article class="card">
+            <div class="card-header">
+                <span class="icon">🏗️</span>
+                <h2>2. Anatomy of a Function Definition</h2>
+            </div>
+            <p>Every function definition is split into two mandatory parts: the <strong>Header</strong> and the <strong>Body</strong>.</p>
+            
+            <div class="syntax-box">
+                <div>
+                    <span class="syntax-pill pill-blue">return_type</span>
+                    <span class="syntax-pill pill-purple">function_name</span>
+                    <span class="syntax-pill pill-green">(arguments with data_type)</span>
+                </div>
+                <div style="font-family: 'Fira Code', monospace; margin-top: 10px; padding-left: 20px;">
+                    {<br>
+                    &nbsp;&nbsp;<span style="color: #6a9955;">// Local variables (optional)</span><br>
+                    &nbsp;&nbsp;<span style="color: #6a9955;">// Statements 1, 2, 3... (mandatory)</span><br>
+                    &nbsp;&nbsp;<span style="color: #6a9955;">// Return statement (optional if void)</span><br>
+                    }
+                </div>
+            </div>
+
+            <ul class="rule-list">
+                <li><strong>Return Type:</strong> What data comes out? (e.g., <code>int</code>, <code>float</code>, <code>void</code>). <em>Rule: If left blank, C assumes it returns an <code>int</code>.</em></li>
+                <li><strong>Arguments:</strong> What data goes in? You MUST write both the data types and the variable names in the definition header.</li>
+                <li><strong>Local Variables:</strong> Variables declared inside the <code>{}</code> only exist inside this function.</li>
+            </ul>
+        </article>
+
+        <!-- Section 3: The Big 3 Comparison -->
+        <article class="card">
+            <div class="card-header">
+                <span class="icon">⚖️</span>
+                <h2>3. Declaration vs Call vs Definition</h2>
+            </div>
+            <p>The most common errors students make are mixing up semicolons, data types, and variable names across these three stages. Here are the golden rules:</p>
+
+            <div class="comparison-grid">
+                <!-- Declaration -->
+                <div class="comp-card decl">
+                    <h3 style="margin-top:0; color: var(--accent-yellow)">1. Declaration</h3>
+                    <p style="font-size:0.9rem; color:var(--text-muted)">"Telling the compiler the function exists."</p>
+                    <code>void sum(int, int);</code>
+                    <ul class="rule-list">
+                        <li>Data types <strong>MUST</strong> be written.</li>
+                        <li>Variable names are <strong>OPTIONAL</strong>.</li>
+                        <li><strong>MUST</strong> end with a <code>;</code></li>
+                    </ul>
+                </div>
+
+                <!-- Call -->
+                <div class="comp-card call">
+                    <h3 style="margin-top:0; color: var(--accent-blue)">2. Call</h3>
+                    <p style="font-size:0.9rem; color:var(--text-muted)">"Executing the function in main()."</p>
+                    <code>sum(5, 7);</code><br>
+                    <code>sum(x, y);</code>
+                    <ul class="rule-list">
+                        <li>Pass actual values/variables.</li>
+                        <li><strong>NEVER</strong> write data types here.</li>
+                        <li><strong>MUST</strong> end with a <code>;</code></li>
+                    </ul>
+                </div>
+
+                <!-- Definition -->
+                <div class="comp-card defn">
+                    <h3 style="margin-top:0; color: var(--accent-green)">3. Definition</h3>
+                    <p style="font-size:0.9rem; color:var(--text-muted)">"Writing the actual logic."</p>
+                    <code>void sum(int a, int b) { ... }</code>
+                    <ul class="rule-list">
+                        <li><strong>MUST</strong> write Data types.</li>
+                        <li><strong>MUST</strong> write Variable names.</li>
+                        <li><strong>NO SEMICOLON</strong> after the header.</li>
+                    </ul>
+                </div>
+            </div>
+        </article>
+
+        <!-- Section 4: Terminology -->
+        <article class="card">
+            <div class="card-header">
+                <span class="icon">📖</span>
+                <h2>4. Vocabulary: Parameters vs Arguments</h2>
+            </div>
+            <p>These terms are often used interchangeably, but in technical interviews and exams, they have distinct meanings.</p>
+
+            <div class="vocab-grid" style="flex-direction: column;">
+                <div class="vocab-box">
+                    <div style="margin-bottom: 10px;"><strong>Actual Arguments:</strong> The actual data passed during the <em>Function Call</em>.</div>
+                    <code>sum(<span class="highlight-arg">5</span>, <span class="highlight-arg">7</span>);</code>
+                </div>
+                
+                <div class="vocab-box">
+                    <div style="margin-bottom: 10px;"><strong>Formal Parameters:</strong> The placeholders receiving the data in the <em>Declaration</em> and <em>Definition</em>.</div>
+                    <code>void sum(int <span class="highlight-param">a</span>, int <span class="highlight-param">b</span>) { ... }</code>
+                </div>
+            </div>
+        </article>
+
+        <!-- Section 5: Homework -->
+        <article class="card">
+            <div class="card-header">
+                <span class="icon">📝</span>
+                <h2>5. Instructor Challenge / Homework</h2>
+            </div>
+            <p>Identify what each snippet is (Declaration, Call, or Definition) and spot any syntax errors based on the rules we just learned.</p>
+
+            <div class="hw-list">
+                
+                <div class="hw-item">
+                    <pre><code><span class="code-keyword">int</span> <span class="code-func">fact</span>(<span class="code-keyword">int</span> a);</code></pre>
+                    <div class="answer-reveal">
+                        <span class="status-ok">Valid: Function Declaration.</span> Ends with a semicolon. The variable name 'a' is optional but completely legal.
+                    </div>
+                </div>
+
+                <div class="hw-item">
+                    <pre><code><span class="code-keyword">void</span> <span class="code-func">multiply</span>(<span class="code-keyword">int</span>, <span class="code-keyword">int</span>);
+{
+    Statements block
+}</code></pre>
+                    <div class="answer-reveal">
+                        <span class="status-error">Error: Invalid Definition.</span> Two mistakes: 1) You cannot put a semicolon after a definition header. 2) Variable names are missing (you must provide names in a definition, e.g., <code>int a, int b</code>).
+                    </div>
+                </div>
+
+                <div class="hw-item">
+                    <pre><code><span class="code-func">Sum</span>(x, y);</code></pre>
+                    <div class="answer-reveal">
+                        <span class="status-ok">Valid: Function Call.</span> Passing actual arguments (variables). No data types are written, ends with a semicolon.
+                    </div>
+                </div>
+
+                <div class="hw-item">
+                    <pre><code><span class="code-func">divide</span>(m+<span class="code-string">5</span>, n+<span class="code-string">5</span>);</code></pre>
+                    <div class="answer-reveal">
+                        <span class="status-ok">Valid: Function Call.</span> You can pass expressions as actual arguments. The math will calculate first, then the result is passed.
+                    </div>
+                </div>
+
+                <div class="hw-item">
+                    <pre><code><span class="code-keyword">void</span> <span class="code-func">isPrime</span>(<span class="code-keyword">int</span>),</code></pre>
+                    <div class="answer-reveal">
+                        <span class="status-error">Error: Invalid Declaration.</span> It ends with a comma <code>,</code> instead of a semicolon <code>;</code>.
+                    </div>
+                </div>
+
+                <div class="hw-item">
+                    <pre><code><span class="code-keyword">void</span> <span class="code-func">sum</span>(<span class="code-keyword">int</span> a, <span class="code-keyword">float</span> b)
+{
+    <span class="code-func">printf</span>(<span class="code-string">"Sum = %f"</span>, a+b);
+    <span class="code-keyword">return</span>;
+}</code></pre>
+                    <div class="answer-reveal">
+                        <span class="status-ok">Valid: Function Definition.</span> No semicolon after the header, both data types and variable names are present. Using <code>return;</code> is optional but valid in a <code>void</code> function.
+                    </div>
+                </div>
+
+            </div>
+        </article>
+
+    </div>
+
+</body>
+</html>

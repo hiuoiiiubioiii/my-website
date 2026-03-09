@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes: Unformatted Output Functions in C</title>
+    <style>
+        /* CSS Variables for Theme */
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --primary: #3b82f6;
+            --primary-light: #eff6ff;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --terminal-bg: #0f172a;
+            --terminal-text: #4ade80;
+            --border-radius: 12px;
+        }
+
+        /* Reset & Base Styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px; /* Space between topics */
+        }
+
+        /* Header Styling */
+        .site-header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: white;
+            border-radius: var(--border-radius);
+            margin-bottom: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .site-header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .site-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Topic Card Styling */
+        .topic-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid var(--primary);
+        }
+
+        .topic-card h2 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 10px;
+        }
+
+        .topic-card h3 {
+            font-size: 1.3rem;
+            margin: 20px 0 10px 0;
+            color: #111827;
+        }
+
+        .topic-card p {
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+        }
+
+        .topic-card ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .topic-card li {
+            margin-bottom: 8px;
+        }
+
+        /* Tag Styling */
+        .tag {
+            background-color: var(--primary-light);
+            color: var(--primary);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* Code Block Styling */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+        }
+
+        .code-keyword { color: #569cd6; }
+        .code-string { color: #ce9178; }
+        .code-function { color: #dcdcaa; }
+        .code-comment { color: #6a9955; }
+
+        /* Visualization: Whiteboard / Output Screen */
+        .visual-container {
+            margin: 20px 0;
+            border: 2px dashed #cbd5e1;
+            border-radius: var(--border-radius);
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+
+        .visual-title {
+            font-weight: bold;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        .terminal {
+            background-color: var(--terminal-bg);
+            color: var(--terminal-text);
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            line-height: 1.5;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 15px;
+            background-color: var(--terminal-text);
+            animation: blink 1s step-end infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Highlight Boxes */
+        .alert-box {
+            background-color: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+
+        .alert-box strong {
+            color: #b45309;
+        }
+
+        /* Layout utilities */
+        .flex-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .flex-col {
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .flex-row {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header -->
+        <header class="site-header">
+            <h1>C Programming Study Notes</h1>
+            <p>Unformatted Output Functions: putchar(), putch(), and puts()</p>
+        </header>
+
+        <!-- Section 1: Introduction -->
+        <article class="topic-card">
+            <h2>1. Introduction & Context</h2>
+            <p>In the previous lesson, we learned about <strong>Unformatted Input Functions</strong> (<span class="tag">getch()</span>, <span class="tag">getche()</span>, <span class="tag">getchar()</span>, <span class="tag">gets()</span>). Now, we are looking at how to output that data.</p>
+            <p><strong>What does "Unformatted" mean?</strong><br>
+            Unlike <span class="tag">printf()</span>, where you can format text using format specifiers like <code>%d</code>, <code>%c</code>, or <code>%s</code>, unformatted functions <em>only</em> output the raw data. You cannot mix them with custom strings like <code>"The character is = "</code>.</p>
+            
+            <div class="visual-container">
+                <div class="visual-title">Whiteboard Overview (High-Level)</div>
+                <ul>
+                    <li><span class="tag">putchar()</span> &rarr; Prints a <strong>Single Character</strong></li>
+                    <li><span class="tag">putch()</span> &rarr; Prints a <strong>Single Character</strong></li>
+                    <li><span class="tag">puts()</span> &rarr; Prints a <strong>String</strong> (Complete lines)</li>
+                </ul>
+                <p><em>Note: <code>putc()</code> and <code>getc()</code> exist but are used for file/stream handling, which is a separate topic.</em></p>
+            </div>
+        </article>
+
+        <!-- Section 2: putchar() -->
+        <article class="topic-card">
+            <h2>2. Deep Dive: putchar()</h2>
+            <p>The <span class="tag">putchar()</span> function is used to print exactly one character to the screen. It is defined inside the <span class="tag">&lt;stdio.h&gt;</span> header file.</p>
+            
+            <h3>The Transition from printf()</h3>
+            <div class="flex-row">
+                <div class="flex-col">
+                    <p><strong>Using Formatted (printf):</strong></p>
+<pre><code><span class="code-keyword">char</span> ch = <span class="code-string">'J'</span>;
+<span class="code-function">printf</span>(<span class="code-string">"Character is = %c"</span>, ch);</code></pre>
+                </div>
+                <div class="flex-col">
+                    <p><strong>Using Unformatted (putchar):</strong></p>
+<pre><code><span class="code-keyword">char</span> ch = <span class="code-string">'J'</span>;
+<span class="code-function">putchar</span>(ch); <span class="code-comment">// No extra text allowed</span></code></pre>
+                </div>
+            </div>
+
+            <h3>Visualizing the Output</h3>
+            <p>If we run the unformatted program where the user types 'J', the screen looks like this:</p>
+            
+            <div class="visual-container">
+                <div class="visual-title">Output Screen Simulation</div>
+                <div class="terminal">
+                    Enter a character: J<br>
+                    J<span class="cursor"></span>
+                </div>
+            </div>
+
+            <div class="alert-box">
+                <strong>Instructor's Tricks:</strong><br>
+                You can print hardcoded characters without variables by using single quotes.<br>
+                &bull; <code>putchar('\n');</code> prints a new line.<br>
+                &bull; <code>putchar('K');</code> prints the letter K.
+            </div>
+        </article>
+
+        <!-- Section 3: putch() -->
+        <article class="topic-card">
+            <h2>3. Deep Dive: putch()</h2>
+            <p>The <span class="tag">putch()</span> function does the <strong>exact same job</strong> as <code>putchar()</code>. It outputs a single character to the screen.</p>
+            
+            <p><strong>So, what is the difference?</strong><br>
+            The difference is entirely in where the function comes from:</p>
+            <ul>
+                <li><code>putchar()</code> belongs to <span class="tag">&lt;stdio.h&gt;</span> (Standard Input/Output)</li>
+                <li><code>putch()</code> belongs to <span class="tag">&lt;conio.h&gt;</span> (Console Input/Output)</li>
+            </ul>
+
+            <p>Just like <code>putchar</code>, you can write <code>putch(ch);</code>, <code>putch('\n');</code>, or <code>putch('K');</code>, and the output screen will behave exactly the same way.</p>
+        </article>
+
+        <!-- Section 4: puts() -->
+        <article class="topic-card">
+            <h2>4. Deep Dive: puts()</h2>
+            <p>Because <code>putchar</code> and <code>putch</code> can only handle one character at a time (unless you manually put them inside a <code>for</code> loop), C provides <span class="tag">puts()</span> to handle whole strings (character arrays). It lives in <span class="tag">&lt;stdio.h&gt;</span>.</p>
+
+            <h3>Syntax & Usage</h3>
+            <p>First, we declare a character array and take unformatted input using <code>gets()</code>:</p>
+<pre><code><span class="code-keyword">char</span> ch[20];
+<span class="code-function">puts</span>(<span class="code-string">"Enter a string:"</span>); <span class="code-comment">// Hardcoding a string</span>
+<span class="code-function">gets</span>(ch);                <span class="code-comment">// Taking input</span>
+<span class="code-function">puts</span>(ch);                <span class="code-comment">// Printing the string variable</span></code></pre>
+
+            <div class="visual-container">
+                <div class="visual-title">Output Screen Simulation</div>
+                <div class="terminal">
+                    Enter a string:<br>
+                    Jenny's lectures<br>
+                    Jenny's lectures<br>
+                    <span class="cursor"></span>
+                </div>
+            </div>
+
+            <div class="alert-box">
+                <strong>⭐ The Most Important Feature of puts():</strong><br>
+                Did you notice the cursor on the screen above moved to a new line automatically? <strong>puts() has a built-in newline operator.</strong> When you use <code>puts(ch);</code>, it prints the string and automatically moves the cursor to the next line. You do NOT need to add <code>\n</code>.
+            </div>
+        </article>
+
+        <!-- Section 5: Homework & Trick Questions -->
+        <article class="topic-card">
+            <h2>5. Instructor Assignments & Trick Question</h2>
+            
+            <h3>Assignment 1 (Conceptual)</h3>
+            <p><em>"Let me know in the comments: What do you mean by formatted input/output vs unformatted input/output?"</em></p>
+            <p><strong>Study Guide Answer:</strong> Formatted functions (<code>printf</code>/<code>scanf</code>) allow developers to combine variables and text freely using format specifiers (<code>%d</code>, <code>%s</code>). Unformatted functions (<code>puts</code>, <code>putchar</code>, <code>gets</code>) only deal directly with raw memory arrays or characters, with no formatting allowed.</p>
+
+            <h3>Assignment 2 (The Trick Question)</h3>
+            <p>The instructor writes this code on the board and asks what the output will be:</p>
+<pre><code><span class="code-function">puts</span>(<span class="code-string">'A'</span>);</code></pre>
+            
+            <p><strong>Study Guide Breakdown:</strong><br>
+            Notice she used <strong>single quotes</strong> (<code>'A'</code>). Single quotes denote a <em>character</em>. However, <code>puts()</code> expects a <em>string pointer</em> (which uses double quotes <code>"A"</code>). <br><br>
+            If you run this in a real compiler, it will cause an error or crash! The program will try to read the integer ASCII value of 'A' (which is 65) as a memory address, leading to a segmentation fault. To fix it, you must write <code>puts("A");</code> or use <code>putchar('A');</code>.</p>
+        </article>
+
+        <div style="text-align: center; color: var(--text-muted); padding: 20px 0;">
+            <p>End of Notes. Scroll up to review.</p>
+        </div>
+
+    </div>
+
+</body>
+</html>

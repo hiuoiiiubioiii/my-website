@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Structure of a C Program | Study Feed</title>
+    <!-- Importing modern fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- GLOBAL STYLES & VERTICAL FEED LAYOUT --- */
+        :root {
+            --bg-color: #f0f2f5;
+            --text-color: #2d3748;
+            --card-bg: #ffffff;
+            --primary: #3182ce;
+            --secondary: #e2e8f0;
+            --accent: #ed8936;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+        }
+
+        /* The continuous scroll container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px; /* Space between each topic */
+        }
+
+        /* --- FEED CARDS --- */
+        .feed-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--primary);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.6s forwards ease-out;
+        }
+
+        /* Animation delays for the feed items */
+        .feed-card:nth-child(1) { animation-delay: 0.1s; }
+        .feed-card:nth-child(2) { animation-delay: 0.2s; }
+        .feed-card:nth-child(3) { animation-delay: 0.3s; }
+        .feed-card:nth-child(4) { animation-delay: 0.4s; }
+        .feed-card:nth-child(5) { animation-delay: 0.5s; }
+        .feed-card:nth-child(6) { animation-delay: 0.6s; }
+        .feed-card:nth-child(7) { animation-delay: 0.7s; }
+        .feed-card:nth-child(8) { animation-delay: 0.8s; }
+
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Typography */
+        h1 { font-size: 2.2rem; color: #1a202c; margin-bottom: 10px; }
+        h2 { font-size: 1.8rem; color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        h3 { font-size: 1.3rem; margin: 20px 0 10px; color: #4a5568; }
+        p { margin-bottom: 15px; font-size: 1.05rem; }
+        ul { margin-left: 20px; margin-bottom: 15px; font-size: 1.05rem; }
+        li { margin-bottom: 8px; }
+        
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        .tag-optional { background: #edf2f7; color: #4a5568; }
+        .tag-compulsory { background: #feb2b2; color: #c53030; }
+
+        /* --- VISUALIZATIONS (Whiteboard & Code) --- */
+        .whiteboard {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 25px;
+            border-radius: 12px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            overflow-x: auto;
+            margin: 20px 0;
+            border-left: 6px solid var(--accent);
+            position: relative;
+        }
+
+        .whiteboard::before {
+            content: "👩‍🏫 Instructor's Whiteboard";
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: var(--accent);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-bottom-left-radius: 8px;
+        }
+
+        /* Code Syntax Highlighting */
+        .c-keyword { color: #569cd6; font-weight: 600; } /* e.g., int, void */
+        .c-directive { color: #c586c0; } /* e.g., #include, #define */
+        .c-string { color: #ce9178; }
+        .c-comment { color: #6a9955; font-style: italic; }
+        .c-func { color: #dcdcaa; }
+
+        /* Instructor Callout Boxes */
+        .callout {
+            background-color: #ebf8ff;
+            border-left: 4px solid var(--primary);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+        .callout strong { color: #2b6cb0; }
+
+        /* Execution Flow Diagram */
+        .flow-step {
+            background: var(--secondary);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        .flow-step::after {
+            content: '⬇';
+            display: block;
+            text-align: center;
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-top: 10px;
+            margin-bottom: -5px;
+        }
+        .flow-step:last-child::after { content: none; }
+
+        /* Header Intro */
+        .intro-header { text-align: center; padding: 20px 0 0 0; }
+        .intro-header p { color: #718096; }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+
+        <!-- INTRO CARD -->
+        <div class="intro-header">
+            <h1>Structure of a C Program</h1>
+            <p>Instructor: Jayanti Khatri Lamba (Jenny's Lectures) • Deep Dive Study Feed</p>
+            <p style="font-size: 0.9rem; margin-top: 10px;"><em>Scroll down to read the continuous feed. No clicks required.</em></p>
+        </div>
+
+        <!-- 1. DOCUMENTATION SECTION -->
+        <section class="feed-card">
+            <h2>1. Documentation Section</h2>
+            <span class="tag tag-optional">Status: Optional</span>
+            
+            <p>This is the very first section, also known as the <strong>comment section</strong>. It is used to provide information about the program to anyone reading the code in the future.</p>
+
+            <div class="whiteboard">
+<span class="c-comment">// Author: Jayanti Khatri</span>
+<span class="c-comment">// Date: 18 Dec 2020</span>
+<span class="c-comment">// Program for addition of two numbers</span>
+
+<span class="c-comment">/* 
+   Program for addition of 
+   two numbers. 
+*/</span>
+            </div>
+
+            <div class="callout">
+                <strong>👩‍🏫 Instructor Explanation:</strong>
+                <p>The compiler completely <strong>ignores</strong> this section. It does not convert these lines into object code. It is strictly for human understanding.</p>
+                <ul>
+                    <li><code>//</code> is used for single-line comments.</li>
+                    <li><code>/* ... */</code> is used for multi-line comments.</li>
+                </ul>
+                <p>Even though it is optional, she highly recommends making it a habit so people (including your future self) understand what the code is for.</p>
+            </div>
+        </section>
+
+        <!-- 2. LINK SECTION -->
+        <section class="feed-card">
+            <h2>2. Link Section</h2>
+            <span class="tag tag-optional">Status: Optional (but usually required in practice)</span>
+            
+            <p>This section links your program to <strong>Header Files</strong> (libraries) that contain predefined functions.</p>
+
+            <div class="whiteboard">
+<span class="c-directive">#include</span> &lt;stdio.h&gt;
+<span class="c-directive">#include</span> &lt;conio.h&gt;
+<span class="c-directive">#include</span> &lt;math.h&gt;
+<span class="c-directive">#include</span> &lt;string.h&gt;
+            </div>
+
+            <div class="callout">
+                <strong>👩‍🏫 Instructor Explanation:</strong>
+                <p>The compiler doesn't have a "brain" of its own. If you type <code>printf</code> to output text, the compiler will say "What does this mean?".</p>
+                <ul>
+                    <li><strong>#</strong> is a Preprocessor Directive.</li>
+                    <li><strong>stdio.h</strong> (Standard Input Output): Contains the logic for <code>printf()</code> and <code>scanf()</code>.</li>
+                    <li><strong>conio.h</strong> (Console Input Output): Contains logic for functions like <code>getch()</code> (which holds the output screen).</li>
+                    <li><strong>math.h / string.h</strong>: Used if you need math formulas (like <code>sqrt</code>, <code>pow</code>) or string logic (like <code>strlen</code>).</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 3. DEFINITION SECTION -->
+        <section class="feed-card">
+            <h2>3. Definition Section</h2>
+            <span class="tag tag-optional">Status: Optional</span>
+            
+            <p>This section is used to define <strong>Symbolic Constants</strong> or Macros.</p>
+
+            <div class="whiteboard">
+<span class="c-directive">#define</span> PI 3.14159
+<span class="c-directive">#define</span> MAX 100
+            </div>
+
+            <div class="callout">
+                <strong>👩‍🏫 Instructor Explanation:</strong>
+                <p>Imagine you have a program with 1,000 lines of code, and you use the maximum student value of <code>100</code> in twenty different places. If the school expands to 200 students, finding and changing every '100' to '200' is a nightmare.</p>
+                <p>Instead, use <code>#define MAX 100</code>. When you compile, the compiler automatically replaces the word <code>MAX</code> with <code>100</code> everywhere. If you ever need to update it, you only change it <strong>once</strong> right here at the top.</p>
+            </div>
+        </section>
+
+        <!-- 4. GLOBAL DECLARATION SECTION -->
+        <section class="feed-card">
+            <h2>4. Global Declaration Section</h2>
+            <span class="tag tag-optional">Status: Optional</span>
+            
+            <p>If you need a variable or a custom function to be accessed by <strong>every</strong> part of your program, you declare it here.</p>
+
+            <div class="whiteboard">
+<span class="c-comment">// Global variable declaration</span>
+<span class="c-keyword">int</span> a = <span class="c-string">50</span>;
+
+<span class="c-comment">// User-defined function prototypes</span>
+<span class="c-keyword">void</span> <span class="c-func">display</span>();
+<span class="c-keyword">void</span> <span class="c-func">sum</span>();
+            </div>
+
+            <div class="callout">
+                <strong>👩‍🏫 Local vs. Global Variables:</strong>
+                <ul>
+                    <li><strong>Local:</strong> If you declare <code>int a;</code> <em>inside</em> <code>main()</code>, only <code>main()</code> can use it. Other functions can't see it.</li>
+                    <li><strong>Global:</strong> Declared here (outside of all functions). Now, <code>main()</code>, <code>display()</code>, and <code>sum()</code> can all share and modify <code>a</code>.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- 5. MAIN SECTION -->
+        <section class="feed-card">
+            <h2>5. Main Section</h2>
+            <span class="tag tag-compulsory">Status: Compulsory</span>
+            
+            <p>This is the heart of the C program. Every C program must have exactly <strong>one</strong> main function. This is where execution begins.</p>
+
+            <div class="whiteboard">
+<span class="c-keyword">void</span> <span class="c-func">main</span>() 
+{
+    <span class="c-comment">// 1. Declaration Part</span>
+    <span class="c-keyword">int</span> sum;
+
+    <span class="c-comment">// 2. Executable Part</span>
+    sum = 10 + 20;
+    <span class="c-func">printf</span>(<span class="c-string">"Sum is %d"</span>, sum);
+}
+            </div>
+
+            <div class="callout">
+                <strong>👩‍🏫 Instructor Explanation:</strong>
+                <p>When you hit "Run", the control goes directly to the very first opening brace <code>{</code> of the <code>main()</code> function.</p>
+                <p>It consists of two parts:</p>
+                <ol>
+                    <li><strong>Declaration Part:</strong> All variables you plan to use inside main must be declared first.</li>
+                    <li><strong>Executable Part:</strong> The actual logic (math, calling other functions, printing outputs). There must be at least one executable statement.</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- 6. SUBPROGRAM SECTION -->
+        <section class="feed-card">
+            <h2>6. Subprogram Section</h2>
+            <span class="tag tag-optional">Status: Optional</span>
+            
+            <p>This section contains the actual code (definitions) for the <strong>user-defined functions</strong> you named earlier.</p>
+
+            <div class="whiteboard">
+<span class="c-keyword">void</span> <span class="c-func">display</span>()
+{
+    <span class="c-func">printf</span>(<span class="c-string">"Jenny's Lectures"</span>);
+}
+            </div>
+
+            <div class="callout">
+                <strong>👩‍🏫 Instructor Explanation:</strong>
+                <p>These functions perform specific tasks. They don't run on their own; they only run when the <code>main()</code> function specifically "calls" their name.</p>
+            </div>
+        </section>
+
+        <!-- 7. THE COMPLETE PROGRAM & EXECUTION FLOW -->
+        <section class="feed-card">
+            <h2>7. Putting It All Together & Execution Flow</h2>
+            <p>Here is the final code the instructor writes on the board, demonstrating how all the sections stack together to create a working program.</p>
+
+            <div class="whiteboard">
+<span class="c-comment">// 1. Documentation</span>
+<span class="c-comment">// Author: Jayanti Khatri</span>
+
+<span class="c-comment">// 2. Link</span>
+<span class="c-directive">#include</span> &lt;stdio.h&gt;
+<span class="c-directive">#include</span> &lt;conio.h&gt;
+
+<span class="c-comment">// 3. Definition</span>
+<span class="c-directive">#define</span> MAX 100
+
+<span class="c-comment">// 4. Global Declaration</span>
+<span class="c-keyword">int</span> a = <span class="c-string">50</span>;
+<span class="c-keyword">void</span> <span class="c-func">display</span>(); 
+
+<span class="c-comment">// 5. Main</span>
+<span class="c-keyword">void</span> <span class="c-func">main</span>() 
+{
+    <span class="c-func">printf</span>(<span class="c-string">"Hello\n"</span>);
+    <span class="c-func">display</span>();         
+    <span class="c-func">getch</span>();           
+}
+
+<span class="c-comment">// 6. Subprogram</span>
+<span class="c-keyword">void</span> <span class="c-func">display</span>() 
+{
+    <span class="c-func">printf</span>(<span class="c-string">"Jenny's Lectures"</span>);
+}
+            </div>
+
+            <h3 style="margin-top: 30px;">How the Computer Reads This (Execution Flow)</h3>
+            <div class="flow-step">
+                <strong>1. Linking:</strong> Compiler loads <code>stdio.h</code> & <code>conio.h</code> so it understands the code. It replaces any <code>MAX</code> with 100.
+            </div>
+            <div class="flow-step">
+                <strong>2. Starts at Main:</strong> Execution jumps directly into <code>void main()</code>.
+            </div>
+            <div class="flow-step">
+                <strong>3. Print Hello:</strong> The computer executes <code>printf("Hello")</code>. "Hello" appears on the screen.
+            </div>
+            <div class="flow-step">
+                <strong>4. Function Call:</strong> The computer sees <code>display();</code>. It stops what it is doing in main, and jumps down to the subprogram section.
+            </div>
+            <div class="flow-step">
+                <strong>5. Executes Subprogram:</strong> Inside <code>display()</code>, it reads <code>printf("Jenny's Lectures")</code>. Prints it to screen.
+            </div>
+            <div class="flow-step">
+                <strong>6. Returns to Main:</strong> Subprogram is done. Control jumps back up to main to execute <code>getch();</code>, holding the screen so the user can see the final output.
+            </div>
+        </section>
+
+    </div>
+
+</body>
+</html>

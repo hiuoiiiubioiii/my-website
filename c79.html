@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pointers in C - Study Notes</title>
+    <style>
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --accent: #4f46e5;
+            --accent-light: #e0e7ff;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --viz-border: #cbd5e1;
+            --highlight: #fef08a;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Content Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent-light);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card h3 {
+            font-size: 1.2rem;
+            margin: 1.5rem 0 1rem 0;
+            color: #374151;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.2rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        code.inline {
+            background-color: #e5e7eb;
+            color: #b91c1c;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+        }
+
+        /* Callout Boxes */
+        .callout {
+            background-color: var(--accent-light);
+            border-left: 4px solid var(--accent);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .callout-danger {
+            background-color: var(--danger-light);
+            border-left: 4px solid var(--danger);
+        }
+
+        .callout strong {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        /* --- VISUALIZATIONS --- */
+        
+        /* Memory Diagram (Problem 1) */
+        .memory-diagram {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+            padding: 2rem;
+            background-color: #f8fafc;
+            border-radius: 8px;
+            border: 1px dashed var(--viz-border);
+        }
+
+        .mem-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .mem-label {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+        }
+
+        .mem-box {
+            width: 80px;
+            height: 80px;
+            border: 2px solid var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background-color: white;
+        }
+
+        .mem-address {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        .mem-arrow {
+            font-size: 2rem;
+            color: var(--accent);
+        }
+
+        /* Array/String Visualization (Problem 2) */
+        .array-viz-container {
+            margin: 2rem 0;
+            background-color: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px dashed var(--viz-border);
+            overflow-x: auto;
+        }
+
+        .array-row {
+            display: flex;
+            min-width: max-content;
+        }
+
+        .array-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: -1px; /* collapse borders */
+        }
+
+        .cell-value {
+            width: 45px;
+            height: 45px;
+            border: 1px solid var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            background-color: white;
+        }
+
+        .cell-address {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .ptr-indicator {
+            text-align: center;
+            color: var(--accent);
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+            height: 20px;
+        }
+
+        /* Step-by-Step Breakdown */
+        .step-block {
+            background: white;
+            border: 1px solid var(--viz-border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .step-code {
+            font-family: monospace;
+            background: var(--code-bg);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .step-detail {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-label {
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .output-highlight {
+            display: inline-block;
+            background: var(--highlight);
+            color: black;
+            padding: 0.2rem 0.8rem;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <main class="feed-container">
+        
+        <header>
+            <h1>Pointers in C</h1>
+            <p>Practice Problems, Arithmetic & Memory Visualizations</p>
+        </header>
+
+        <!-- SECTION 1 -->
+        <article class="card">
+            <h2>1. Constant Variables & Constant Pointers</h2>
+            <p>Let's look at how the <code>const</code> keyword interacts with variables and pointers. First, let's visualize a standard integer and pointer assignment.</p>
+            
+<pre><code>void main() {
+    int a = -11;
+    int *p = &a;
+    *p = 10;
+    printf("%d", a); // Prints 10
+}</code></pre>
+
+            <!-- Memory Visualization 1 -->
+            <div class="memory-diagram">
+                <div class="mem-block">
+                    <div class="mem-label">Pointer (p)</div>
+                    <div class="mem-box">1000</div>
+                    <div class="mem-address">addr: 100</div>
+                </div>
+                <div class="mem-arrow">&#10230;</div>
+                <div class="mem-block">
+                    <div class="mem-label">Variable (a)</div>
+                    <div class="mem-box">-11 <br><span style="font-size:0.8rem; color:red;">&#8594; 10</span></div>
+                    <div class="mem-address">addr: 1000</div>
+                </div>
+            </div>
+
+            <p>The indirection operator <code>*p</code> accesses the memory location <code>1000</code> and overwrites <code>-11</code> with <code>10</code>.</p>
+
+            <h3>Introducing the <code>const</code> Keyword</h3>
+            <p>Now, watch what happens when we modify the code to make <code>a</code> a constant variable.</p>
+
+<pre><code>void main() {
+    const int a = -11;
+    const int *p = &a; // Pointer must match data type
+    *p = 10; // ⚠️ Error occurs here
+    printf("%d", a);
+}</code></pre>
+
+            <div class="callout callout-danger">
+                <strong>Compilation Error: "assignment of read-only location"</strong>
+                Because <code>a</code> is declared with <code>const</code>, its memory location becomes strictly <b>read-only</b>. Attempting to modify that location using the pointer (<code>*p = 10;</code>) is illegal and will cause the program to crash upon compilation. You can only <i>read</i> the value, not change it.
+            </div>
+        </article>
+
+        <!-- SECTION 2 -->
+        <article class="card">
+            <h2>2. Pointer Arithmetic with Strings</h2>
+            <p>This problem tests how pointers navigate through a character array (string) using increment and decrement operators combined with ASCII math.</p>
+
+<pre><code>void main() {
+    char str[] = "Welcome to Jenny's lectures";
+    char *ptr = str;
+
+    printf("%c\n", *ptr);
+    printf("%c\n", *(ptr++ + 1));
+    printf("%c\n", *((ptr-- + 5) - 1) + 3);
+    printf("%c\n", *(++ptr + 10) - 32);
+    printf("%c %c %c\n", *ptr, *++ptr, *--ptr);
+}</code></pre>
+
+            <h3>Visualizing the String in Memory</h3>
+            <p>Because it's a <code>char</code> array, each element takes exactly <b>1 byte</b>. We will assume the base address (the address of the first character 'W') starts at <code>100</code>.</p>
+            <p><code>char *ptr = str;</code> assigns the base address (100) to <code>ptr</code>.</p>
+
+            <!-- Array Visualization -->
+            <div class="array-viz-container">
+                <div class="array-row" id="array-row-1">
+                    <!-- Javascript will populate this to keep HTML clean, see script at bottom -->
+                </div>
+            </div>
+
+            <h3>Step-by-Step Breakdown</h3>
+
+            <!-- Step 1 -->
+            <div class="step-block">
+                <div class="step-code">printf("%c\n", *ptr);</div>
+                <div class="step-detail">
+                    <span class="step-label">Action:</span> 
+                    <span>Dereference the current value of <code>ptr</code>.</span>
+                </div>
+                <div class="step-detail">
+                    <span class="step-label">Math:</span> 
+                    <span><code>*100</code> &rarr; The value at address 100.</span>
+                </div>
+                <div class="step-detail">
+                    <span class="step-label">State:</span> 
+                    <span><code>ptr</code> remains at 100.</span>
+                </div>
+                <div class="step-detail">
+                    <span class="step-label">Output:</span> 
+                    <span class="output-highlight">W</span>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="step-block">
+                <div class="step-code">printf("%c\n", *(ptr++ + 1));</div>
+                <div class="step-detail">
+                    <span class="step-label">Rule:</span> 
+                    <span>Parentheses evaluate first. Contains a <b>post-increment</b> (<code>ptr++</code>). Use the current value in the expression first, <i>then</i> increment the pointer.</span>
+                </div>
+                <div class="step-detail">
+                    <span class="step-label">Math:</span> 
+                    <span>1. Use current ptr (100): <code>*(100 + 1)</code> &rarr; <code>*101</code><br>
+                          2. Increment ptr: ptr becomes <code>101</code><br>
+                          3. Dereference: Value at 101 is 'e'.</span>
+                </div>
+                <div class="step-detail">
+                    <span class="step-label">State:</span> 
+                    <span><code>ptr</code> is now 101.</span>
+                </div>
+                <div class="step-detail">
+                    <span class="step-label">Output:</span> 
+                    <span class="output-highlight">e</span>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="step-block">
+                <div class="step-code">printf("%c\n", *((ptr-- + 5) - 1) + 3);</div>
+                <div class="step-detail">
+                    <span class="step-label">Rule:</span> 
+                    <span>Contains a <b>post-decrement</b> (<code>ptr--</code>). Use the current value first, then decrement. Afterwards, perform ASCII addition.</span>
+                </div>
+                <div class="step-detail">
+                    <span class="step-label">Math:</span> 
+                    <span>1. Use current ptr (101): <code>(101 + 5) - 1</code> &rarr; <code>106 - 1</code> &rarr; <code>105</code><br>
+                          2. Decrement ptr: ptr becomes <code>100</code><br>
+                          3. Dereference: <code>*105</code> is 'm'.<br>
+                          4. ASCII Addition: <code>'m' + 3</code>. Moving 3 letters forward in the alphabet ('m' &rarr; 'n' &rarr; 'o' &rarr; 'p').</span>
+                </div>
+                <div class="step-detail">
+                    <span class="step-label">State:</span> 
+                    <span><code>ptr</code> is back to 100.</span>
+                </div>
+                <div class="step-detail">
+                    <span class="step-label">Output:</span> 
+                    <span class="output-highlight">p</span>
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="step-block">
+                <div class="step-code">printf("%c\n", *(++ptr + 10) - 32);</div>
+                <div class="step-detail">
+                    <span class="step-label">Rule:</span> 
+                    <span>Contains a <b>pre-increment</b> (<code>++ptr</code>). Increment the pointer first, <i>then</i> use the new value in the expression.</span>
+                </div>
+                <div class="step-detail">
+                    <span class="step-label">Math:</span> 
+                    <span>1. Increment ptr: ptr goes from 100 to <code>101</code>.<br>
+                          2. Use new ptr (101): <code>(101 + 10)</code> &rarr; <code>111</code>.<br>
+                          3. Dereference: <code>*111</code> is 'j' (from "Jenny's").<br>
+                          4. ASCII Subtraction: <code>'j' - 32</code>. Subtracting 32 from a lowercase letter converts it to Uppercase.</span>
+                </div>
+                <div class="step-detail">
+                    <span class="step-label">State:</span> 
+                    <span><code>ptr</code> is now 101.</span>
+                </div>
+                <div class="step-detail">
+                    <span class="step-label">Output:</span> 
+                    <span class="output-highlight">J</span>
+                </div>
+            </div>
+
+            <!-- Step 5 -->
+            <div class="step-block">
+                <div class="step-code">printf("%c %c %c\n", *ptr, *++ptr, *--ptr);</div>
+                
+                <div class="callout">
+                    <strong>⚠️ Crucial Rule for Multiple Expressions</strong>
+                    When a single <code>printf</code> contains multiple expressions separated by commas, they are evaluated from <b>Right to Left</b>, but printed from <b>Left to Right</b>.
+                </div>
+
+                <div class="step-detail">
+                    <span class="step-label">Evaluation:</span> 
+                    <span>(From Right to Left)<br>
+                        1. <b>Rightmost (<code>*--ptr</code>):</b> Pre-decrement ptr (101 &rarr; 100). Dereference <code>*100</code> &rarr; Value is <b>'W'</b>.<br>
+                        2. <b>Middle (<code>*++ptr</code>):</b> Pre-increment ptr (100 &rarr; 101). Dereference <code>*101</code> &rarr; Value is <b>'e'</b>.<br>
+                        3. <b>Leftmost (<code>*ptr</code>):</b> Use current ptr (101). Dereference <code>*101</code> &rarr; Value is <b>'e'</b>.
+                    </span>
+                </div>
+                <div class="step-detail">
+                    <span class="step-label">Printing:</span> 
+                    <span>Print the evaluated values from Left to Right.</span>
+                </div>
+                <div class="step-detail">
+                    <span class="step-label">Output:</span> 
+                    <span class="output-highlight">e e W</span>
+                </div>
+            </div>
+
+        </article>
+
+        <!-- SECTION 3 -->
+        <article class="card">
+            <h2>3. Practical Demonstration (VS Code)</h2>
+            <p>At the end of the lecture, the instructor ran these codes in an IDE to prove the logic is mathematically sound. The output matched our manual calculations exactly:</p>
+            
+<pre><code>W
+e
+p
+J
+e e W</code></pre>
+            
+            <p><strong>Study Tip:</strong> Try modifying the code in your own IDE. Change <code>++ptr</code> to <code>ptr++</code>, or alter the ASCII addition/subtraction numbers, to verify you truly understand how the memory offsets are working!</p>
+        </article>
+
+    </main>
+
+    <!-- Script to render the array visualization dynamically -->
+    <script>
+        const stringVal = "Welcome to Jenny's";
+        const baseAddr = 100;
+        const arrayContainer = document.getElementById('array-row-1');
+
+        let html = '';
+        for(let i = 0; i < stringVal.length; i++) {
+            let char = stringVal[i];
+            if(char === ' ') char = '␣'; // visual representation of space
+            
+            // Add a pointer indicator for the first two blocks just to show where ptr starts/moves
+            let ptrIndicator = '';
+            if(i === 0) ptrIndicator = 'ptr &darr;';
+            else if (i === 1) ptrIndicator = '<span style="color:#9ca3af; font-size:0.75rem;">(moves here)</span>';
+
+            html += `
+                <div class="array-cell">
+                    <div class="ptr-indicator">${ptrIndicator}</div>
+                    <div class="cell-value">${char}</div>
+                    <div class="cell-address">${baseAddr + i}</div>
+                </div>
+            `;
+        }
+        
+        // Add trailing dots to show array continues
+        html += `
+            <div class="array-cell" style="margin-left: 10px; justify-content: flex-end;">
+                <div class="cell-value" style="border:none; font-size:1.5rem; background:transparent;">...</div>
+            </div>
+        `;
+
+        arrayContainer.innerHTML = html;
+    </script>
+</body>
+</html>

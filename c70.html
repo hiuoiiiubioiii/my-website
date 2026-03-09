@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes: Uppercase to Lowercase String Conversion</title>
+    <style>
+        /* Global Styles & Vertical Feed Layout */
+        :root {
+            --bg-color: #f4f7f9;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --accent-blue: #2a69ac;
+            --accent-light: #e9f2fa;
+            --warning-bg: #fff3f3;
+            --warning-border: #ffcdd2;
+            --warning-text: #d32f2f;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --terminal-bg: #0c0c0c;
+            --terminal-text: #4af626;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* The Feed Container */
+        .feed-container {
+            max-width: 800px;
+            width: 100%;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem; /* Creates the vertical scrolling feed effect */
+        }
+
+        /* Feed Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            padding: 2rem;
+            border-top: 5px solid var(--accent-blue);
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--accent-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid var(--accent-light);
+            padding-bottom: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        /* Visualizations */
+        .visual-box {
+            background-color: var(--accent-light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+
+        .transform-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+        }
+
+        .arrow {
+            color: var(--accent-blue);
+        }
+
+        /* Warning Box */
+        .warning-box {
+            background-color: var(--warning-bg);
+            border-left: 5px solid var(--warning-text);
+            padding: 1rem 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1.5rem 0;
+        }
+
+        .warning-box strong {
+            color: var(--warning-text);
+        }
+
+        /* ASCII Table Visualization */
+        .ascii-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .ascii-col {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .ascii-row {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed #eee;
+            padding: 0.5rem 0;
+            font-family: monospace;
+            font-size: 1.1rem;
+        }
+
+        .math-highlight {
+            background-color: #ffe082;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 1rem 0;
+        }
+
+        /* Memory Array Visualization */
+        .memory-array {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+            gap: 5px;
+        }
+
+        .memory-cell-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .memory-cell {
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--accent-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-family: monospace;
+            font-weight: bold;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+
+        .memory-cell.modified {
+            background-color: #dcedc8;
+            border-color: #8bc34a;
+            color: #33691e;
+        }
+
+        .memory-index {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 0.95rem;
+            margin: 1.5rem 0;
+        }
+
+        .code-keyword { color: #569cd6; }
+        .code-string { color: #ce9178; }
+        .code-comment { color: #6a9955; font-style: italic; }
+        .code-func { color: #dcdcaa; }
+
+        /* Terminal Window */
+        .terminal {
+            background-color: var(--terminal-bg);
+            color: var(--terminal-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            margin-top: 1.5rem;
+            border-top: 25px solid #333; /* Fake window bar */
+            position: relative;
+        }
+
+        .terminal::before {
+            content: "• • •";
+            position: absolute;
+            top: -22px;
+            left: 10px;
+            color: #ff5f56;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            line-height: 20px;
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--accent-blue);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header Section -->
+        <header style="text-align: center; margin-bottom: 1rem;">
+            <h1>String Conversion in C</h1>
+            <p style="color: var(--text-muted); font-size: 1.1rem;">In-depth breakdown: Converting Uppercase to Lowercase Letters</p>
+        </header>
+
+        <!-- Card 1: The Goal -->
+        <div class="card">
+            <span class="badge">Concept 1</span>
+            <h2>Visualizing the Problem</h2>
+            <p>Before writing code, we must define the rules. The objective is to convert <strong>only uppercase letters</strong> to lowercase. We must completely ignore lowercase letters, numbers, and special symbols.</p>
+            
+            <div class="visual-box">
+                <div class="transform-row">
+                    <span>JENNY</span> <span class="arrow">➔</span> <span>jenny</span>
+                </div>
+                <div class="transform-row">
+                    <span>JeNnY</span> <span class="arrow">➔</span> <span>jenny</span>
+                </div>
+                <div class="transform-row">
+                    <span>JeNnY 123</span> <span class="arrow">➔</span> <span>jenny 123</span>
+                </div>
+                <div class="transform-row">
+                    <span>#JeNnY +</span> <span class="arrow">➔</span> <span>#jenny +</span>
+                </div>
+            </div>
+            <p><strong>The Core Rule:</strong> We only modify a character if it falls exactly in the range of 'A' to 'Z'.</p>
+        </div>
+
+        <!-- Card 2: The Built-in Function -->
+        <div class="card">
+            <span class="badge">Concept 2</span>
+            <h2>The Built-In Approach: <code>strlwr()</code></h2>
+            <p>C has a built-in library function called <code>strlwr()</code> (String Lower) defined inside <code>&lt;string.h&gt;</code>. It takes a pointer to a string, modifies it in memory, and returns the modified string.</p>
+            
+<pre>
+<span class="code-comment">// Quick usage of predefined function</span>
+<span class="code-keyword">char</span> S1[30] = <span class="code-string">"JayanTi"</span>;
+<span class="code-func">strlwr</span>(S1);         
+<span class="code-func">printf</span>(<span class="code-string">"%s"</span>, S1); <span class="code-comment">// Output: jayanti</span>
+</pre>
+
+            <div class="warning-box">
+                <strong>🚨 Important Compiler Warning:</strong>
+                <p>Functions like <code>strlwr()</code>, <code>strupr()</code>, and <code>strrev()</code> are <strong>not standard C functions</strong>. They are legacy Microsoft C functions. If you compile this on a modern GCC compiler, you will likely get an <em>"undefined reference to strlwr"</em> error. Therefore, we must learn to write our own logic!</p>
+            </div>
+        </div>
+
+        <!-- Card 3: The Standard Approach & ASCII Math -->
+        <div class="card">
+            <span class="badge">Concept 3</span>
+            <h2>The Standard Approach: ASCII Math</h2>
+            <p>Since we can't rely on predefined functions, we have to look at how computers store characters. Every character is stored as an integer known as an <strong>ASCII value</strong>.</p>
+            
+            <div class="ascii-grid">
+                <div class="ascii-col">
+                    <h3 style="text-align: center; margin-bottom: 10px;">Uppercase</h3>
+                    <div class="ascii-row"><span>A</span> <span>65</span></div>
+                    <div class="ascii-row"><span>B</span> <span>66</span></div>
+                    <div class="ascii-row"><span>...</span> <span>...</span></div>
+                    <div class="ascii-row"><span>Z</span> <span>90</span></div>
+                </div>
+                <div class="ascii-col">
+                    <h3 style="text-align: center; margin-bottom: 10px;">Lowercase</h3>
+                    <div class="ascii-row"><span>a</span> <span>97</span></div>
+                    <div class="ascii-row"><span>b</span> <span>98</span></div>
+                    <div class="ascii-row"><span>...</span> <span>...</span></div>
+                    <div class="ascii-row"><span>z</span> <span>122</span></div>
+                </div>
+            </div>
+
+            <p>Look closely at the relationship between the tables. There is a mathematical secret here:</p>
+            <div style="text-align: center;">
+                <div class="math-highlight">97 (a) - 65 (A) = 32</div><br>
+                <div class="math-highlight">98 (b) - 66 (B) = 32</div>
+            </div>
+            <p><strong>The Logic:</strong> To convert an uppercase letter to a lowercase letter, you simply add <strong>32</strong> to its ASCII value.</p>
+        </div>
+
+        <!-- Card 4: Writing the Logic -->
+        <div class="card">
+            <span class="badge">Concept 4</span>
+            <h2>Building the Logic (Memory Traverse)</h2>
+            <p>To convert the string, we must traverse an array in memory character by character until we hit the null character <code>\0</code>.</p>
+
+            <div class="memory-array">
+                <div class="memory-cell-container"><div class="memory-cell">J</div><div class="memory-index">0</div></div>
+                <div class="memory-cell-container"><div class="memory-cell">a</div><div class="memory-index">1</div></div>
+                <div class="memory-cell-container"><div class="memory-cell">y</div><div class="memory-index">2</div></div>
+                <div class="memory-cell-container"><div class="memory-cell">a</div><div class="memory-index">3</div></div>
+                <div class="memory-cell-container"><div class="memory-cell">n</div><div class="memory-index">4</div></div>
+                <div class="memory-cell-container"><div class="memory-cell">T</div><div class="memory-index">5</div></div>
+                <div class="memory-cell-container"><div class="memory-cell">i</div><div class="memory-index">6</div></div>
+                <div class="memory-cell-container"><div class="memory-cell" style="color: #ccc;">\0</div><div class="memory-index">7</div></div>
+            </div>
+
+            <p>We cannot blindly add 32 to every cell. If we add 32 to 'a', it turns into a special symbol. We must use an <code>if</code> condition with a <strong>Logical AND (<code>&&</code>)</strong> to ensure the character is an uppercase letter.</p>
+
+<pre>
+<span class="code-keyword">for</span>(<span class="code-keyword">int</span> i = 0; S1[i] != <span class="code-string">'\0'</span>; i++) 
+{
+    <span class="code-comment">// Condition: Is it >= A AND <= Z ?</span>
+    <span class="code-keyword">if</span>(S1[i] >= <span class="code-string">'A'</span> && S1[i] <= <span class="code-string">'Z'</span>) 
+    {
+        S1[i] = S1[i] + 32; <span class="code-comment">// Convert to lowercase</span>
+    }
+}
+</pre>
+            <p><em>Instructor Note:</em> You can write <code>S1[i] >= 65 && S1[i] <= 90</code>, but using <code>'A'</code> and <code>'Z'</code> inside single quotes is easier because you don't have to memorize the ASCII numbers!</p>
+        </div>
+
+        <!-- Card 5: Dry Run -->
+        <div class="card">
+            <span class="badge">Concept 5</span>
+            <h2>Executing the Dry Run</h2>
+            <p>Let's manually trace the code against our memory array:</p>
+            
+            <ul style="list-style-position: inside; margin-bottom: 1.5rem; color: var(--text-muted);">
+                <li><strong>i = 0 ('J')</strong>: Between 'A' and 'Z'? Yes. Add 32. Becomes <strong>'j'</strong>.</li>
+                <li><strong>i = 1 ('a')</strong>: Between 'A' and 'Z'? No. Condition fails. Skips.</li>
+                <li><strong>i = 2, 3, 4 ('y','a','n')</strong>: Condition fails. Skips.</li>
+                <li><strong>i = 5 ('T')</strong>: Between 'A' and 'Z'? Yes. Add 32. Becomes <strong>'t'</strong>.</li>
+                <li><strong>i = 6 ('i')</strong>: Condition fails. Skips.</li>
+                <li><strong>i = 7 ('\0')</strong>: Loop condition <code>!= '\0'</code> becomes false. Loop terminates.</li>
+            </ul>
+
+            <h3 style="text-align: center; margin-bottom: 10px;">Final Memory State</h3>
+            <div class="memory-array">
+                <div class="memory-cell-container"><div class="memory-cell modified">j</div><div class="memory-index">0</div></div>
+                <div class="memory-cell-container"><div class="memory-cell">a</div><div class="memory-index">1</div></div>
+                <div class="memory-cell-container"><div class="memory-cell">y</div><div class="memory-index">2</div></div>
+                <div class="memory-cell-container"><div class="memory-cell">a</div><div class="memory-index">3</div></div>
+                <div class="memory-cell-container"><div class="memory-cell">n</div><div class="memory-index">4</div></div>
+                <div class="memory-cell-container"><div class="memory-cell modified">t</div><div class="memory-index">5</div></div>
+                <div class="memory-cell-container"><div class="memory-cell">i</div><div class="memory-index">6</div></div>
+                <div class="memory-cell-container"><div class="memory-cell" style="color: #ccc;">\0</div><div class="memory-index">7</div></div>
+            </div>
+        </div>
+
+        <!-- Card 6: Final Code & Terminal -->
+        <div class="card">
+            <span class="badge">Concept 6</span>
+            <h2>Final Code & Live Execution</h2>
+            <p>Here is the complete, standard C program as written in the live IDE demonstration.</p>
+            <p><em>Note: The instructor used <code>gets()</code> to read strings with spaces. While effective for the demo, remember that <code>gets()</code> is unsafe in production code; <code>fgets()</code> is the modern alternative.</em></p>
+
+<pre>
+<span class="code-keyword">#include</span> &lt;stdio.h&gt;
+<span class="code-keyword">#include</span> &lt;string.h&gt;
+
+<span class="code-keyword">void</span> <span class="code-func">main</span>() {
+    <span class="code-keyword">char</span> S1[30];
+    <span class="code-keyword">int</span> i; <span class="code-comment">// Loop variable</span>
+
+    <span class="code-func">printf</span>(<span class="code-string">"Enter string: "</span>);
+    <span class="code-func">gets</span>(S1); 
+
+    <span class="code-comment">// Traverse string until null character</span>
+    <span class="code-keyword">for</span>(i = 0; S1[i] != <span class="code-string">'\0'</span>; i++) 
+    {
+        <span class="code-comment">// If character is an uppercase letter</span>
+        <span class="code-keyword">if</span>(S1[i] >= <span class="code-string">'A'</span> && S1[i] <= <span class="code-string">'Z'</span>) 
+        {
+            S1[i] = S1[i] + 32; <span class="code-comment">// Convert to lowercase</span>
+        }
+    }
+
+    <span class="code-func">printf</span>(<span class="code-string">"String is: %s"</span>, S1);
+}
+</pre>
+
+            <h3>Live Terminal Output</h3>
+            <div class="terminal">
+                PS C:\Users\Programs&gt; .\stringlower<br>
+                Enter string: 12JeNnY # kHaTrI<br>
+                String is: 12jenny # khatri<br>
+                PS C:\Users\Programs&gt; _
+            </div>
+            <p style="margin-top: 1rem; color: var(--text-muted); font-size: 0.9rem;">Notice how the logic flawlessly ignores the numbers, spaces, and the hash symbol, isolating and converting only the uppercase letters!</p>
+        </div>
+
+    </div>
+
+</body>
+</html>

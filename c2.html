@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Low-Level vs High-Level Languages | Study Feed</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;600&display=swap');
+
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #2d3436;
+            --text-muted: #636e72;
+            --accent: #6c5ce7;
+            --accent-light: #a29bfe;
+            --code-bg: #2d3436;
+            --code-text: #00b894;
+            --border: #dfe6e9;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Feed Container */
+        .feed-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            padding-bottom: 100px;
+        }
+
+        /* Typography */
+        h1 { font-size: 2.5rem; font-weight: 800; color: var(--accent); line-height: 1.2;}
+        h2 { font-size: 1.8rem; font-weight: 600; margin-bottom: 15px; position: sticky; top: 10px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 8px; z-index: 10; backdrop-filter: blur(5px); border-left: 5px solid var(--accent);}
+        h3 { font-size: 1.3rem; font-weight: 600; margin-top: 20px; margin-bottom: 10px; color: var(--accent);}
+        p { margin-bottom: 15px; font-size: 1.1rem; }
+        ul { margin-left: 20px; margin-bottom: 15px; font-size: 1.1rem;}
+        li { margin-bottom: 8px; }
+
+        /* Feed Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Highlight box */
+        .highlight-box {
+            background-color: rgba(108, 92, 231, 0.1);
+            padding: 15px;
+            border-left: 4px solid var(--accent);
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+            font-style: italic;
+        }
+
+        /* Visualizations */
+        .visual-container {
+            background-color: var(--bg-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            border: 1px dashed var(--accent-light);
+        }
+
+        /* Language Tree Visual */
+        .tree-level { display: flex; gap: 40px; justify-content: center; width: 100%; text-align: center;}
+        .tree-node { background: var(--card-bg); padding: 15px 25px; border-radius: 8px; border: 2px solid var(--accent); font-weight: 600;}
+        .tree-arrow { width: 2px; height: 30px; background: var(--accent); margin: 0 auto;}
+
+        /* Memory & CPU Visual */
+        .hardware-grid { display: flex; gap: 30px; justify-content: center; flex-wrap: wrap; width: 100%;}
+        .memory-block { border: 2px solid var(--text-main); padding: 10px; border-radius: 8px; background: var(--code-bg); color: var(--code-text); font-family: 'Fira Code', monospace; display: flex; flex-direction: column; gap: 5px; text-align: center;}
+        .memory-block div { padding: 5px; border-bottom: 1px solid rgba(255,255,255,0.2);}
+        .cpu-block { border: 2px solid var(--accent); padding: 20px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; background: var(--accent-light); color: white;}
+        .arrow-flex { display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--accent);}
+
+        /* Bit Architecture Visual */
+        .arch-box { display: flex; border: 2px solid var(--text-muted); border-radius: 6px; overflow: hidden; font-family: 'Fira Code', monospace; margin-top: 10px;}
+        .arch-part { padding: 10px; text-align: center; border-right: 1px solid var(--text-muted); background: #eee;}
+        .arch-part.opcode { background: var(--accent-light); color: white; font-weight: bold;}
+        .arch-part:last-child { border-right: none;}
+
+        /* Flow Diagram Visual */
+        .flow-diagram { display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap; width: 100%;}
+        .flow-box { padding: 15px 20px; border-radius: 8px; font-weight: 600; text-align: center; border: 2px solid var(--text-main);}
+        .flow-translator { background: var(--accent); color: white; border-color: var(--accent);}
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background-color: var(--bg-color); color: var(--accent); font-weight: 600; }
+        
+        @media(max-width: 600px) {
+            h1 { font-size: 2rem; }
+            .hardware-grid, .flow-diagram { flex-direction: column; align-items: center; }
+            .arch-box { flex-direction: column; }
+            .arch-part { border-right: none; border-bottom: 1px solid var(--text-muted); }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="feed-container">
+        
+        <!-- HEADER -->
+        <header class="card visible">
+            <p style="color: var(--accent); font-weight: 600; text-transform: uppercase; font-size: 0.9rem;">Instructor: Jenny's Lectures</p>
+            <h1>Low-Level vs. High-Level Programming Languages</h1>
+            <p style="margin-top: 10px; color: var(--text-muted);">An in-depth breakdown of how humans communicate with hardware, visualised step-by-step.</p>
+        </header>
+
+        <!-- SEC 1: INTRO -->
+        <section class="card">
+            <h2>1. The Native Language of Computers</h2>
+            <p>Computers are general-purpose machines capable of performing any computational task, but they are "nothing without programs." To make a computer work, we must submit a set of instructions (a program).</p>
+            
+            <div class="highlight-box">
+                "The language of the computer is Binary Language. A computer can only understand 0s and 1s."
+            </div>
+
+            <p>No matter what language you write your program in (C, C++, Java), the CPU processor eventually needs to execute it in pure 0s and 1s. This reality splits programming languages into two main levels based on how close they are to the hardware.</p>
+
+            <div class="visual-container">
+                <div class="tree-node" style="border-color: var(--text-main);">Programming Languages</div>
+                <div class="tree-arrow"></div>
+                <div class="tree-level">
+                    <div class="tree-node">Low-Level Languages<br><small>(Close to Hardware)</small></div>
+                    <div class="tree-node">High-Level Languages<br><small>(Close to Humans)</small></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SEC 2: MACHINE LANGUAGE -->
+        <section class="card">
+            <h2>2. Low-Level: Machine Language</h2>
+            <p>Machine language (or Machine Code) is purely **Machine Oriented**. It operates directly with the hardware.</p>
+            <ul>
+                <li><strong>Format:</strong> Written completely in 0s and 1s.</li>
+                <li><strong>Difficulty:</strong> Requires extensive knowledge of the system configuration, memory management, and internal CPU architecture.</li>
+            </ul>
+
+            <h3>Visualising Execution</h3>
+            <p>The CPU fetches these binary instructions from memory, executes the task, and returns the output to memory.</p>
+            
+            <div class="visual-container">
+                <div class="hardware-grid">
+                    <div class="memory-block">
+                        <strong>Memory</strong>
+                        <div>01001010</div>
+                        <div>10001101</div>
+                        <div>01001111</div>
+                    </div>
+                    <div class="arrow-flex">⟷</div>
+                    <div class="cpu-block">CPU<br>(Processor)</div>
+                </div>
+            </div>
+
+            <h3>The Portability Problem (Hardware Dependency)</h3>
+            <p>Machine code is heavily dependent on the specific architecture of the CPU. The instructor uses the example of instruction formatting:</p>
+
+            <div class="visual-container">
+                <p><strong>CPU 1 (20-bit architecture for adding 1+2)</strong></p>
+                <div class="arch-box">
+                    <div class="arch-part opcode">Opcode (4-bit) <br>0001 (+)</div>
+                    <div class="arch-part">Operand 1 (8-bit) <br>00000001 (1)</div>
+                    <div class="arch-part">Operand 2 (8-bit) <br>00000010 (2)</div>
+                </div>
+
+                <p style="margin-top: 15px;"><strong>CPU 2 (32-bit architecture)</strong></p>
+                <div class="arch-box">
+                    <div class="arch-part opcode" style="background: var(--text-muted);">Opcode (6-bit)<br>000001</div>
+                    <div class="arch-part">Operand 1 (13-bit)</div>
+                    <div class="arch-part">Operand 2 (13-bit)</div>
+                </div>
+            </div>
+
+            <p>Because CPU 1 and CPU 2 expect bits in entirely different formats, a machine code program written for CPU 1 will crash on CPU 2. <strong>Machine language is NOT portable.</strong></p>
+            
+            <div class="highlight-box">
+                <strong>Advantage:</strong> Fastest execution. It's already in 0s and 1s, so the computer requires zero translation time.<br><br>
+                <strong>Disadvantage:</strong> Unreadable for humans. "Hello World" looks like a random block of <code>01001000 01100101...</code>
+            </div>
+        </section>
+
+        <!-- SEC 3: ASSEMBLY LANGUAGE -->
+        <section class="card">
+            <h2>3. Low-Level: Assembly Language</h2>
+            <p>To overcome the nightmare of writing in pure binary, Assembly Language was created. It uses English-like symbols and numbers called <strong>Mnemonics</strong>.</p>
+
+            <div class="visual-container">
+                <div style="display: flex; gap: 40px; font-family: 'Fira Code', monospace; font-size: 1.2rem;">
+                    <div>
+                        <strong style="color: var(--accent);">Mnemonics</strong><br>
+                        ADD (Addition)<br>
+                        SUB (Subtraction)<br>
+                        MOV (Move Data)
+                    </div>
+                    <div class="arrow-flex">⟶</div>
+                    <div>
+                        <strong>Machine Code</strong><br>
+                        0001<br>
+                        0010<br>
+                        0100
+                    </div>
+                </div>
+            </div>
+
+            <p>While humans can now read "ADD" instead of "0001", the computer cannot. Therefore, Assembly language introduces the need for a translator.</p>
+
+            <h3>The Assembler Flow</h3>
+            <div class="visual-container">
+                <div class="flow-diagram">
+                    <div class="flow-box">Assembly<br>Program<br><code>ADD 1, 2</code></div>
+                    <div class="arrow-flex">⟶</div>
+                    <div class="flow-box flow-translator">ASSEMBLER</div>
+                    <div class="arrow-flex">⟶</div>
+                    <div class="flow-box" style="font-family: 'Fira Code', monospace; background: #eee;">M/C Code<br>0100101</div>
+                </div>
+            </div>
+
+            <div class="highlight-box">
+                <strong>Important Note:</strong> Assembly is still considered "Low-Level". Why? Because there is a strict 1-to-1 correspondence with machine code. You still need to know how many bits your CPU uses and manage its registers manually. Therefore, it is still <strong>Machine Dependent</strong> and not portable.
+            </div>
+        </section>
+
+        <!-- SEC 4: HIGH-LEVEL LANGUAGE -->
+        <section class="card">
+            <h2>4. High-Level Languages</h2>
+            <p>Languages like <strong>C, C++, Java, Python, and PHP</strong> were designed with higher abstractions. They are completely separated from the hardware details.</p>
+
+            <ul>
+                <li><strong>Syntax:</strong> Uses mathematical notations (<code>+</code>, <code>-</code>), English words (<code>if</code>, <code>while</code>, <code>print</code>), variables, and loops.</li>
+                <li><strong>No Hardware Knowledge Required:</strong> You don't need to know if the CPU uses 20-bit or 32-bit architecture. You just write <code>c = a + b;</code></li>
+                <li><strong>Portability:</strong> A program written on a Windows machine can be run on a Mac or Linux machine without rewriting the logic.</li>
+            </ul>
+
+            <h3>Translation: Compilers & Interpreters</h3>
+            <p>Because High-Level languages are so far from binary, they require heavy translation back down to machine code.</p>
+
+            <div class="visual-container">
+                <div class="flow-diagram">
+                    <div class="flow-box">Source Code<br>(High-Level)</div>
+                    <div class="arrow-flex">⟶</div>
+                    <div class="flow-box flow-translator">COMPILER<br>or<br>INTERPRETER</div>
+                    <div class="arrow-flex">⟶</div>
+                    <div class="flow-box" style="font-family: 'Fira Code', monospace; background: #eee;">Object Code<br>(Binary)</div>
+                </div>
+            </div>
+
+            <ul>
+                <li><strong>Compiler:</strong> Takes the <em>entire source code</em>, translates it all at once into an object file (machine code), and then the CPU executes it.</li>
+                <li><strong>Interpreter:</strong> Translates and executes the program <em>line by line</em>. It does not generate a separate compiled object file.</li>
+            </ul>
+
+            <div class="highlight-box">
+                <strong>Advantage:</strong> Highly usable, readable, and portable.<br><br>
+                <strong>Disadvantage:</strong> Execution is slower than low-level languages because of the heavy translation process required before the CPU can understand it.
+            </div>
+        </section>
+
+        <!-- SEC 5: SUMMARY -->
+        <section class="card">
+            <h2>5. The Final Summary</h2>
+            <p>Here is a quick reference comparing everything discussed in the lecture:</p>
+            
+            <div style="overflow-x: auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Machine Language</th>
+                            <th>Assembly Language</th>
+                            <th>High-Level Language</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Closeness</strong></td>
+                            <td>Hardware</td>
+                            <td>Hardware</td>
+                            <td>Human Programmer</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Format</strong></td>
+                            <td>Binary (0s, 1s)</td>
+                            <td>Mnemonics (ADD)</td>
+                            <td>English/Math (if, +)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Translation Needed</strong></td>
+                            <td>None</td>
+                            <td>Assembler</td>
+                            <td>Compiler / Interpreter</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Portability</strong></td>
+                            <td>No (Machine Dependent)</td>
+                            <td>No (Machine Dependent)</td>
+                            <td>Yes (Machine Independent)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Execution Speed</strong></td>
+                            <td>Fastest</td>
+                            <td>Fast (Slower than M/C)</td>
+                            <td>Slowest (Heavy translation)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <p style="margin-top: 20px; font-style: italic; color: var(--text-muted); text-align: center;">Up next in the course: How to write and execute a program in C language.</p>
+        </section>
+
+    </main>
+
+    <!-- JavaScript for scroll animations -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const cards = document.querySelectorAll('.card');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.15 // Triggers when 15% of the card is visible
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target); // Only animate once
+                    }
+                });
+            }, observerOptions);
+
+            cards.forEach(card => {
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strings in C - Study Notes</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+        :root {
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --primary: #4e54c8;
+            --secondary: #8f94fb;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+            --code-bg: #1e1e1e;
+            --memory-border: #2c3e50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Feed Container */
+        .feed-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem; /* Creates the vertical feed gap */
+        }
+
+        /* Header Note */
+        .feed-header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .feed-header h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        .feed-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Note Cards */
+        .note-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--primary);
+        }
+
+        .note-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .note-card h3 {
+            font-size: 1.2rem;
+            margin: 1.5rem 0 0.5rem;
+            color: var(--primary);
+        }
+
+        .note-card p {
+            margin-bottom: 1rem;
+        }
+
+        .highlight {
+            background-color: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+            color: #856404;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            margin: 1rem 0;
+        }
+        .keyword { color: #569cd6; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; font-style: italic; }
+
+        /* Memory Visualizations */
+        .visualization-container {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .vis-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .memory-layout {
+            display: flex;
+            align-items: flex-end;
+            gap: 20px;
+            overflow-x: auto;
+            padding-bottom: 1rem;
+        }
+
+        /* Pointer Styles */
+        .pointer-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .pointer-label { font-weight: 600; color: var(--primary); }
+        .pointer-box {
+            border: 2px solid var(--primary);
+            padding: 10px;
+            background: #fff;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-weight: bold;
+        }
+        .pointer-arrow {
+            font-size: 1.5rem;
+            color: var(--primary);
+            transform: translateY(-5px);
+        }
+
+        /* Array Memory Blocks */
+        .memory-array {
+            display: flex;
+            gap: 2px;
+        }
+        .memory-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        .cell-index { font-size: 0.8rem; color: var(--text-muted); font-weight: bold; }
+        .cell-box {
+            width: 45px;
+            height: 45px;
+            border: 2px solid var(--memory-border);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            background-color: #fff;
+            font-family: 'Fira Code', monospace;
+        }
+        .cell-address { font-size: 0.75rem; color: var(--text-muted); font-family: 'Fira Code', monospace; }
+
+        .null-char { color: var(--danger); background-color: #ffeaea; }
+        .garbage { color: #bdc3c7; font-style: italic; font-weight: 300; }
+        
+        /* Error Box */
+        .error-box {
+            border-left-color: var(--danger);
+        }
+        .error-box h2 { color: var(--danger); }
+        .error-list { list-style: none; }
+        .error-list li { margin-bottom: 1.5rem; padding-left: 1rem; border-left: 3px solid #ffcccb;}
+
+        /* Assignment Box */
+        .hw-box {
+            border-left-color: var(--secondary);
+            background: linear-gradient(to right, #ffffff, #f9f9ff);
+        }
+        .hw-code {
+            background: #eef2f5;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <main class="feed-container">
+        
+        <header class="feed-header">
+            <h1>Strings in C</h1>
+            <p>Complete In-Depth Breakdown & Visualizations</p>
+        </header>
+
+        <!-- Topic 1 -->
+        <section class="note-card">
+            <h2>1. What is a String?</h2>
+            <p>In simple terms, C does not have a built-in data type for strings (like <code>int</code> or <code>float</code>). Instead, a string is a derived data type.</p>
+            <p>A string in C is simply an <strong>Array of Characters</strong>. Because of this, it can only store characters (A-Z, a-z, 0-9, spaces, and special symbols).</p>
+            <ul>
+                <li><strong>Data Type:</strong> Always <code>char</code>.</li>
+                <li><strong>Format Specifier:</strong> <code>%s</code> is used to print or read strings.</li>
+                <li><strong>Memory:</strong> Each character takes exactly <strong>1 byte</strong> of memory.</li>
+            </ul>
+        </section>
+
+        <!-- Topic 2 -->
+        <section class="note-card">
+            <h2>2. The Null Character (\0)</h2>
+            <p>This is the most crucial difference between a standard character array and a string. A string will <strong>always be terminated with a null character (<span class="highlight">\0</span>)</strong>.</p>
+            <p>The compiler uses this invisible character to know exactly where the string ends in memory. The ASCII value of the null character is <code>0</code>.</p>
+            
+            <div class="visualization-container">
+                <div class="vis-title">Memory Representation of: char name[10] = "Jenny";</div>
+                <div class="memory-layout">
+                    <!-- Internal Pointer -->
+                    <div class="pointer-wrapper">
+                        <span class="pointer-label">name</span>
+                        <div class="pointer-box">2000</div>
+                        <span class="pointer-arrow">→</span>
+                    </div>
+                    
+                    <!-- Memory Blocks -->
+                    <div class="memory-array">
+                        <div class="memory-cell">
+                            <span class="cell-index">0</span>
+                            <div class="cell-box">J</div>
+                            <span class="cell-address">2000</span>
+                        </div>
+                        <div class="memory-cell">
+                            <span class="cell-index">1</span>
+                            <div class="cell-box">e</div>
+                            <span class="cell-address">2001</span>
+                        </div>
+                        <div class="memory-cell">
+                            <span class="cell-index">2</span>
+                            <div class="cell-box">n</div>
+                            <span class="cell-address">2002</span>
+                        </div>
+                        <div class="memory-cell">
+                            <span class="cell-index">3</span>
+                            <div class="cell-box">n</div>
+                            <span class="cell-address">2003</span>
+                        </div>
+                        <div class="memory-cell">
+                            <span class="cell-index">4</span>
+                            <div class="cell-box">y</div>
+                            <span class="cell-address">2004</span>
+                        </div>
+                        <div class="memory-cell">
+                            <span class="cell-index">5</span>
+                            <div class="cell-box null-char">\0</div>
+                            <span class="cell-address">2005</span>
+                        </div>
+                        <div class="memory-cell">
+                            <span class="cell-index">6</span>
+                            <div class="cell-box garbage">?</div>
+                            <span class="cell-address">2006</span>
+                        </div>
+                        <div class="memory-cell">
+                            <span class="cell-index">7</span>
+                            <div class="cell-box garbage">?</div>
+                            <span class="cell-address">2007</span>
+                        </div>
+                        <div class="memory-cell">
+                            <span class="cell-index">8</span>
+                            <div class="cell-box garbage">?</div>
+                            <span class="cell-address">2008</span>
+                        </div>
+                        <div class="memory-cell">
+                            <span class="cell-index">9</span>
+                            <div class="cell-box garbage">?</div>
+                            <span class="cell-address">2009</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p><em><strong>Note:</strong> The variable <code>name</code> acts as an internal pointer holding the base address (2000). Because "Jenny" has 5 letters + 1 null character, it uses 6 bytes. The remaining 4 bytes contain garbage values.</em></p>
+        </section>
+
+        <!-- Topic 3 -->
+        <section class="note-card">
+            <h2>3. Valid Ways to Initialize Strings</h2>
+            <p>The instructor highlights several correct methods to initialize strings at compile time.</p>
+
+            <h3>Method A: String Literal (Implicit Null)</h3>
+<pre><code><span class="keyword">char</span> name[<span class="keyword">10</span>] = <span class="string">"Jenny"</span>;</code></pre>
+            <p>By using double quotes, the compiler <strong>automatically</strong> appends the <code>\0</code> at the end.</p>
+
+            <h3>Method B: Character Array List (Explicit Null)</h3>
+<pre><code><span class="keyword">char</span> name[<span class="keyword">10</span>] = {<span class="string">'J'</span>, <span class="string">'e'</span>, <span class="string">'n'</span>, <span class="string">'n'</span>, <span class="string">'y'</span>, <span class="string">'\0'</span>};</code></pre>
+            <p>When using curly braces and single quotes, the compiler does <strong>not</strong> add the null character. You must write it explicitly.</p>
+
+            <h3>Method C: Implicit Sizing</h3>
+<pre><code><span class="keyword">char</span> name[] = <span class="string">"Jenny"</span>;
+<span class="comment">// Size automatically becomes 6 (5 letters + 1 null)</span>
+
+<span class="keyword">char</span> name2[] = {<span class="string">'J'</span>, <span class="string">'e'</span>, <span class="string">'n'</span>, <span class="string">'n'</span>, <span class="string">'y'</span>, <span class="string">'\0'</span>};
+<span class="comment">// Size automatically becomes 6</span></code></pre>
+
+            <h3>Method D: Including Spaces and Numbers</h3>
+<pre><code><span class="keyword">char</span> info[] = <span class="string">"Jenny Khatri 123"</span>;</code></pre>
+            <p>Numbers and spaces inside double quotes are treated as standard characters and occupy 1 byte each.</p>
+        </section>
+
+        <!-- Topic 4 -->
+        <section class="note-card error-box">
+            <h2>4. INVALID Initialization (Common Errors) ❌</h2>
+            <p>Avoid these syntax errors that will cause compiler failures or memory bugs.</p>
+
+            <ul class="error-list">
+                <li>
+                    <strong>Empty brackets with no initialization:</strong>
+<pre><code><span class="keyword">char</span> name[]; <span class="comment">// ERROR</span></code></pre>
+                    <p>The compiler doesn't know how much memory to allocate. You must provide a size or initialize it immediately.</p>
+                </li>
+                <li>
+                    <strong>Array Out of Bounds:</strong>
+<pre><code><span class="keyword">char</span> name[<span class="keyword">5</span>] = <span class="string">"Jenny"</span>; <span class="comment">// ERROR / BUG</span></code></pre>
+                    <p>"Jenny" requires 6 bytes (5 for letters + 1 for <code>\0</code>). You only gave it 5 bytes, causing an overflow.</p>
+                </li>
+                <li>
+                    <strong>Assigning literal after declaration:</strong>
+<pre><code><span class="keyword">char</span> name[<span class="keyword">10</span>];
+name = <span class="string">"Jenny"</span>; <span class="comment">// ERROR</span></code></pre>
+                    <p>The array name is a constant pointer to the base address. You cannot assign a new string literal to it after declaration. (You must use <code>strcpy</code> instead).</p>
+                </li>
+                <li>
+                    <strong>Assigning array to array:</strong>
+<pre><code><span class="keyword">char</span> name[<span class="keyword">10</span>] = <span class="string">"Jenny"</span>;
+<span class="keyword">char</span> s1[<span class="keyword">10</span>];
+s1 = name; <span class="comment">// ERROR</span></code></pre>
+                    <p>You cannot copy an array by assigning the base address of one variable to another.</p>
+                </li>
+            </ul>
+        </section>
+
+        <!-- Topic 5 -->
+        <section class="note-card hw-box">
+            <h2>5. Homework / Assignment 📝</h2>
+            <p>The instructor left 5 scenarios on the whiteboard. Are they valid or invalid? If valid, what is the allocated size?</p>
+            
+            <span class="hw-code">1. char S1[50] = "H No-126, Gurgaon";</span>
+            <p>✅ <strong>Valid.</strong> Plenty of space (50 bytes) for the characters, symbols, spaces, and the null character.</p>
+
+            <span class="hw-code">2. char S2[] = "12345678910";</span>
+            <p>✅ <strong>Valid.</strong> Implicit sizing is used. Size will be <strong>12</strong> (11 numbers + 1 null character).</p>
+
+            <span class="hw-code">3. char S3[5] = "Hello";</span>
+            <p>❌ <strong>Invalid / Overflow.</strong> "Hello" has 5 characters, but it needs a 6th byte for the <code>\0</code>. The size provided is only 5.</p>
+
+            <span class="hw-code">4. char S4[] = {'H', 'e', 'l', 'l', 'o', '\0'};</span>
+            <p>✅ <strong>Valid.</strong> Implicit sizing with an explicit null character. Size will be <strong>6</strong>.</p>
+
+            <span class="hw-code">5. char S5[15] = "Jayanti Khatri";</span>
+            <p>✅ <strong>Valid.</strong> "Jayanti Khatri" is 14 characters (including the space). With the <code>\0</code>, it is exactly 15 bytes. Fits perfectly.</p>
+        </section>
+
+    </main>
+
+</body>
+</html>

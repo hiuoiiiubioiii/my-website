@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control Statements in C: If-Else | Study Notes</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700&display=swap');
+
+        :root {
+            --bg-color: #f4f7f8;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --primary: #4299e1;
+            --primary-dark: #2b6cb0;
+            --success: #48bb78;
+            --danger: #e53e3e;
+            --warning: #ed8936;
+            --card-bg: #ffffff;
+            --code-bg: #1a202c;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            width: 100%;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        /* Typography */
+        h1 { font-size: 2.5rem; color: var(--primary-dark); margin-bottom: 10px; line-height: 1.2; }
+        h2 { font-size: 1.75rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; }
+        h3 { font-size: 1.3rem; margin-top: 20px; margin-bottom: 10px; color: var(--primary-dark); }
+        p { margin-bottom: 15px; font-size: 1.05rem; }
+        strong { color: var(--primary-dark); }
+
+        /* Cards / Sections */
+        .section-card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.025);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .section-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Callouts */
+        .callout {
+            padding: 15px 20px;
+            border-radius: 8px;
+            border-left: 5px solid;
+            margin: 20px 0;
+            background-color: #f8fafc;
+        }
+        .callout.info { border-color: var(--primary); background-color: #ebf8ff; }
+        .callout.warning { border-color: var(--warning); background-color: #fffaf0; }
+        .callout.danger { border-color: var(--danger); background-color: #fff5f5; }
+        
+        .callout-title {
+            font-weight: 700;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
+        code .keyword { color: #f6ad55; }
+        code .string { color: #9ae6b4; }
+        code .comment { color: #a0aec0; font-style: italic; }
+        code .function { color: #63b3ed; }
+
+        /* Custom Flowchart Visualization */
+        .flowchart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 30px 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+        }
+        .fc-node {
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 2;
+        }
+        .fc-diamond {
+            background: var(--warning);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            padding: 30px 40px;
+            font-weight: bold;
+        }
+        .fc-arrow {
+            width: 2px;
+            height: 30px;
+            background-color: #cbd5e1;
+            position: relative;
+            z-index: 1;
+        }
+        .fc-arrow::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: -4px;
+            border-width: 6px 5px 0 5px;
+            border-style: solid;
+            border-color: #cbd5e1 transparent transparent transparent;
+        }
+        .fc-split {
+            display: flex;
+            justify-content: center;
+            width: 100%;
+            position: relative;
+        }
+        .fc-split-line {
+            position: absolute;
+            top: 0;
+            width: 200px;
+            height: 2px;
+            background-color: #cbd5e1;
+        }
+        .fc-branch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 200px;
+        }
+        .fc-label {
+            background: var(--card-bg);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            border: 1px solid #e2e8f0;
+            margin-top: -10px;
+            z-index: 3;
+            color: var(--text-muted);
+        }
+        .fc-true { color: var(--success); border-color: var(--success); }
+        .fc-false { color: var(--danger); border-color: var(--danger); }
+        .fc-merge-line {
+            width: 200px;
+            height: 30px;
+            border-bottom: 2px solid #cbd5e1;
+            border-left: 2px solid #cbd5e1;
+            border-right: 2px solid #cbd5e1;
+            border-radius: 0 0 8px 8px;
+            margin-top: -2px;
+        }
+
+        /* Execution Trace Grid */
+        .trace-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .trace-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .trace-header {
+            font-weight: bold;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 15px;
+        }
+        .trace-output {
+            background: #000;
+            color: #0f0;
+            font-family: 'Fira Code', monospace;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        /* Badge styling */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: #e2e8f0;
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .trace-grid { grid-template-columns: 1fr; }
+            .fc-split-line { width: 140px; }
+            .fc-branch { width: 140px; }
+            .fc-merge-line { width: 140px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+    
+    <!-- Title Section -->
+    <header style="text-align: center; margin-bottom: 20px;">
+        <span class="badge">C Programming Lectures</span>
+        <h1>Control Statements in C:<br>The If-Else Statement</h1>
+        <p style="color: var(--text-muted);">Instructor: Jenny's Lectures | Visualized Study Notes</p>
+    </header>
+
+    <!-- 1. Introduction -->
+    <section class="section-card">
+        <h2>1. Introduction to If-Else</h2>
+        <p>In the previous lecture, we covered the simple <code>if</code> statement. A simple <code>if</code> statement only executes a block of code if a condition is <strong>true</strong>. If false, it does nothing.</p>
+        <p>The <strong><code>if-else</code> statement</strong> is an extension of this. It provides <strong>two distinct blocks of code</strong>. The program will NEVER execute both blocks; it chooses one path based on the condition.</p>
+        
+        <div class="callout info">
+            <span class="callout-title">🛒 Real-Life Analogy: The Supermarket</span>
+            <strong>Task:</strong> You are sent to the supermarket to buy fruit.<br>
+            <strong>Logic:</strong> <strong>If</strong> oranges are available, buy oranges. <strong>Else</strong> (otherwise), buy mosambis (sweet limes). If neither are available, just come home.
+        </div>
+    </section>
+
+    <!-- 2. Syntax -->
+    <section class="section-card">
+        <h2>2. General Syntax</h2>
+        <p>Here is how you structure an <code>if-else</code> statement in C. Pay close attention to the curly braces <code>{ }</code>.</p>
+        
+        <pre><code><span class="keyword">if</span> (Condition)
+{
+    <span class="comment">// True-block statements</span>
+    <span class="comment">// Executes ONLY if condition is 1 (True)</span>
+}
+<span class="keyword">else</span>
+{
+    <span class="comment">// False-block statements</span>
+    <span class="comment">// Executes ONLY if condition is 0 (False)</span>
+}
+
+<span class="comment">// Statements here run after the if-else block finishes</span></code></pre>
+
+        <div class="callout warning">
+            <span class="callout-title">⚠️ The Curly Brace Rule</span>
+            <ul>
+                <li><strong>Multiple Statements:</strong> If you have more than one statement inside your <code>if</code> or <code>else</code> block, you <strong>must</strong> use curly braces.</li>
+                <li><strong>Single Statement:</strong> If you only have one statement, curly braces are optional (though using them is highly recommended for readability).</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- 3. Flowchart Visualization -->
+    <section class="section-card">
+        <h2>3. Visualizing the Execution Flow</h2>
+        <p>The flowchart below visually represents how the program's control evaluates the condition and splits into two possible paths.</p>
+        
+        <div class="flowchart">
+            <div class="fc-node" style="border-radius: 20px;">Program Flow Enters</div>
+            <div class="fc-arrow"></div>
+            
+            <div class="fc-node fc-diamond">Condition?</div>
+            <div class="fc-arrow" style="height: 15px;"></div>
+            
+            <div class="fc-split">
+                <div class="fc-split-line"></div>
+                
+                <div class="fc-branch">
+                    <div class="fc-arrow"></div>
+                    <div class="fc-label fc-true">TRUE (1)</div>
+                    <div class="fc-arrow" style="height: 15px;"></div>
+                    <div class="fc-node" style="background: var(--success);">True-Block<br>Statements</div>
+                    <div class="fc-arrow"></div>
+                </div>
+                
+                <div class="fc-branch">
+                    <div class="fc-arrow"></div>
+                    <div class="fc-label fc-false">FALSE (0)</div>
+                    <div class="fc-arrow" style="height: 15px;"></div>
+                    <div class="fc-node" style="background: var(--danger);">False-Block<br>Statements</div>
+                    <div class="fc-arrow"></div>
+                </div>
+            </div>
+            
+            <div class="fc-merge-line"></div>
+            <div class="fc-arrow" style="height: 15px;"></div>
+            <div class="fc-node" style="background: var(--text-muted); border-radius: 20px;">After if-else block statements</div>
+        </div>
+    </section>
+
+    <!-- 4. Code & Execution Trace -->
+    <section class="section-card">
+        <h2>4. Live Code Example & Tracing</h2>
+        <p>Let's look at the complete program written by the instructor and trace how the computer executes it based on different user inputs.</p>
+
+        <pre><code><span class="keyword">void</span> <span class="function">main</span>()
+{
+    <span class="keyword">int</span> age;
+    <span class="function">printf</span>(<span class="string">"enter age: "</span>);
+    <span class="function">scanf</span>(<span class="string">"%d"</span>, &age);
+    
+    <span class="keyword">if</span> (age > <span class="keyword">25</span> && age < <span class="keyword">30</span>)
+    {
+        <span class="function">printf</span>(<span class="string">"age : %d \n"</span>, age);
+        <span class="function">printf</span>(<span class="string">"Coffee with me \n"</span>);
+    }
+    <span class="keyword">else</span>
+    {
+        <span class="function">printf</span>(<span class="string">"age : %d \n"</span>, age);
+        <span class="function">printf</span>(<span class="string">"Go home \n"</span>);
+    }
+    
+    <span class="function">printf</span>(<span class="string">"Out of if-else"</span>);
+}</code></pre>
+
+        <div class="trace-grid">
+            <!-- Trace 1 -->
+            <div class="trace-box">
+                <div class="trace-header">Scenario A: User Inputs <span style="color: var(--primary);">28</span></div>
+                <p><strong>Check Condition:</strong> <code>(28 > 25 && 28 < 30)</code></p>
+                <p>Both sides of the Logical AND (<code>&&</code>) evaluate to True (1). The program enters the <code>if</code> block.</p>
+                <p>The <code>else</code> block is completely skipped.</p>
+                <div class="trace-output">
+                    enter age: 28<br>
+                    age : 28<br>
+                    Coffee with me<br>
+                    Out of if-else
+                </div>
+            </div>
+
+            <!-- Trace 2 -->
+            <div class="trace-box">
+                <div class="trace-header">Scenario B: User Inputs <span style="color: var(--danger);">20</span></div>
+                <p><strong>Check Condition:</strong> <code>(20 > 25 && 20 < 30)</code></p>
+                <p>The first part <code>(20 > 25)</code> is False (0). Due to short-circuiting in C, it stops checking. The whole condition is False.</p>
+                <p>The <code>if</code> block is skipped. It jumps to <code>else</code>.</p>
+                <div class="trace-output">
+                    enter age: 20<br>
+                    age : 20<br>
+                    Go home<br>
+                    Out of if-else
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Tricky Questions / Errors -->
+    <section class="section-card">
+        <h2>5. Exam Pitfalls & Compiler Errors</h2>
+        <p>These are the exact tricks examiners use to test your understanding of C syntax rules. Read carefully!</p>
+
+        <h3>Trick 1: Semicolon after the Condition</h3>
+        <pre><code><span class="keyword">if</span> (age > <span class="keyword">25</span> && age < <span class="keyword">30</span>)<span style="color: #f56565; font-weight: bold; font-size: 1.2rem;">;</span>  <span class="comment">// <-- Notice the semicolon!</span>
+{
+    <span class="function">printf</span>(<span class="string">"Coffee"</span>);
+}
+<span class="keyword">else</span> 
+{
+    <span class="function">printf</span>(<span class="string">"Go home"</span>);
+}</code></pre>
+        <div class="callout danger">
+            <span class="callout-title">Result: Compiler Error ("Misplaced else")</span>
+            The semicolon immediately terminates the <code>if</code> statement. The block below it becomes a disconnected block of code. When the compiler hits the word <code>else</code>, it crashes because an <code>else</code> MUST immediately follow an <code>if</code> block.
+        </div>
+
+        <h3>Trick 2: Missing Curly Braces</h3>
+        <pre><code><span class="keyword">if</span> (age > <span class="keyword">25</span> && age < <span class="keyword">30</span>)
+    <span class="function">printf</span>(<span class="string">"age : %d \n"</span>, age);
+    <span class="function">printf</span>(<span class="string">"Coffee with me \n"</span>);  <span class="comment">// <-- This breaks the flow!</span>
+<span class="keyword">else</span>
+    <span class="function">printf</span>(<span class="string">"Go home"</span>);</code></pre>
+        <div class="callout danger">
+            <span class="callout-title">Result: Compiler Error ("Misplaced else")</span>
+            Without curly braces, the <code>if</code> statement only "owns" the very first line beneath it. The compiler considers the "Coffee with me" line as normal code happening <em>after</em> the <code>if</code> statement. Because of this intervening line of code, the <code>else</code> is no longer attached to the <code>if</code>, causing a syntax error.
+        </div>
+    </section>
+
+    <!-- 6. Homework -->
+    <section class="section-card">
+        <h2>6. Homework Assignments</h2>
+        <p>Test your understanding by completing these tasks mentioned at the end of the lecture:</p>
+        
+        <div class="callout info">
+            <span class="callout-title">Task 1: Mental Tracing</span>
+            Look back at the program in Section 4. Trace the exact output line-by-line if the user inputs:
+            <ul>
+                <li><strong>Age = 25</strong> <em>(Hint: look closely at the > and < operators!)</em></li>
+                <li><strong>Age = 32</strong></li>
+            </ul>
+        </div>
+
+        <div class="callout info">
+            <span class="callout-title">Task 2: Write Your Own C Programs</span>
+            Write full <code>if-else</code> C programs for the following scenarios:
+            <ol style="margin-left: 20px; margin-top: 10px;">
+                <li>Input a number and check if it is <strong>Positive or Negative</strong>.</li>
+                <li>Input a number and check if it is <strong>Even or Odd</strong>.</li>
+                <li>Input a number and check if it is <strong>Prime or Not Prime</strong>.</li>
+            </ol>
+        </div>
+        
+        <p style="text-align: center; margin-top: 30px; font-weight: bold; color: var(--primary);">Happy Coding! 🚀</p>
+    </section>
+
+</div>
+
+<script>
+    // Simple Intersection Observer to fade in cards as user scrolls down
+    document.addEventListener("DOMContentLoaded", () => {
+        const cards = document.querySelectorAll('.section-card');
+        
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.15 // triggers when 15% of the card is visible
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target); // only animate once
+                }
+            });
+        }, observerOptions);
+
+        cards.forEach(card => {
+            observer.observe(card);
+        });
+        
+        // Ensure the first card is immediately visible on load
+        if(cards.length > 0) {
+            cards[0].classList.add('visible');
+        }
+    });
+</script>
+
+</body>
+</html>

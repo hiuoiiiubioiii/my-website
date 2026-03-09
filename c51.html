@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes: Counting Even & Odd Numbers in an Array</title>
+    <style>
+        :root {
+            --bg-color: #f4f7fb;
+            --card-bg: #ffffff;
+            --primary: #4361ee;
+            --secondary: #3f37c9;
+            --accent: #f72585;
+            --text-main: #2b2d42;
+            --text-muted: #6c757d;
+            --code-bg: #1e1e24;
+            --code-text: #f8f9fa;
+            --border-color: #e9ecef;
+            --danger: #ef233c;
+            --success: #2a9d8f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* The Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px; /* Space between each topic card */
+        }
+
+        /* Feed Header */
+        .feed-header {
+            text-align: center;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 20px rgba(67, 97, 238, 0.2);
+        }
+
+        .feed-header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        .feed-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Individual Topic Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .card h2 {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .card p {
+            margin-bottom: 15px;
+        }
+
+        /* Warning/Important Callouts */
+        .callout {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+            color: #856404;
+        }
+
+        .callout.danger {
+            background-color: #f8d7da;
+            border-left-color: var(--danger);
+            color: #721c24;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.05rem;
+            margin: 15px 0;
+        }
+
+        code .keyword { color: #f72585; }
+        code .type { color: #4cc9f0; }
+        code .string { color: #2a9d8f; }
+        code .comment { color: #6c757d; font-style: italic; }
+
+        /* VISUALIZATIONS */
+        
+        /* 1. Array Memory Visualization */
+        .visual-container {
+            background-color: var(--bg-color);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .array-vis {
+            display: flex;
+            gap: 5px;
+            margin-top: 20px;
+            min-width: 600px; /* Force scroll on mobile to keep structure */
+        }
+
+        .array-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        .array-index {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .array-cell {
+            width: 100%;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--secondary);
+            background-color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--primary);
+        }
+
+        .array-addr {
+            font-size: 0.8rem;
+            color: var(--accent);
+            margin-top: 5px;
+        }
+
+        /* 2. Variables Visualization */
+        .vars-vis {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .var-box {
+            text-align: center;
+        }
+
+        .var-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text-main);
+        }
+
+        .var-value {
+            width: 80px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px dashed var(--primary);
+            background-color: white;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        /* 3. Logic & Math Tracing */
+        .math-trace {
+            background: white;
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .math-trace .calc {
+            font-family: monospace;
+            background: #eee;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 1.1rem;
+        }
+
+        .math-trace .result-odd { color: var(--danger); font-weight: bold; }
+        .math-trace .result-even { color: var(--success); font-weight: bold; }
+
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+    
+    <!-- Header -->
+    <header class="feed-header">
+        <h1>Counting Even & Odd Numbers in C</h1>
+        <p>A step-by-step breakdown of array iteration, memory visualization, and loop optimization.</p>
+    </header>
+
+    <!-- Card 1: Setup -->
+    <section class="card">
+        <h2>🛠️ 1. Setup & Variable Declarations</h2>
+        <p>To start, we need to set up our memory container (the array) and variables to keep count.</p>
+        
+<pre><code><span class="type">int</span> a[<span class="keyword">10</span>];
+<span class="type">int</span> i;
+<span class="type">int</span> even = <span class="keyword">0</span>, odd = <span class="keyword">0</span>;</code></pre>
+
+        <div class="callout danger">
+            <strong>⚠️ The "Garbage Value" Trap!</strong><br>
+            You MUST initialize your counters to <code>0</code> (<code>even = 0, odd = 0</code>). If you don't, C assigns them random "garbage values" (like 24198). If you add 1 to a garbage value, your final count will be completely ruined!
+        </div>
+
+        <div class="visual-container">
+            <h3>Visualizing Our Counter Variables</h3>
+            <div class="vars-vis">
+                <div class="var-box">
+                    <div class="var-name">even</div>
+                    <div class="var-value">0</div>
+                </div>
+                <div class="var-box">
+                    <div class="var-name">odd</div>
+                    <div class="var-value">0</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Card 2: Memory & Input -->
+    <section class="card">
+        <h2>📥 2. Reading Input & Array Memory Layout</h2>
+        <p>We use a standard <code>for</code> loop and <code>scanf</code> to read 10 numbers from the user.</p>
+
+<pre><code><span class="keyword">for</span>(i = <span class="keyword">0</span>; i < <span class="keyword">10</span>; i++) {
+    <span class="keyword">scanf</span>(<span class="string">"%d"</span>, &a[i]);
+}</code></pre>
+
+        <p>Let's pretend the user enters: <strong>1, 2, 4, 7, 10, 15, 16, 20, 8, 5</strong>. Here is how the computer visualizes this array in its memory:</p>
+
+        <div class="visual-container">
+            <div class="array-vis">
+                <!-- Array Cells -->
+                <div class="array-box"><span class="array-index">i = 0</span><div class="array-cell">1</div><span class="array-addr">100</span></div>
+                <div class="array-box"><span class="array-index">i = 1</span><div class="array-cell">2</div><span class="array-addr">104</span></div>
+                <div class="array-box"><span class="array-index">i = 2</span><div class="array-cell">4</div><span class="array-addr">108</span></div>
+                <div class="array-box"><span class="array-index">i = 3</span><div class="array-cell">7</div><span class="array-addr">112</span></div>
+                <div class="array-box"><span class="array-index">i = 4</span><div class="array-cell">10</div><span class="array-addr">116</span></div>
+                <div class="array-box"><span class="array-index">i = 5</span><div class="array-cell">15</div><span class="array-addr">120</span></div>
+                <div class="array-box"><span class="array-index">i = 6</span><div class="array-cell">16</div><span class="array-addr">124</span></div>
+                <div class="array-box"><span class="array-index">i = 7</span><div class="array-cell">20</div><span class="array-addr">128</span></div>
+                <div class="array-box"><span class="array-index">i = 8</span><div class="array-cell">8</div><span class="array-addr">132</span></div>
+                <div class="array-box"><span class="array-index">i = 9</span><div class="array-cell">5</div><span class="array-addr">136</span></div>
+            </div>
+            <p style="margin-top: 15px; font-size: 0.9rem; color: var(--text-muted);">* Notice the memory addresses (pink) increment by 4 bytes each time because integers typically take 4 bytes of memory in C.</p>
+        </div>
+    </section>
+
+    <!-- Card 3: The Logic -->
+    <section class="card">
+        <h2>🧠 3. The Core Logic (The Modulo Operator)</h2>
+        <p>To check if a number is even or odd, we use the <strong>Modulo Operator (<code>%</code>)</strong>. It divides a number and gives us the <strong>remainder</strong>.</p>
+        
+        <div class="callout">
+            <strong>The Golden Rule:</strong><br>
+            If <code>Number % 2 == 0</code> ➡️ The number is <strong>EVEN</strong>.<br>
+            If <code>Number % 2 != 0</code> ➡️ The number is <strong>ODD</strong>.
+        </div>
+
+        <h3>Tracing the first few loops:</h3>
+        
+        <!-- Trace 1 -->
+        <div class="math-trace">
+            <span class="calc">i = 0</span> ➡️ 
+            <span class="calc">a[0] is 1</span> ➡️ 
+            <span class="calc">1 % 2 = 1</span>
+            <span class="result-odd">Condition FALSE. odd++</span>
+        </div>
+
+        <!-- Trace 2 -->
+        <div class="math-trace">
+            <span class="calc">i = 1</span> ➡️ 
+            <span class="calc">a[1] is 2</span> ➡️ 
+            <span class="calc">2 % 2 = 0</span>
+            <span class="result-even">Condition TRUE. even++</span>
+        </div>
+
+        <!-- Trace 3 -->
+        <div class="math-trace">
+            <span class="calc">i = 2</span> ➡️ 
+            <span class="calc">a[2] is 4</span> ➡️ 
+            <span class="calc">4 % 2 = 0</span>
+            <span class="result-even">Condition TRUE. even++</span>
+        </div>
+        
+        <p style="margin-top:15px;">By the end of this loop, the computer will have tallied up <code>even = 6</code> and <code>odd = 4</code> based on our array above.</p>
+
+    </section>
+
+    <!-- Card 4: Unoptimized vs Optimized -->
+    <section class="card">
+        <h2>⚡ 4. Code Optimization: 2 Loops vs 1 Loop</h2>
+        <p>Initially, the instructor writes a loop to <code>scanf</code> the inputs, and then a <strong>second separate loop</strong> to check for even/odd. </p>
+        
+        <p><strong>The "Aha!" Moment:</strong> Why read all 10 numbers first, and then loop through them all over again to check them? We can do this in <strong>ONE loop!</strong> We can check if the number is even or odd the very second the user presses 'Enter'.</p>
+
+<pre><code><span class="comment">// OPTIMIZED: Doing everything in one single loop!</span>
+<span class="keyword">for</span>(i = <span class="keyword">0</span>; i < <span class="keyword">10</span>; i++) {
+    
+    <span class="comment">// 1. Grab the input from the user</span>
+    <span class="keyword">scanf</span>(<span class="string">"%d"</span>, &a[i]);
+
+    <span class="comment">// 2. IMMEDIATELY check if it's even or odd</span>
+    <span class="keyword">if</span>(a[i] % <span class="keyword">2</span> == <span class="keyword">0</span>) {
+        even++;  <span class="comment">// Same as even = even + 1</span>
+    } <span class="keyword">else</span> {
+        odd++;   <span class="comment">// Same as odd = odd + 1</span>
+    }
+}</code></pre>
+    </section>
+
+    <!-- Card 5: Final Code -->
+    <section class="card">
+        <h2>💻 5. The Final, Complete VS Code Implementation</h2>
+        <p>Here is the final code the instructor writes in VS Code, combining all the concepts we learned above, alongside the print statements to display the results.</p>
+
+<pre><code><span class="keyword">#include</span> <span class="string">&lt;stdio.h&gt;</span>
+
+<span class="type">void</span> <span class="keyword">main</span>() {
+    <span class="type">int</span> a[<span class="keyword">10</span>], i;
+    <span class="type">int</span> even = <span class="keyword">0</span>, odd = <span class="keyword">0</span>;
+
+    <span class="keyword">printf</span>(<span class="string">"Enter array elements:\n"</span>);
+
+    <span class="keyword">for</span>(i = <span class="keyword">0</span>; i < <span class="keyword">10</span>; i++) {
+        <span class="keyword">scanf</span>(<span class="string">"%d"</span>, &a[i]);
+        
+        <span class="keyword">if</span>(a[i] % <span class="keyword">2</span> == <span class="keyword">0</span>) {
+            even++;
+        } <span class="keyword">else</span> {
+            odd++;
+        }
+    }
+
+    <span class="comment">// Print results OUTSIDE the loop</span>
+    <span class="keyword">printf</span>(<span class="string">"\nTotal even numbers are: %d"</span>, even);
+    <span class="keyword">printf</span>(<span class="string">"\nTotal odd numbers are: %d"</span>, odd);
+}</code></pre>
+        
+        <div class="callout" style="background-color: #e2eafc; border-left-color: var(--primary); color: var(--text-main);">
+            <strong>Terminal Output:</strong><br><br>
+            <span style="font-family: monospace;">
+            Enter array elements:<br>
+            2<br>4<br>6<br>8<br>10<br>4<br>6<br>8<br>2<br>10<br><br>
+            Total even numbers are: 10<br>
+            Total odd numbers are: 0
+            </span>
+        </div>
+
+    </section>
+
+</div>
+
+</body>
+</html>

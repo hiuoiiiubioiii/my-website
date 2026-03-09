@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Loops Breakdown | Study Notes</title>
+    <style>
+        /* --- GLOBAL STYLES --- */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;500&display=swap');
+
+        :root {
+            --bg-color: #f4f7fb;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --primary: #4f46e5; /* Indigo */
+            --for-color: #2563eb; /* Blue */
+            --while-color: #16a34a; /* Green */
+            --dowhile-color: #ea580c; /* Orange */
+            --warning: #e11d48; /* Red */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* --- VERTICAL FEED LAYOUT --- */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px; /* Space between each feed item */
+        }
+
+        /* --- HEADER --- */
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        header h1 {
+            font-size: 2.5rem;
+            color: #0f172a;
+            margin-bottom: 10px;
+            font-weight: 800;
+        }
+        header p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        /* --- FEED CARDS --- */
+        .card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            padding: 40px;
+            border-top: 6px solid var(--primary);
+            position: relative;
+        }
+
+        .card.for-card { border-top-color: var(--for-color); }
+        .card.while-card { border-top-color: var(--while-color); }
+        .card.dowhile-card { border-top-color: var(--dowhile-color); }
+        .card.pro-tip { border-top-color: #eab308; background: #fefce8;}
+
+        .card-title {
+            font-size: 1.8rem;
+            color: #0f172a;
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .tag {
+            font-size: 0.8rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .tag.blue { background: #dbeafe; color: var(--for-color); }
+        .tag.green { background: #dcfce3; color: var(--while-color); }
+        .tag.orange { background: #ffedd5; color: var(--dowhile-color); }
+
+        /* --- VISUALIZATIONS & FLOWCHARTS --- */
+        .flow-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        @media (max-width: 600px) {
+            .flow-container { flex-direction: column; }
+        }
+
+        .flow-box {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 12px;
+            flex: 1;
+            text-align: center;
+        }
+        .flow-box h4 {
+            margin: 0 0 15px 0;
+            color: #0f172a;
+        }
+        .flow-step {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .flow-step.condition { border-left: 4px solid var(--warning); }
+        .flow-step.body { border-left: 4px solid var(--primary); }
+        .arrow-down {
+            color: var(--text-light);
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        /* --- CODE BLOCKS --- */
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            margin: 15px 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+        code .keyword { color: #569cd6; font-weight: bold; }
+        code .comment { color: #6a9955; font-style: italic; }
+        code .highlight-error { color: #ffeb3b; background: rgba(255, 235, 59, 0.2); padding: 2px 4px; border-radius: 4px; }
+        
+        /* --- INSTRUCTOR WARNINGS --- */
+        .instructor-note {
+            background: #fff1f2;
+            border-left: 5px solid var(--warning);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+            font-size: 0.95rem;
+        }
+        .instructor-note strong {
+            color: var(--warning);
+        }
+
+        /* --- GRID COMPARISON --- */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .comp-card {
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+        .comp-card h3 { margin-top: 0; font-size: 1.2rem; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>C Loops Masterclass</h1>
+        <p>A complete visual breakdown of for, while, and do-while loops</p>
+    </header>
+
+    <main class="feed-container">
+
+        <!-- CONCEPT 1: ENTRY VS EXIT CONTROL -->
+        <section class="card">
+            <h2 class="card-title">1. Type of Control (The Checkpoint)</h2>
+            <p>The most fundamental difference between the three loops is <strong>when</strong> the program checks the condition. Are you checked at the door, or are you checked as you leave?</p>
+            
+            <div class="flow-container">
+                <div class="flow-box">
+                    <h4>Entry-Controlled <br><span class="tag blue">for</span> <span class="tag green">while</span></h4>
+                    <p style="font-size: 0.85rem; color: var(--text-light);">Condition is checked BEFORE entering the loop.</p>
+                    <div class="flow-step condition">1. Check Condition</div>
+                    <div class="arrow-down">↓</div>
+                    <div class="flow-step body">2. Execute Body of Loop</div>
+                </div>
+
+                <div class="flow-box">
+                    <h4>Exit-Controlled <br><span class="tag orange">do-while</span></h4>
+                    <p style="font-size: 0.85rem; color: var(--text-light);">Condition is checked AFTER executing the loop once.</p>
+                    <div class="flow-step body">1. Execute Body of Loop</div>
+                    <div class="arrow-down">↓</div>
+                    <div class="flow-step condition">2. Check Condition</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONCEPT 2: SYNTAX BREAKDOWN -->
+        <section class="card">
+            <h2 class="card-title">2. Syntax & Structure</h2>
+            <p>How we write them on the whiteboard (and in the IDE). Look closely at where the pieces live.</p>
+
+            <div class="instructor-note">
+                <strong>Instructor Warning:</strong> Always write C keywords (<code>for</code>, <code>while</code>, <code>do</code>) in strictly lowercase letters. Using capital letters will throw an error!
+            </div>
+
+            <!-- FOR LOOP SYNTAX -->
+            <h3 style="color: var(--for-color);">A. The <code>for</code> Loop</h3>
+            <p>Everything is packed neatly into one line. The most popular loop for programmers!</p>
+<pre><code><span class="keyword">for</span> (initialization; condition; update) 
+{
+    <span class="comment">// Body of loop</span>
+    Statement 1;
+}</code></pre>
+
+            <!-- WHILE LOOP SYNTAX -->
+            <h3 style="color: var(--while-color); margin-top: 30px;">B. The <code>while</code> Loop</h3>
+            <p>Initialization happens before the loop, and updates happen inside the body.</p>
+<pre><code><span class="comment">initialization;</span>
+<span class="keyword">while</span> (Condition) 
+{
+    <span class="comment">// Body of loop</span>
+    Statement 1;
+    <span class="comment">update;</span>
+}</code></pre>
+
+            <!-- DO-WHILE LOOP SYNTAX -->
+            <h3 style="color: var(--dowhile-color); margin-top: 30px;">C. The <code>do-while</code> Loop</h3>
+            <div class="instructor-note" style="border-left-color: var(--dowhile-color);">
+                <strong>Crucial Syntax Rule:</strong> You <em>must</em> put a semicolon <code>;</code> at the very end of the <code>while(condition)</code> statement. Do not put it after the curly brace!
+            </div>
+<pre><code><span class="comment">initialization;</span>
+<span class="keyword">do</span> 
+{
+    <span class="comment">// Body of loop</span>
+    Statement 1;
+    <span class="comment">update;</span>
+
+} <span class="keyword">while</span> (Condition)<span class="highlight-error">;</span> <span class="comment">&lt;-- Do not forget this semicolon!</span></code></pre>
+        </section>
+
+        <!-- CONCEPT 3: THE FALSE CONDITION TEST -->
+        <section class="card">
+            <h2 class="card-title">3. The "False Condition" Test</h2>
+            <p>What happens if the initial condition is <strong>FALSE</strong> on the very first try? Will the body of the loop execute?</p>
+
+            <div class="comparison-grid">
+                <div class="comp-card" style="border-top: 4px solid var(--for-color);">
+                    <h3 style="color: var(--for-color);">for loop</h3>
+                    <h1 style="margin: 0; font-size: 3rem; color: #0f172a;">0</h1>
+                    <p><strong>Executes Zero Times.</strong><br> Because it is entry-controlled, it never enters the body.</p>
+                </div>
+                <div class="comp-card" style="border-top: 4px solid var(--while-color);">
+                    <h3 style="color: var(--while-color);">while loop</h3>
+                    <h1 style="margin: 0; font-size: 3rem; color: #0f172a;">0</h1>
+                    <p><strong>Executes Zero Times.</strong><br> Same as the for loop. The door is locked immediately.</p>
+                </div>
+                <div class="comp-card" style="border-top: 4px solid var(--dowhile-color);">
+                    <h3 style="color: var(--dowhile-color);">do-while loop</h3>
+                    <h1 style="margin: 0; font-size: 3rem; color: #0f172a;">1</h1>
+                    <p><strong>Executes At Least Once.</strong><br> It runs the "do" block before it even realizes the condition is false!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONCEPT 4: REAL WORLD USE CASES -->
+        <section class="card">
+            <h2 class="card-title">4. When to Use Which Loop?</h2>
+            
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: var(--for-color); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">When to use <code>for</code></h3>
+                <p><strong>Rule:</strong> Used when the exact number of iterations is known.</p>
+                <p><em>Example:</em> You want to print numbers from 1 to 10. You know definitively that this requires exactly 10 iterations. You use a <code>for</code> loop.</p>
+            </div>
+
+            <div style="margin-bottom: 30px;">
+                <h3 style="color: var(--while-color); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">When to use <code>while</code></h3>
+                <p><strong>Rule:</strong> Used when the number of iterations is NOT exactly known.</p>
+                <p><em>Example:</em> You want to keep asking a user to enter an integer, and you only want the program to stop when they enter a <code>0</code>. User A might enter 6 numbers before typing 0. User B might type 0 on the second try. You cannot predict it, so you use a <code>while</code> loop.</p>
+            </div>
+
+            <div>
+                <h3 style="color: var(--dowhile-color); border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">When to use <code>do-while</code></h3>
+                <p><strong>Rule:</strong> Used when iterations are unknown, AND the body of the loop must be executed at least once.</p>
+                <p><em>Example:</em> A menu-driven program (like an ATM). You must show the user the menu at least one time before they can choose the "Exit" option.</p>
+            </div>
+        </section>
+
+        <!-- PRO TIPS / INFINITE LOOPS -->
+        <section class="card pro-tip">
+            <h2 class="card-title">💡 Pro-Tip: The Infinite Loop</h2>
+            <p>During the user-input example, the instructor introduced the most famous way to write an infinite loop in C programming:</p>
+            
+<pre style="background: #0f172a;"><code><span class="keyword">while</span> (1) 
+{
+    printf(<span class="comment">"Enter an integer (0 to stop): "</span>);
+    scanf(<span class="comment">"%d"</span>, &number);
+
+    <span class="keyword">if</span> (number == 0) {
+        <span class="keyword">break</span>; <span class="comment">// This breaks the infinite loop!</span>
+    }
+}</code></pre>
+            <p><strong>How it works:</strong> In C, <code>1</code> represents "True". So <code>while(1)</code> means "While True". It will run forever unless you put an <code>if</code> condition paired with a <code>break;</code> statement inside the loop body to force the program out!</p>
+        </section>
+
+    </main>
+
+</body>
+</html>

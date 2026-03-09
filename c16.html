@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relational Operators in C - Study Feed</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;600&family=Caveat:wght@600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --primary: #3b82f6;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --board-border: #374151;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        /* Card Styles */
+        .feed-card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 35px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .feed-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--bg);
+        }
+
+        .card-icon {
+            font-size: 2rem;
+            background: var(--primary);
+            color: white;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        h1 { font-size: 2.5rem; color: var(--text-main); text-align: center; margin-bottom: 10px;}
+        h2 { font-size: 1.8rem; color: var(--text-main); }
+        h3 { font-size: 1.4rem; margin: 20px 0 10px 0; color: var(--primary); }
+
+        p { margin-bottom: 15px; font-size: 1.1rem; }
+
+        /* Highlights & Tags */
+        .highlight { font-weight: 600; color: var(--primary); }
+        .tag-true { background: rgba(16, 185, 129, 0.2); color: var(--success); padding: 3px 8px; border-radius: 6px; font-weight: bold; }
+        .tag-false { background: rgba(239, 68, 68, 0.2); color: var(--danger); padding: 3px 8px; border-radius: 6px; font-weight: bold; }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.05rem;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+        code { font-family: 'Fira Code', monospace; background: #e5e7eb; padding: 2px 6px; border-radius: 4px; color: #b91c1c; }
+
+        /* Warning Boxes */
+        .warning-box {
+            background-color: #fffbeb;
+            border-left: 6px solid var(--accent);
+            padding: 20px;
+            border-radius: 0 12px 12px 0;
+            margin: 20px 0;
+        }
+        
+        .danger-box {
+            background-color: #fef2f2;
+            border-left: 6px solid var(--danger);
+            padding: 20px;
+            border-radius: 0 12px 12px 0;
+            margin: 20px 0;
+        }
+
+        /* Whiteboard Visualizations */
+        .whiteboard {
+            background: #fff;
+            border: 3px solid var(--board-border);
+            border-radius: 8px;
+            padding: 25px;
+            margin: 20px 0;
+            position: relative;
+            box-shadow: 3px 3px 0 var(--board-border);
+            font-family: 'Caveat', cursive;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+        /* Memory Visualization */
+        .memory-row {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 25px 0;
+        }
+        .memory-cell {
+            width: 70px;
+            border: 3px solid var(--board-border);
+            border-radius: 8px;
+            background: white;
+            box-shadow: 2px 2px 0 var(--board-border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        .memory-cell:hover { transform: translateY(-5px); }
+        .memory-label {
+            background: var(--bg);
+            border-bottom: 3px solid var(--board-border);
+            font-weight: 800;
+            font-size: 1.2rem;
+            text-align: center;
+            padding: 5px;
+        }
+        .memory-value {
+            text-align: center;
+            padding: 15px 5px;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.3rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
+        .garbage { color: var(--text-muted); font-size: 0.9rem; font-style: italic; }
+
+        /* Step-by-Step Resolution */
+        .step-board {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+            font-family: 'Fira Code', monospace;
+        }
+        .step-arrow { color: var(--primary); font-weight: bold; }
+        .strikethrough { text-decoration: line-through; color: var(--text-muted); }
+
+        /* Homework Button */
+        .hw-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: background 0.3s;
+        }
+        .hw-btn:hover { background: #2563eb; }
+        #hw-answer { display: none; margin-top: 20px; padding: 20px; background: #ecfdf5; border-radius: 8px; border-left: 5px solid var(--success);}
+
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        <!-- Title Header -->
+        <div style="text-align: center; margin-bottom: 20px;">
+            <p style="color: var(--primary); font-weight: 600; letter-spacing: 2px; text-transform: uppercase;">Study Notes Feed</p>
+            <h1>Relational Operators in C</h1>
+            <p style="color: var(--text-muted);">Scroll down to learn, trace memory, and execute code.</p>
+        </div>
+
+        <!-- Section 1: Core Concepts -->
+        <article class="feed-card">
+            <div class="card-header">
+                <div class="card-icon">💡</div>
+                <h2>1. Core Concepts</h2>
+            </div>
+            <p>Relational operators (also known as Comparison Operators) are used to check the relationship between two values. They are heavily used in decision-making (like <code>if-else</code>) and loops.</p>
+            <p>The result of a relational operation is <strong>always a boolean value</strong>:</p>
+            <div class="whiteboard" style="display: flex; justify-content: space-around;">
+                <div><span class="tag-true">True</span> = Stored as 1</div>
+                <div><span class="tag-false">False</span> = Stored as 0</div>
+            </div>
+            <p>Since the output is stored as an integer in memory, we use the <code>%d</code> format specifier to print the result in C.</p>
+        </article>
+
+        <!-- Section 2: The 6 Operators -->
+        <article class="feed-card">
+            <div class="card-header">
+                <div class="card-icon">📋</div>
+                <h2>2. The 6 Operators</h2>
+            </div>
+            <p>Here is what the instructor wrote on the board for the types of relational operators:</p>
+            <pre>
+&lt;   (Less than)
+&gt;   (Greater than)
+&lt;=  (Less than or equal to)
+&gt;=  (Greater than or equal to)
+==  (Equal to / Equality operator)
+!=  (Not equal to / Non-equality)
+            </pre>
+            <div class="warning-box">
+                <h3>⚠️ Crucial Distinction!</h3>
+                <p><code>=</code> (Single equals) is an <strong>Assignment Operator</strong>. It assigns a value to a variable.</p>
+                <p><code>==</code> (Double equals) is a <strong>Relational Operator</strong>. It compares two values.</p>
+            </div>
+        </article>
+
+        <!-- Section 3: Data Types & Strings -->
+        <article class="feed-card">
+            <div class="card-header">
+                <div class="card-icon">🔤</div>
+                <h2>3. Comparing Different Data Types</h2>
+            </div>
+            <p>You can compare integers, floats, and characters. You can also compare full expressions.</p>
+            
+            <h3>A. Comparing Characters</h3>
+            <p>C compares characters using their integer ASCII values.</p>
+            <div class="whiteboard">
+                'a' < 'b'<br>
+                <span style="color:var(--text-muted); font-size:1.2rem;">↓ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ↓</span><br>
+                <span style="color:var(--primary);">97 < 98</span> &nbsp;➡️ <span class="tag-true">1 (True)</span>
+            </div>
+
+            <h3>B. Comparing Strings (The Danger Zone)</h3>
+            <div class="danger-box">
+                <p>You <strong>CANNOT</strong> compare strings using relational operators in C!</p>
+                <div class="whiteboard" style="border-color: var(--danger); box-shadow: 3px 3px 0 var(--danger);">
+                    "Jenny" < "lectures" <br>
+                    <span style="color:var(--text-muted); font-size:1.2rem;">Compares Base Memory Addresses!</span><br>
+                    <span style="color:var(--danger);">[Addr: 1000] < [Addr: 2000]</span>
+                </div>
+                <p>Because strings are stored at random memory addresses, comparing them this way yields unpredictable garbage results. You must use functions like <code>strcmp()</code>.</p>
+            </div>
+        </article>
+
+        <!-- Section 4: General Syntax -->
+        <article class="feed-card">
+            <div class="card-header">
+                <div class="card-icon">⚙️</div>
+                <h2>4. General Syntax</h2>
+            </div>
+            <p>Relational operators don't just work on single numbers. You can compare entire mathematical expressions on either side.</p>
+            <div class="whiteboard">
+                [ AE1 ] &nbsp; <span style="color: var(--primary);">Relational Operator</span> &nbsp; [ AE2 ]
+            </div>
+            <p><em>(AE stands for Arithmetic Expression)</em></p>
+            <div class="step-board">
+                <div class="step">Example: <code>a + b &lt; c + d</code></div>
+                <div class="step">Example: <code>-14 &gt; 3</code> <span class="step-arrow">→</span> <span class="tag-false">0</span></div>
+            </div>
+        </article>
+
+        <!-- Section 5: Code Walkthrough & Memory Tracing -->
+        <article class="feed-card">
+            <div class="card-header">
+                <div class="card-icon">🧠</div>
+                <h2>5. Deep Dive: Memory Tracing</h2>
+            </div>
+            <p>Let's dry-run the instructor's code. Watch the memory update as we move through the statements.</p>
+            
+            <pre>int a = 18, b = 9, c, d, e = 10;</pre>
+            
+            <h3>Initial Memory State:</h3>
+            <div class="memory-row">
+                <div class="memory-cell"><div class="memory-label">a</div><div class="memory-value">18</div></div>
+                <div class="memory-cell"><div class="memory-label">b</div><div class="memory-value" id="mem-b">9</div></div>
+                <div class="memory-cell"><div class="memory-label">c</div><div class="memory-value garbage" id="mem-c">null</div></div>
+                <div class="memory-cell"><div class="memory-label">d</div><div class="memory-value garbage" id="mem-d">null</div></div>
+                <div class="memory-cell"><div class="memory-label">e</div><div class="memory-value">10</div></div>
+            </div>
+
+            <h3>Execution:</h3>
+            
+            <div class="step-board">
+                <p><strong>1.</strong> <code>printf("%d", a < b);</code></p>
+                <div class="step"><code>18 < 9</code> <span class="step-arrow">→</span> <span class="tag-false">Prints 0</span></div>
+            </div>
+
+            <div class="step-board">
+                <p><strong>2.</strong> <code>c = b++;</code> <em>(Post-increment)</em></p>
+                <div class="step">Action 1: Assign <code>b</code> to <code>c</code>. <span class="step-arrow">→</span> <strong>c becomes 9</strong></div>
+                <div class="step">Action 2: Increment <code>b</code>. <span class="step-arrow">→</span> <strong>b becomes 10</strong></div>
+            </div>
+
+            <div class="step-board">
+                <p><strong>3.</strong> <code>d = b;</code></p>
+                <div class="step">Assign current <code>b</code> to <code>d</code>. <span class="step-arrow">→</span> <strong>d becomes 10</strong></div>
+            </div>
+
+            <h3>Updated Memory State:</h3>
+            <div class="memory-row">
+                <div class="memory-cell"><div class="memory-label">a</div><div class="memory-value">18</div></div>
+                <div class="memory-cell"><div class="memory-label" style="background:#fef08a;">b</div><div class="memory-value">10</div></div>
+                <div class="memory-cell"><div class="memory-label" style="background:#fef08a;">c</div><div class="memory-value">9</div></div>
+                <div class="memory-cell"><div class="memory-label" style="background:#fef08a;">d</div><div class="memory-value">10</div></div>
+                <div class="memory-cell"><div class="memory-label">e</div><div class="memory-value">10</div></div>
+            </div>
+            
+            <h3>Precedence & Associativity</h3>
+            <p><strong>Rule 1:</strong> Arithmetic operators (<code>+</code>, <code>-</code>) have higher precedence than Relational operators. Solve math first!</p>
+            <p><strong>Rule 2:</strong> Relational operators have <strong>Left-to-Right Associativity</strong>.</p>
+
+            <div class="step-board">
+                <p><strong>4.</strong> <code>printf("%d", a < b < c > d);</code></p>
+                <div class="step"><span class="strikethrough">18 < 10</span> <code>< 9 > 10</code></div>
+                <div class="step"><code>0 < 9 > 10</code></div>
+                <div class="step"><span class="strikethrough">0 < 9</span> <code>> 10</code></div>
+                <div class="step"><code>1 > 10</code> <span class="step-arrow">→</span> <span class="tag-false">Prints 0</span></div>
+            </div>
+
+            <div class="step-board" style="border-color: var(--primary); border-width: 2px;">
+                <p><strong>5. The Mega Expression:</strong> <code>a + c == b >= e < c + d</code></p>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 10px;"><em>Values: 18 + 9 == 10 >= 10 < 9 + 10</em></p>
+                
+                <div class="step"><em>Step 1: Math first!</em></div>
+                <div class="step"><code>27 == 10 >= 10 < 19</code></div>
+                
+                <div class="step"><em>Step 2: Relational (>, <) have higher precedence than Equality (==)</em></div>
+                <div class="step"><code>27 == </code><span class="strikethrough">10 >= 10</span><code> < 19</code></div>
+                <div class="step"><code>27 == 1 < 19</code></div>
+                <div class="step"><code>27 == </code><span class="strikethrough">1 < 19</span></div>
+                <div class="step"><code>27 == 1</code> <span class="step-arrow">→</span> <span class="tag-false">Prints 0</span></div>
+            </div>
+        </article>
+
+        <!-- Section 6: Complex Dry Run -->
+        <article class="feed-card">
+            <div class="card-header">
+                <div class="card-icon">⚡</div>
+                <h2>6. Tricky Edge Cases</h2>
+            </div>
+            
+            <p>What if you run: <code>f = a > b > d < c;</code> ?</p>
+            <div class="step-board">
+                <div class="step"><code>18 > 10 > 10 < 9</code></div>
+                <div class="step"><code>1 > 10 < 9</code></div>
+                <div class="step"><code>0 < 9</code> <span class="step-arrow">→</span> <span class="tag-true">Stores 1 in f</span></div>
+            </div>
+
+            <p>What if you run: <code>printf("%d", '+' == '+');</code> ?</p>
+            <div class="step-board">
+                <div class="step">The compiler checks ASCII values: <code>43 == 43</code> <span class="step-arrow">→</span> <span class="tag-true">Prints 1</span></div>
+                <div class="step" style="font-size: 0.9rem;">(Even <code>'<' > '>'</code> is valid syntax because it compares underlying integers!)</div>
+            </div>
+        </article>
+
+        <!-- Section 7: Floating Point Trap -->
+        <article class="feed-card">
+            <div class="card-header">
+                <div class="card-icon">🎯</div>
+                <h2>7. The Floating-Point Trap</h2>
+            </div>
+            <pre>float f = 2.2;
+float g = 2.22;</pre>
+            <p>Comparing <code>f < g</code> works perfectly fine. However...</p>
+            <div class="danger-box">
+                <h3>Avoid `==` with Floats!</h3>
+                <p>If you have high precision floats (e.g., <code>2.0000001</code> vs <code>2.000001</code>), the computer stores them as approximations. Two floats that look identical might be mathematically evaluated as slightly different by the computer, causing <code>==</code> to return <strong>False</strong> unexpectedly.</p>
+            </div>
+        </article>
+
+        <!-- Section 8: Homework -->
+        <article class="feed-card">
+            <div class="card-header">
+                <div class="card-icon">📝</div>
+                <h2>8. Assignment</h2>
+            </div>
+            <p>Given the final memory state from earlier:</p>
+            <div class="whiteboard" style="font-family: monospace; font-size: 1.2rem;">
+                a = 18, b = 10, c = 9, d = 10, e = 10
+            </div>
+            <p>Evaluate this expression exactly as the computer would:</p>
+            <pre>a + c == b >= e < c + d != 1</pre>
+            
+            <button class="hw-btn" onclick="toggleAnswer()">Reveal Output</button>
+            
+            <div id="hw-answer">
+                <p><strong>Step-by-step logic:</strong></p>
+                <ol style="margin-left: 20px; line-height: 1.8; font-family: 'Fira Code', monospace;">
+                    <li>Insert values: <code>18 + 9 == 10 >= 10 < 9 + 10 != 1</code></li>
+                    <li>Arithmetic first: <code>27 == 10 >= 10 < 19 != 1</code></li>
+                    <li>Relational (>=, <) Left-to-Right: <code>27 == 1 < 19 != 1</code></li>
+                    <li>Next Relational: <code>27 == 1 != 1</code></li>
+                    <li>Equality (==, !=) Left-to-Right: <code>0 != 1</code></li>
+                    <li>Final Evaluation: <code>1</code></li>
+                </ol>
+                <p style="margin-top: 15px;"><strong>Final Output: <span class="tag-true">1 (True)</span></strong></p>
+            </div>
+        </article>
+
+        <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+            <p>End of Lesson • Next up: Logical Operators in C</p>
+        </div>
+    </div>
+
+    <script>
+        // Scroll Animation Observer
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+
+        document.querySelectorAll('.feed-card').forEach((card) => {
+            observer.observe(card);
+        });
+
+        // Homework Toggle
+        function toggleAnswer() {
+            const answerDiv = document.getElementById('hw-answer');
+            const btn = document.querySelector('.hw-btn');
+            
+            if (answerDiv.style.display === 'block') {
+                answerDiv.style.display = 'none';
+                btn.innerText = 'Reveal Output';
+            } else {
+                answerDiv.style.display = 'block';
+                btn.innerText = 'Hide Output';
+            }
+        }
+    </script>
+</body>
+</html>

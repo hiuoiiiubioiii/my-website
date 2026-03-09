@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming Notes | Call by Value vs Reference</title>
+    <style>
+        /* Base Styles & Typography */
+        :root {
+            --bg-color: #f3f4f6;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --accent-blue: #2563eb;
+            --accent-green: #059669;
+            --accent-red: #dc2626;
+            --card-bg: #ffffff;
+            --code-bg: #1e1e1e;
+            --line-color: #e5e7eb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Vertical Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            position: relative;
+        }
+
+        /* Connecting vertical line for the feed */
+        .feed-container::before {
+            content: '';
+            position: absolute;
+            top: 40px;
+            bottom: 40px;
+            left: 50px;
+            width: 4px;
+            background-color: var(--line-color);
+            z-index: 0;
+        }
+
+        /* Feed Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            position: relative;
+            z-index: 1;
+            margin-left: 60px; /* Space for the timeline */
+        }
+
+        /* Timeline Dots */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 30px;
+            left: -43px;
+            width: 22px;
+            height: 22px;
+            background-color: var(--accent-blue);
+            border: 4px solid var(--bg-color);
+            border-radius: 50%;
+            z-index: 2;
+        }
+
+        h1, h2, h3 {
+            color: var(--text-main);
+            margin-bottom: 15px;
+        }
+
+        .header-card {
+            margin-left: 0;
+            text-align: center;
+            background: linear-gradient(135deg, #1e3a8a, #2563eb);
+            color: white;
+        }
+        
+        .header-card h1 { color: white; }
+        .header-card::before { display: none; } /* No dot on header */
+
+        p {
+            margin-bottom: 15px;
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+        .keyword { color: #569cd6; }
+        .type { color: #4ec9b0; }
+        .func { color: #dcdcaa; }
+        .num { color: #b5cea8; }
+        .string { color: #ce9178; }
+
+        /* Memory Visualization CSS (The "Whiteboard") */
+        .whiteboard {
+            background-color: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .memory-block {
+            border: 2px solid #94a3b8;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background: white;
+            position: relative;
+        }
+
+        .memory-title {
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: white;
+            padding: 0 10px;
+            font-weight: bold;
+            color: #475569;
+        }
+
+        .variables-container {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+        }
+
+        .variable {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .var-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .var-box {
+            width: 70px;
+            height: 70px;
+            border: 2px solid var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 4px;
+            background-color: #f0fdf4;
+            position: relative;
+        }
+
+        .var-address {
+            margin-top: 5px;
+            font-size: 0.8rem;
+            color: #64748b;
+            font-family: monospace;
+        }
+
+        /* Pointer specific styling */
+        .var-box.pointer {
+            background-color: #eff6ff;
+            border-color: var(--accent-blue);
+        }
+        
+        .pointer-arrow {
+            color: var(--accent-blue);
+            font-size: 0.85rem;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        /* Cross-out animations for updates */
+        .crossed {
+            text-decoration: line-through;
+            color: var(--accent-red);
+            font-size: 1rem;
+            position: absolute;
+            top: 5px;
+            left: 5px;
+        }
+
+        .new-value {
+            color: var(--accent-green);
+        }
+
+        /* Summary Rules Box */
+        .rules-box {
+            background-color: #fffbeb;
+            border-left: 5px solid #f59e0b;
+            padding: 20px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 20px;
+        }
+        .rules-box li {
+            margin-bottom: 10px;
+            margin-left: 20px;
+            color: #78350f;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- HEADER -->
+        <div class="card header-card">
+            <h1>C Programming: Call by Value vs Reference</h1>
+            <p style="color: #bfdbfe; margin: 0;">In-depth breakdown of the GATE 2016 Question</p>
+        </div>
+
+        <!-- STEP 0: The Problem -->
+        <div class="card">
+            <h2>1. The Problem Setup</h2>
+            <p>The instructor introduces a previous year GATE exam question. It tests your understanding of what happens when you mix "Call by Value" and "Call by Reference" in a single function call.</p>
+            
+            <pre><code><span class="type">void</span> <span class="func">f</span>(<span class="type">int</span> *p, <span class="type">int</span> m) {
+    m = m + <span class="num">5</span>;
+    *p = *p + m;
+    <span class="keyword">return</span>;
+}
+
+<span class="type">void</span> <span class="func">main</span>() {
+    <span class="type">int</span> i = <span class="num">5</span>, j = <span class="num">10</span>;
+    f(&i, j);
+    <span class="func">printf</span>(<span class="string">"%d"</span>, i + j);
+}</code></pre>
+            <p><strong>Rule of thumb:</strong> Execution of a C program always begins at the <code>main()</code> function. Let's trace it step-by-step.</p>
+        </div>
+
+        <!-- STEP 1 -->
+        <div class="card">
+            <h2>2. Initializing Variables in <code>main()</code></h2>
+            <p>The execution starts in `main()`. Memory is allocated for the `main` function. Two integer variables, <code>i</code> and <code>j</code>, are declared and initialized. The instructor assigns hypothetical memory addresses (1000 and 2000) to visualize how pointers will work.</p>
+            
+            <div class="whiteboard">
+                <div class="memory-block">
+                    <div class="memory-title">main Memory Block</div>
+                    <div class="variables-container">
+                        <div class="variable">
+                            <span class="var-name">i</span>
+                            <div class="var-box">5</div>
+                            <span class="var-address">Address: 1000</span>
+                        </div>
+                        <div class="variable">
+                            <span class="var-name">j</span>
+                            <div class="var-box">10</div>
+                            <span class="var-address">Address: 2000</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2 & 3 -->
+        <div class="card">
+            <h2>3. The Function Call: <code>f(&i, j)</code></h2>
+            <p>We are calling function <code>f</code>. Look closely at the arguments being passed:</p>
+            <ul>
+                <li><strong><code>&i</code> (Call by Reference):</strong> We pass the <em>address</em> of `i` (1000) into pointer <code>*p</code>.</li>
+                <li><strong><code>j</code> (Call by Value):</strong> We pass the normal <em>value</em> of `j` (10) into variable <code>m</code>.</li>
+            </ul>
+            <p>A new memory block is created for function <code>f</code>.</p>
+
+            <div class="whiteboard">
+                <div class="memory-block">
+                    <div class="memory-title">main Memory Block</div>
+                    <div class="variables-container">
+                        <div class="variable">
+                            <span class="var-name">i</span>
+                            <div class="var-box" style="border-color: var(--accent-blue);">5</div>
+                            <span class="var-address">Address: 1000</span>
+                        </div>
+                        <div class="variable">
+                            <span class="var-name">j</span>
+                            <div class="var-box">10</div>
+                            <span class="var-address">Address: 2000</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="memory-block">
+                    <div class="memory-title">f Memory Block</div>
+                    <div class="variables-container">
+                        <div class="variable">
+                            <span class="var-name">p (Pointer)</span>
+                            <div class="var-box pointer">1000</div>
+                            <span class="pointer-arrow">↑ Points to 'i' (1000)</span>
+                        </div>
+                        <div class="variable">
+                            <span class="var-name">m</span>
+                            <div class="var-box">10</div>
+                            <span class="var-address">Copied from 'j'</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 4 -->
+        <div class="card">
+            <h2>4. Executing inside <code>f()</code></h2>
+            <p><strong>Code Line 1: <code>m = m + 5;</code></strong><br>We update the local variable `m`. The current value is 10. 10 + 5 = 15. The 10 is crossed out and becomes 15.</p>
+            <p><strong>Code Line 2: <code>*p = *p + m;</code></strong><br>Always evaluate the right side of the equals sign first!<br>
+            - <code>*p</code> means "Value at address". Pointer `p` holds 1000. Look back at `main`—the value at address 1000 is <strong>5</strong>.<br>
+            - <code>m</code> is our local variable, currently <strong>15</strong>.<br>
+            - Calculation: 5 + 15 = <strong>20</strong>.<br>
+            We assign this 20 to the left side (<code>*p</code>). We reach up into `main` and overwrite `i` with 20.</p>
+
+            <div class="whiteboard">
+                <div class="memory-block">
+                    <div class="memory-title">main Memory Block</div>
+                    <div class="variables-container">
+                        <div class="variable">
+                            <span class="var-name">i</span>
+                            <div class="var-box" style="border-color: var(--accent-blue);">
+                                <span class="crossed">5</span>
+                                <span class="new-value">20</span>
+                            </div>
+                            <span class="var-address">Address: 1000</span>
+                        </div>
+                        <div class="variable">
+                            <span class="var-name">j</span>
+                            <div class="var-box">10</div>
+                            <span class="var-address">Address: 2000</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="memory-block">
+                    <div class="memory-title">f Memory Block</div>
+                    <div class="variables-container">
+                        <div class="variable">
+                            <span class="var-name">p</span>
+                            <div class="var-box pointer">1000</div>
+                            <span class="pointer-arrow">↑ Altered 'i' via pointer</span>
+                        </div>
+                        <div class="variable">
+                            <span class="var-name">m</span>
+                            <div class="var-box">
+                                <span class="crossed">10</span>
+                                <span class="new-value">15</span>
+                            </div>
+                            <span class="var-address">Updated locally</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 5 -->
+        <div class="card">
+            <h2>5. Return to <code>main()</code> & Final Output</h2>
+            <p>The <code>return;</code> statement executes. Function <code>f</code> finishes and its memory block is theoretically destroyed. Control jumps back to `main`.</p>
+            <p><strong>Code Line: <code>printf("%d", i + j);</code></strong></p>
+            <p>We look solely at our `main` memory block now. 
+            <br>Value of <code>i</code> is <strong>20</strong> (permanently altered by the pointer). 
+            <br>Value of <code>j</code> is <strong>10</strong> (untouched because it was passed by value).</p>
+            <p style="font-size: 1.5rem; color: var(--text-main); font-weight: bold; text-align: center; margin-top: 20px;">
+                20 + 10 = <span style="color: var(--accent-green); border: 2px solid var(--accent-green); padding: 5px 15px; border-radius: 50px;">30</span>
+            </p>
+            <p style="text-align: center;"><em>The instructor runs the code live in Visual Studio Code at the end of the video, confirming the terminal output is exactly 30.</em></p>
+        </div>
+
+        <!-- TAKEAWAYS -->
+        <div class="card">
+            <h2>🎓 Key Student Takeaways</h2>
+            <div class="rules-box">
+                <ul>
+                    <li><strong>Draw Memory Blocks:</strong> When tracing C code in exams, always draw separate boxes for different functions. Variables inside <code>main</code> are isolated from variables inside custom functions unless pointers are used.</li>
+                    <li><strong>Call by Value:</strong> Passing just the variable name (e.g., <code>j</code>). It creates an isolated copy in the receiving function. Changing the copy does <em>not</em> affect the original.</li>
+                    <li><strong>Call by Reference:</strong> Passing the address of a variable (e.g., <code>&i</code>) into a pointer (<code>*p</code>). Using the <code>*</code> (dereference) operator allows the secondary function to reach back into <code>main</code> and permanently alter the original variable.</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

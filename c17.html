@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logical Operators in C - Study Feed</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --primary: #4a90e2;
+            --true-color: #2ecc71;
+            --false-color: #e74c3c;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --highlight: #f39c12;
+            --border-radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Feed Layout */
+        .feed-container {
+            width: 100%;
+            max-width: 760px;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            color: var(--primary);
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--primary);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card h2 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .card p, .card ul {
+            margin-bottom: 1rem;
+        }
+
+        .card ul {
+            padding-left: 1.5rem;
+        }
+
+        .golden-rule {
+            background-color: #fff9e6;
+            border-left: 4px solid var(--highlight);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 4px;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+        }
+
+        .comment { color: #6a9955; }
+        .keyword { color: #569cd6; }
+        .number { color: #b5cea8; }
+        .string { color: #ce9178; }
+
+        /* Visualizations */
+        .visual-box {
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+        .truth-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            background: white;
+        }
+
+        .truth-table th, .truth-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .truth-table th { background-color: var(--primary); color: white; }
+        .val-1 { color: var(--true-color); font-weight: bold; }
+        .val-0 { color: var(--false-color); font-weight: bold; }
+
+        .interactive-circuit {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .operand {
+            padding: 0.8rem 1.5rem;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .operand:hover { transform: scale(1.05); }
+        .operand.true { border-color: var(--true-color); background: #e8f8f5; }
+        .operand.false { border-color: var(--false-color); background: #fdf2e9; }
+        .operand.skipped { opacity: 0.3; text-decoration: line-through; border-color: #999; }
+        
+        .operator { color: var(--primary); font-size: 1.5rem; }
+        .result-box { padding: 0.8rem 1.5rem; background: #eee; border-radius: 8px; min-width: 80px;}
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 1rem;
+            transition: background 0.3s;
+        }
+
+        button:hover { background-color: #357abd; }
+
+        .hw-answer {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #e8f8f5;
+            border-left: 4px solid var(--true-color);
+            border-radius: 4px;
+        }
+
+        .tag {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<main class="feed-container">
+    
+    <div class="header">
+        <h1>Logical Operators in C</h1>
+        <p>Complete In-Depth Study Feed & Visualizations</p>
+    </div>
+
+    <!-- Section 1 -->
+    <article class="card">
+        <h2>1. Introduction to Logical Operators</h2>
+        <p>While Relational Operators (like <code>&lt;</code>, <code>&gt;</code>, <code>==</code>) are used to check a <em>single</em> condition, <strong>Logical Operators are used to test multiple conditions simultaneously</strong> and combine them into a single Boolean result.</p>
+        
+        <div class="golden-rule">
+            <strong>🌟 The Golden Rule of C:</strong><br>
+            • <strong>False</strong> is ALWAYS represented by <code>0</code>.<br>
+            • <strong>True</strong> is represented by <code>1</code> (or strictly speaking, <em>any non-zero number</em> like 5, -10, etc).
+        </div>
+
+        <p>The Three Operators we will cover:</p>
+        <ul>
+            <li><code>&&</code> <strong>(Logical AND)</strong> - Binary operator</li>
+            <li><code>||</code> <strong>(Logical OR)</strong> - Binary operator</li>
+            <li><code>!</code> <strong>(Logical NOT)</strong> - Unary operator</li>
+        </ul>
+
+<pre><span class="comment">// Example: Combining two relational expressions</span>
+<span class="keyword">if</span> (a > b && c < d) {
+    <span class="comment">// Both conditions must be met</span>
+}</pre>
+    </article>
+
+    <!-- Section 2 -->
+    <article class="card">
+        <h2>2. Logical AND (&&) <span class="tag">Binary</span></h2>
+        <p><strong>The Rule:</strong> For <code>&&</code> to evaluate to True (<code>1</code>), <strong>ALL</strong> operands/conditions must be True. If even one is False (<code>0</code>), the entire expression is False.</p>
+        
+        <table class="truth-table">
+            <tr><th>Operand 1</th><th>Operand 2</th><th>Result (Op1 && Op2)</th></tr>
+            <tr><td>0</td><td>0</td><td class="val-0">0</td></tr>
+            <tr><td>0</td><td>1</td><td class="val-0">0</td></tr>
+            <tr><td>1</td><td>0</td><td class="val-0">0</td></tr>
+            <tr><td>1</td><td>1</td><td class="val-1">1</td></tr>
+        </table>
+
+        <p><strong>Multiple Conditions Example:</strong></p>
+<pre><span class="comment">// Assume a = 10, b = 5</span>
+result = a > b && b != 10 && b < 11 && a > 5;
+<span class="comment">// Result: 1 && 1 && 1 && 1  ➔ 1 (True)</span></pre>
+
+        <div class="visual-box">
+            <h3>⚠️ Critical Exam Concept: Short-Circuiting</h3>
+            <p>If the compiler reads from left to right and finds a <code>0</code> (False), it <strong>stops immediately</strong>. It knows the whole <code>&&</code> expression will fail, so it skips checking the rest!</p>
+            
+            <div class="interactive-circuit" id="and-circuit">
+                <div class="operand true" id="and-op1" onclick="toggleAnd()">A (1)</div>
+                <div class="operator">&&</div>
+                <div class="operand true" id="and-op2">B (1)</div>
+                <div class="operator">=</div>
+                <div class="result-box val-1" id="and-result">1</div>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-muted);"><em>Click Operand A to toggle its value and see Short-Circuiting in action.</em></p>
+        </div>
+    </article>
+
+    <!-- Section 3 -->
+    <article class="card">
+        <h2>3. Logical OR (||) <span class="tag">Binary</span></h2>
+        <p><strong>The Rule:</strong> For <code>||</code> to evaluate to True (<code>1</code>), <strong>ANY ONE</strong> of the operands needs to be True. It only results in False if <strong>ALL</strong> operands are False.</p>
+        
+        <table class="truth-table">
+            <tr><th>Operand 1</th><th>Operand 2</th><th>Result (Op1 || Op2)</th></tr>
+            <tr><td>0</td><td>0</td><td class="val-0">0</td></tr>
+            <tr><td>0</td><td>1</td><td class="val-1">1</td></tr>
+            <tr><td>1</td><td>0</td><td class="val-1">1</td></tr>
+            <tr><td>1</td><td>1</td><td class="val-1">1</td></tr>
+        </table>
+
+        <div class="visual-box">
+            <h3>⚠️ Short-Circuiting in OR</h3>
+            <p>If the compiler reads from left to right and finds a <code>1</code> (True), it <strong>stops immediately</strong>. It knows the whole <code>||</code> expression will succeed, so it skips checking the rest.</p>
+            
+            <div class="interactive-circuit" id="or-circuit">
+                <div class="operand false" id="or-op1" onclick="toggleOr()">A (0)</div>
+                <div class="operator">||</div>
+                <div class="operand false" id="or-op2">B (0)</div>
+                <div class="operator">=</div>
+                <div class="result-box val-0" id="or-result">0</div>
+            </div>
+            <p style="font-size: 0.9rem; color: var(--text-muted);"><em>Click Operand A to toggle its value. Watch B get skipped when A is True!</em></p>
+        </div>
+    </article>
+
+    <!-- Section 4 -->
+    <article class="card">
+        <h2>4. Logical NOT (!) <span class="tag">Unary</span></h2>
+        <p><strong>The Rule:</strong> This operator simply reverses/negates the Boolean state. True becomes False (<code>0</code>), and False becomes True (<code>1</code>).</p>
+        
+<pre>!<span class="number">5</span>     <span class="comment">// 5 is non-zero (True). NOT True ➔ 0 (False).</span>
+!<span class="number">0</span>     <span class="comment">// 0 is False. NOT False ➔ 1 (True).</span>
+
+<span class="comment">// Assume a = 10, b = 5</span>
+!(a > b) <span class="comment">// (10 > 5) is 1. !1 ➔ 0</span></pre>
+
+        <div class="visual-box">
+            <h3>Precedence Note</h3>
+            <p>The <code>!</code> (NOT) operator has <strong>higher precedence</strong> than <code>&&</code> and <code>||</code>.</p>
+            <p>Example: <code>4 && !0</code> ➔ <code>!0</code> becomes 1 first ➔ <code>4 && 1</code> ➔ <strong>1</strong>.</p>
+        </div>
+    </article>
+
+    <!-- Section 5 -->
+    <article class="card">
+        <h2>5. Tracing Complex Programs: The "printf" Trap</h2>
+        <p>This is a common trick question on exams. What happens when a function call is part of a logical expression?</p>
+        
+<pre><span class="keyword">int</span> a = <span class="number">4</span>, b = <span class="number">6</span>, result;
+    
+<span class="comment">// Trace this:</span>
+result = a > b && printf(<span class="string">"Jenny"</span>);
+printf(<span class="string">"%d"</span>, result);</pre>
+
+        <div class="visual-box">
+            <h3>Execution Visualizer</h3>
+            <p id="printf-explanation"><strong>Step 1:</strong> Evaluate <code>a > b</code> (4 > 6).</p>
+            <div style="font-family: monospace; background: #222; color: #0f0; padding: 1rem; border-radius: 5px; margin: 1rem 0;" id="console-output">
+                Console Output: <span id="printf-console">...</span>
+            </div>
+            <button onclick="runPrintfTrace()">Step Forward</button>
+        </div>
+        <p><em><strong>Note on printf:</strong> If it does run, <code>printf("Jenny")</code> prints the word, and then returns the integer <code>5</code> (number of characters). Since 5 is non-zero, it counts as True (1) in logical math!</em></p>
+    </article>
+
+    <!-- Section 6 -->
+    <article class="card">
+        <h2>6. Tracing with Post-Increment</h2>
+        <p>How does short-circuiting interact with variable increments?</p>
+
+<pre><span class="keyword">int</span> a = <span class="number">10</span>, b = <span class="number">5</span>, result;
+
+result = (a > b) && a++;
+printf(<span class="string">"%d %d"</span>, result, a);</pre>
+
+        <ul style="margin-top:1rem;">
+            <li><code>10 > 5</code> is True (1). The compiler checks the next part.</li>
+            <li><code>a++</code> is post-increment. It uses the current value (10, which is True) to evaluate the expression.</li>
+            <li>Result logic: <code>1 && 1</code> ➔ <code>result = 1</code>.</li>
+            <li><em>After</em> evaluation, <code>a</code> is incremented to 11.</li>
+            <li><strong>Output:</strong> 1 11</li>
+        </ul>
+    </article>
+
+    <!-- Section 7 -->
+    <article class="card" style="border-top-color: var(--highlight);">
+        <h2>📝 Homework / Assignment</h2>
+        <p>Solve the code traces written on the whiteboard at the end of the lecture. Try them before checking the answers!</p>
+
+        <h3>Question 1:</h3>
+<pre><span class="keyword">int</span> a = <span class="number">1</span>, b = <span class="number">6</span>;
+<span class="keyword">int</span> result1 = a-- && ++b;
+printf(<span class="string">"%d %d %d"</span>, result1, a, b);</pre>
+        <button onclick="document.getElementById('ans1').style.display='block'">Reveal Answer 1</button>
+        <div class="hw-answer" id="ans1">
+            <strong>Output: 1 0 7</strong><br>
+            <em>Trace:</em> <code>a--</code> is post-decrement. It uses the current value `1` (True) for the <code>&&</code> check. Since it's True, compiler moves to the right. <code>++b</code> pre-increments `b` to 7 (True). <br>Result: `1 && 1` = 1. Finally, `a` becomes 0 due to the post-decrement.
+        </div>
+
+        <h3 style="margin-top: 2rem;">Question 2 (Using updated values):</h3>
+<pre><span class="comment">// Currently: a = 0, b = 7</span>
+<span class="keyword">int</span> result2 = --a && ++b;
+printf(<span class="string">"%d %d %d"</span>, result2, a, b);</pre>
+        <button onclick="document.getElementById('ans2').style.display='block'">Reveal Answer 2</button>
+        <div class="hw-answer" id="ans2">
+            <strong>Output: 1 -1 8</strong><br>
+            <em>Trace:</em> <code>--a</code> pre-decrements `a` to `-1`. Because `-1` is non-zero, it is <strong>True</strong>! The compiler moves to the right. <code>++b</code> pre-increments `b` to 8 (True). <br>Result: `1 && 1` = 1.
+        </div>
+    </article>
+
+</main>
+
+<script>
+    // JS for Logical AND Visualization
+    function toggleAnd() {
+        const op1 = document.getElementById('and-op1');
+        const op2 = document.getElementById('and-op2');
+        const res = document.getElementById('and-result');
+        
+        if (op1.classList.contains('true')) {
+            // Switch A to False
+            op1.classList.replace('true', 'false');
+            op1.innerText = 'A (0)';
+            
+            // Short circuit B
+            op2.className = 'operand skipped';
+            op2.innerText = 'Skipped';
+            
+            // Result is 0
+            res.classList.replace('val-1', 'val-0');
+            res.innerText = '0';
+        } else {
+            // Switch A to True
+            op1.classList.replace('false', 'true');
+            op1.innerText = 'A (1)';
+            
+            // Restore B
+            op2.className = 'operand true';
+            op2.innerText = 'B (1)';
+            
+            // Result is 1
+            res.classList.replace('val-0', 'val-1');
+            res.innerText = '1';
+        }
+    }
+
+    // JS for Logical OR Visualization
+    function toggleOr() {
+        const op1 = document.getElementById('or-op1');
+        const op2 = document.getElementById('or-op2');
+        const res = document.getElementById('or-result');
+        
+        if (op1.classList.contains('false')) {
+            // Switch A to True
+            op1.classList.replace('false', 'true');
+            op1.innerText = 'A (1)';
+            
+            // Short circuit B
+            op2.className = 'operand skipped';
+            op2.innerText = 'Skipped';
+            
+            // Result is 1
+            res.classList.replace('val-0', 'val-1');
+            res.innerText = '1';
+        } else {
+            // Switch A to False
+            op1.classList.replace('true', 'false');
+            op1.innerText = 'A (0)';
+            
+            // Restore B
+            op2.className = 'operand false';
+            op2.innerText = 'B (0)';
+            
+            // Result is 0
+            res.classList.replace('val-1', 'val-0');
+            res.innerText = '0';
+        }
+    }
+
+    // JS for printf Trap Trace
+    let traceStep = 0;
+    function runPrintfTrace() {
+        const expl = document.getElementById('printf-explanation');
+        const cons = document.getElementById('printf-console');
+        
+        if (traceStep === 0) {
+            expl.innerHTML = "<strong>Step 1:</strong> <code>a > b</code> (4 > 6) is evaluated. It is <strong>0 (False)</strong>.";
+            traceStep++;
+        } 
+        else if (traceStep === 1) {
+            expl.innerHTML = "<strong>Step 2:</strong> Because of <code>&&</code> short-circuiting, the compiler stops. It <strong>NEVER</strong> executes <code>printf(\"Jenny\")</code>.";
+            traceStep++;
+        }
+        else if (traceStep === 2) {
+            expl.innerHTML = "<strong>Step 3:</strong> The result `0` is assigned to `result`. The next line prints it.";
+            cons.innerText = "0";
+            traceStep = 0; // Reset
+            document.querySelector("button[onclick='runPrintfTrace()']").innerText = "Reset Trace";
+        }
+        else {
+             expl.innerHTML = "<strong>Step 1:</strong> Evaluate <code>a > b</code> (4 > 6).";
+             cons.innerText = "...";
+             document.querySelector("button[onclick='runPrintfTrace()']").innerText = "Step Forward";
+        }
+    }
+</script>
+
+</body>
+</html>

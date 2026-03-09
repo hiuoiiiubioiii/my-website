@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Strings Masterclass | Study Feed</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Fira+Code:wght@400;600&display=swap');
+
+        :root {
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --primary: #4F46E5;
+            --secondary: #10B981;
+            --danger: #EF4444;
+            --danger-bg: #FEF2F2;
+            --code-bg: #1E1E1E;
+            --term-bg: #0C0C0C;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Reading Progress Bar */
+        #progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            z-index: 1000;
+        }
+        #progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.1s ease-out;
+        }
+
+        /* Feed Layout */
+        header {
+            text-align: center;
+            padding: 4rem 1rem 2rem;
+            background: linear-gradient(135deg, var(--primary), #818CF8);
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 1rem 4rem;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .step-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            color: #111827;
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        /* Code & Terminal Styles */
+        .code-window {
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .window-header {
+            background: #2D2D2D;
+            padding: 0.5rem 1rem;
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #888;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .dots span {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .dots span:nth-child(1) { background: #FF5F56; }
+        .dots span:nth-child(2) { background: #FFBD2E; }
+        .dots span:nth-child(3) { background: #27C93F; }
+
+        pre {
+            background: var(--code-bg);
+            color: #E5E7EB;
+            padding: 1.5rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            overflow-x: auto;
+        }
+
+        .keyword { color: #F92672; }
+        .function { color: #A6E22E; }
+        .string { color: #E6DB74; }
+        .comment { color: #75715E; font-style: italic; }
+        .type { color: #66D9EF; }
+
+        .terminal {
+            background: var(--term-bg);
+            border-top: 2px solid #333;
+        }
+        .terminal pre {
+            background: transparent;
+            color: #10B981; /* Hacker green */
+        }
+        .term-input { color: #FBBF24; } /* Yellow for user input */
+
+        /* Visualizations */
+        .memory-array {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+            justify-content: center;
+        }
+
+        .memory-cell {
+            width: 45px;
+            height: 45px;
+            background: #F3F4F6;
+            border: 2px solid #D1D5DB;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Fira Code', monospace;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .cell-index {
+            position: absolute;
+            bottom: -20px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .memory-cell.null { background: #DBEAFE; border-color: #93C5FD; color: #1E3A8A; }
+        .memory-cell.highlight { background: #FEF3C7; border-color: #FCD34D; transform: scale(1.1); transition: 0.3s;}
+        
+        /* Danger Box */
+        .danger-card {
+            border-left: 5px solid var(--danger);
+            background: var(--danger-bg);
+        }
+        .danger-card h2 { color: var(--danger); }
+
+        /* Highlight box */
+        .insight-box {
+            background: #EEF2FF;
+            border-left: 4px solid var(--primary);
+            padding: 1rem 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1.5rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Scroll Progress Bar -->
+    <div id="progress-container">
+        <div id="progress-bar"></div>
+    </div>
+
+    <header>
+        <h1>C Strings Masterclass</h1>
+        <p>A complete vertical study feed based on Jayanti Khatri Lamba's lecture.</p>
+    </header>
+
+    <main class="feed-container">
+
+        <!-- Topic 1 -->
+        <section class="card">
+            <span class="step-badge">Topic 1</span>
+            <h2>Direct String Initialization</h2>
+            <p>Before reading user input, we must know how to declare and initialize strings manually. The instructor shows two ways to do this in C.</p>
+            
+            <div class="insight-box">
+                <strong>Crucial Rule:</strong> Strings in C are just arrays of characters. Every valid string <em>must</em> end with a hidden Null Character <code>\0</code>.
+            </div>
+
+            <div class="code-window">
+                <div class="window-header">
+                    <div class="dots"><span></span><span></span><span></span></div>
+                    &nbsp;&nbsp;Method A & B
+                </div>
+                <pre>
+<span class="type">char</span> name[<span class="keyword">30</span>] = <span class="string">"jenny"</span>; <span class="comment">// Method A: Compiler adds \0 automatically</span>
+
+<span class="type">char</span> name[<span class="keyword">30</span>] = {<span class="string">'j'</span>, <span class="string">'e'</span>, <span class="string">'n'</span>, <span class="string">'n'</span>, <span class="string">'y'</span>, <span class="string">'\0'</span>}; <span class="comment">// Method B: Manual</span>
+
+<span class="function">printf</span>(<span class="string">"%s"</span>, name); <span class="comment">// %s tells compiler to expect a string</span></pre>
+            </div>
+
+            <h4>Memory Visualization of the Array:</h4>
+            <div class="memory-array">
+                <div class="memory-cell">j<span class="cell-index">0</span></div>
+                <div class="memory-cell">e<span class="cell-index">1</span></div>
+                <div class="memory-cell">n<span class="cell-index">2</span></div>
+                <div class="memory-cell">n<span class="cell-index">3</span></div>
+                <div class="memory-cell">y<span class="cell-index">4</span></div>
+                <div class="memory-cell null">\0<span class="cell-index">5</span></div>
+                <div class="memory-cell" style="opacity: 0.3;">?<span class="cell-index">...</span></div>
+                <div class="memory-cell" style="opacity: 0.3;">?<span class="cell-index">29</span></div>
+            </div>
+        </section>
+
+        <!-- Topic 2 -->
+        <section class="card">
+            <span class="step-badge">Topic 2</span>
+            <h2>Reading Input with scanf()</h2>
+            <p>Let's ask the user for their name. Notice that in <code>scanf</code>, we write <code>name</code> instead of <code>&name</code>. Because <code>name</code> is an array, the variable itself acts as a pointer to the memory address!</p>
+
+            <div class="code-window">
+                <div class="window-header">
+                    <div class="dots"><span></span><span></span><span></span></div>
+                    &nbsp;&nbsp;main.c
+                </div>
+                <pre>
+<span class="type">char</span> name[<span class="keyword">30</span>];
+<span class="function">printf</span>(<span class="string">"enter name: "</span>);
+<span class="function">scanf</span>(<span class="string">"%s"</span>, name);
+<span class="function">printf</span>(<span class="string">"%s"</span>, name);</pre>
+                
+                <div class="terminal">
+                    <div class="window-header">Terminal Output</div>
+                    <pre>
+enter name: <span class="term-input">jenny khatri</span>
+jenny</pre>
+                </div>
+            </div>
+
+            <div class="insight-box">
+                <strong>Why did it ignore "khatri"?</strong> <code>scanf</code> automatically stops reading input the exact moment it hits a whitespace (space, tab, or Enter).
+            </div>
+        </section>
+
+        <!-- Topic 3 -->
+        <section class="card">
+            <span class="step-badge">Topic 3</span>
+            <h2>Reading Full Lines with gets()</h2>
+            <p>To solve the space limitation of <code>scanf</code>, the instructor introduces <code>gets()</code> (Get String). It reads the whole line including spaces until you hit "Enter".</p>
+
+            <div class="code-window">
+                <div class="window-header">
+                    <div class="dots"><span></span><span></span><span></span></div>
+                    &nbsp;&nbsp;main.c
+                </div>
+                <pre>
+<span class="type">char</span> name[<span class="keyword">30</span>];
+<span class="function">printf</span>(<span class="string">"enter name: "</span>);
+<span class="function">gets</span>(name); 
+<span class="function">printf</span>(<span class="string">"%s"</span>, name);</pre>
+                
+                <div class="terminal">
+                    <div class="window-header">Terminal Output</div>
+                    <pre>
+enter name: <span class="term-input">jenny's lectures is best channel for cs/it</span>
+jenny's lectures is best channel for cs/it</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Danger Section -->
+        <section class="card danger-card">
+            <span class="step-badge" style="background: var(--danger);">WARNING</span>
+            <h2>The Danger of gets(): Buffer Overflow</h2>
+            <p>The instructor issues a massive warning: <strong>Do not use gets() in real-world programming!</strong></p>
+            <p>Our array capacity is 30 characters. The sentence above is 42 characters. <code>gets()</code> does not check boundaries. It forces the extra 12 characters into memory spaces that don't belong to the array.</p>
+            
+            <div class="memory-array" style="margin-top: 1rem;">
+                <div class="memory-cell" style="background: #D1D5DB;">...</div>
+                <div class="memory-cell">i<span class="cell-index">28</span></div>
+                <div class="memory-cell">t<span class="cell-index">29</span></div>
+                <!-- Overflow -->
+                <div class="memory-cell" style="border-color: red; color: red; border-style: dashed;">\0<span class="cell-index" style="color: red;">30</span></div>
+                <div class="memory-cell" style="border-color: red; color: red; border-style: dashed;">X<span class="cell-index" style="color: red;">31</span></div>
+            </div>
+            <p style="text-align: center; color: var(--danger); font-size: 0.9rem; margin-top: 10px;"><em>Memory overwritten! This causes program crashes and security vulnerabilities.</em></p>
+        </section>
+
+        <!-- Topic 4 -->
+        <section class="card">
+            <span class="step-badge">Topic 4</span>
+            <h2>Printing Output with puts()</h2>
+            <p>Just like <code>gets</code> replaces <code>scanf</code> for strings, <code>puts()</code> can replace <code>printf</code>. The main difference? <code>puts()</code> automatically presses "Enter" (appends a newline <code>\n</code>) after printing.</p>
+
+            <div class="code-window">
+                <div class="window-header">
+                    <div class="dots"><span></span><span></span><span></span></div>
+                    &nbsp;&nbsp;main.c
+                </div>
+                <pre>
+<span class="function">puts</span>(name);
+<span class="function">puts</span>(name);</pre>
+                
+                <div class="terminal">
+                    <div class="window-header">Terminal Output</div>
+                    <pre>
+jenny
+jenny</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Topic 5 -->
+        <section class="card">
+            <span class="step-badge">Topic 5</span>
+            <h2>Format Specifier Magic</h2>
+            <p>You can manipulate exactly how many characters are read or printed by putting numbers inside the <code>%s</code> specifier.</p>
+
+            <div class="insight-box">
+                <strong>Limit Output (%.5s):</strong> Prints only the first 5 characters. <br>
+                <strong>Field Width (%10.5s):</strong> Allocates exactly 10 spaces on screen, then prints 5 characters pushed to the right.
+            </div>
+
+            <div class="code-window">
+                <div class="window-header">
+                    <div class="dots"><span></span><span></span><span></span></div>
+                    &nbsp;&nbsp;main.c
+                </div>
+                <pre>
+<span class="comment">// Inputting the word: Jayanti</span>
+
+<span class="function">printf</span>(<span class="string">"%.5s\n"</span>, name);
+<span class="function">printf</span>(<span class="string">"%10.5s\n"</span>, name);</pre>
+                
+                <div class="terminal">
+                    <div class="window-header">Terminal Output</div>
+                    <pre>
+Jayan
+     Jayan</pre>
+                </div>
+            </div>
+            
+            <p><strong>Safety Hack:</strong> You can also use <code>scanf("%5s", name);</code> to prevent buffer overflow. It forces the program to stop reading after 5 characters, ignoring the rest.</p>
+        </section>
+
+        <!-- Topic 6 -->
+        <section class="card">
+            <span class="step-badge">Topic 6</span>
+            <h2>Pointer Offset Printing</h2>
+            <p>Usually, <code>printf("%s", name)</code> starts printing from index 0. But what if we want to print starting from the middle of the string? We combine the address operator <code>&</code> with an array index.</p>
+
+            <div class="code-window">
+                <div class="window-header">
+                    <div class="dots"><span></span><span></span><span></span></div>
+                    &nbsp;&nbsp;main.c
+                </div>
+                <pre>
+<span class="comment">// User inputs: Jayanti khatri</span>
+<span class="function">printf</span>(<span class="string">"%s"</span>, &name[<span class="keyword">2</span>]); </pre>
+                
+                <div class="terminal">
+                    <div class="window-header">Terminal Output</div>
+                    <pre>
+yanti khatri</pre>
+                </div>
+            </div>
+
+            <h4>How the compiler sees this:</h4>
+            <p style="font-size: 0.9rem;">"Go to the memory address of Index 2. Start printing from there until you hit the <code>\0</code>."</p>
+            <div class="memory-array">
+                <div class="memory-cell" style="opacity: 0.4;">J<span class="cell-index">0</span></div>
+                <div class="memory-cell" style="opacity: 0.4;">a<span class="cell-index">1</span></div>
+                <div class="memory-cell highlight">y<span class="cell-index">2 (Start)</span></div>
+                <div class="memory-cell highlight">a<span class="cell-index">3</span></div>
+                <div class="memory-cell highlight">n<span class="cell-index">4</span></div>
+                <div class="memory-cell highlight">t<span class="cell-index">5</span></div>
+                <div class="memory-cell highlight">i<span class="cell-index">6</span></div>
+                <div class="memory-cell highlight">...<span class="cell-index">-></span></div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Progress Bar Logic
+        window.onscroll = function() {
+            let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            let scrolled = (winScroll / height) * 100;
+            document.getElementById("progress-bar").style.width = scrolled + "%";
+        };
+
+        // Scroll Reveal Animation Logic
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.15
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target); // Run animation only once
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.card').forEach(card => {
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

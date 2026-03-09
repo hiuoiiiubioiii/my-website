@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes | C Program: Table of a Number</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom Styles & Scroll Animations */
+        body {
+            background-color: #0f172a; /* Slate 900 */
+            color: #f8fafc; /* Slate 50 */
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            scroll-behavior: smooth;
+        }
+        
+        /* Font for code and terminal */
+        .font-mono {
+            font-family: 'Fira Code', 'Courier New', Courier, monospace;
+        }
+
+        /* Fade-in animation classes */
+        .fade-in-section {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+            will-change: opacity, visibility;
+        }
+        .fade-in-section.is-visible {
+            opacity: 1;
+            transform: none;
+        }
+
+        /* Memory Box Styling */
+        .memory-box {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            border: 4px solid #3b82f6; /* Blue 500 */
+            border-radius: 12px;
+            background: rgba(59, 130, 246, 0.1);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+        }
+        .memory-label {
+            position: absolute;
+            top: -30px;
+            font-size: 1rem;
+            color: #94a3b8; /* Slate 400 */
+            font-family: monospace;
+        }
+
+        /* Timeline Line */
+        .timeline-line {
+            width: 4px;
+            background: #334155;
+            position: absolute;
+            left: 24px;
+            top: 0;
+            bottom: 0;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-blue-500 selection:text-white">
+
+    <!-- Header / Title -->
+    <header class="max-w-3xl mx-auto pt-24 pb-12 px-6 text-center fade-in-section is-visible">
+        <p class="text-blue-400 font-semibold tracking-widest uppercase mb-3 text-sm">Learning C Programming</p>
+        <h1 class="text-4xl md:text-5xl font-extrabold leading-tight mb-4">
+            Print the Table of a Number
+        </h1>
+        <p class="text-slate-400 text-lg">
+            A complete, step-by-step logic and memory breakdown of loops in C.
+            Scroll down to begin. 👇
+        </p>
+    </header>
+
+    <!-- Main Vertical Feed -->
+    <main class="max-w-3xl mx-auto px-6 pb-32 space-y-24">
+
+        <!-- Section 1: The Logic -->
+        <section class="fade-in-section bg-slate-800/50 border border-slate-700 rounded-2xl p-8 shadow-xl">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <span class="bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">1</span>
+                The "Think Before You Code" Phase
+            </h2>
+            <p class="text-slate-300 leading-relaxed mb-6">
+                Before writing a single line of C code, the instructor emphasizes understanding the <strong>desired output</strong> to figure out the logic.
+            </p>
+            
+            <div class="bg-black/60 rounded-lg p-6 font-mono text-green-400 mb-6 shadow-inner border border-slate-800">
+                <div class="text-slate-500 text-xs mb-2 uppercase tracking-widest">// Expected Output (if user enters 2)</div>
+                2 x 1 = 2<br>
+                2 x 2 = 4<br>
+                2 x 3 = 6<br>
+                ...<br>
+                2 x 10 = 20
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex items-start">
+                    <div class="text-blue-400 text-xl mr-3">🧠</div>
+                    <p class="text-slate-300"><strong>The Constant (<code class="text-pink-400">number</code>):</strong> The number '2' at the beginning stays the same. This will be the variable containing user input.</p>
+                </div>
+                <div class="flex items-start">
+                    <div class="text-blue-400 text-xl mr-3">🔄</div>
+                    <p class="text-slate-300"><strong>The Counter (<code class="text-pink-400">i</code>):</strong> The multiplier (1, 2, 3... 10) increases by exactly 1 each time. Because this is repetitive, <strong>we must use a loop</strong>.</p>
+                </div>
+                <div class="flex items-start">
+                    <div class="text-blue-400 text-xl mr-3">🧮</div>
+                    <p class="text-slate-300"><strong>The Result (<code class="text-pink-400">a</code>):</strong> The final answer (2, 4, 6...) is the calculation of <code class="bg-slate-700 px-1 rounded">number * i</code>. We need a variable to store this result in memory.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: The Code -->
+        <section class="fade-in-section bg-slate-800/50 border border-slate-700 rounded-2xl p-8 shadow-xl">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <span class="bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">2</span>
+                Writing the Code
+            </h2>
+            <p class="text-slate-300 leading-relaxed mb-6">
+                Here is exactly what she writes on the whiteboard, translated into clean C syntax. Read the inline annotations to understand what each block does.
+            </p>
+
+            <div class="bg-[#1e1e1e] rounded-lg p-6 font-mono text-sm overflow-x-auto border border-slate-700 text-slate-300 leading-loose">
+<span class="text-purple-400">#include</span> <span class="text-orange-300">&lt;stdio.h&gt;</span>
+<span class="text-purple-400">#include</span> <span class="text-orange-300">&lt;conio.h&gt;</span>
+
+<span class="text-blue-400">void</span> <span class="text-yellow-200">main</span>() 
+{
+    <span class="text-slate-500 italic">// 1. Declare 3 memory blocks</span>
+    <span class="text-blue-400">int</span> number, i, a;  
+    
+    <span class="text-slate-500 italic">// 2. Ask user for input and store it at address (&amp;) of 'number'</span>
+    <span class="text-yellow-200">printf</span>(<span class="text-orange-300">"Enter a number:"</span>);
+    <span class="text-yellow-200">scanf</span>(<span class="text-orange-300">"%d"</span>, &amp;number);
+
+    <span class="text-slate-500 italic">// 3. The Core Logic: Start at 1, go up to 10, add 1 each time</span>
+    <span class="text-purple-400">for</span> (i = <span class="text-green-400">1</span>; i &lt;= <span class="text-green-400">10</span>; i++)
+    {
+        <span class="text-slate-500 italic">// Math: Multiply user input by the loop counter</span>
+        a = number * i;
+        
+        <span class="text-slate-500 italic">// Print the result. '\n' is crucial to print a vertical list!</span>
+        <span class="text-yellow-200">printf</span>(<span class="text-orange-300">"%d\n"</span>, a);
+    }
+    <span class="text-yellow-200">getch</span>();
+}
+            </div>
+        </section>
+
+        <!-- Section 3: Visual Memory Setup -->
+        <section class="fade-in-section bg-slate-800/50 border border-slate-700 rounded-2xl p-8 shadow-xl">
+            <h2 class="text-2xl font-bold mb-6 flex items-center">
+                <span class="bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">3</span>
+                Visual Memory Setup
+            </h2>
+            <p class="text-slate-300 leading-relaxed mb-8">
+                The most crucial part of the video! The instructor draws boxes to represent the computer's RAM. When `int number, i, a;` is executed, the computer creates these three empty boxes. Let's assume the user enters <strong class="text-white">2</strong>.
+            </p>
+
+            <div class="flex flex-wrap gap-12 justify-center py-6">
+                <!-- Box 1 -->
+                <div class="memory-box">
+                    <span class="memory-label">number</span>
+                    <span class="text-white">2</span>
+                </div>
+                <!-- Box 2 -->
+                <div class="memory-box border-slate-600 bg-slate-800 shadow-none">
+                    <span class="memory-label text-slate-500">i</span>
+                    <span class="text-slate-600">?</span>
+                </div>
+                <!-- Box 3 -->
+                <div class="memory-box border-slate-600 bg-slate-800 shadow-none">
+                    <span class="memory-label text-slate-500">a</span>
+                    <span class="text-slate-600">?</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: The Dry Run Timeline -->
+        <section class="fade-in-section relative">
+            <h2 class="text-2xl font-bold mb-10 pl-8">
+                <span class="bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center absolute left-0 text-sm z-10">4</span>
+                The Dry Run (Execution)
+            </h2>
+            
+            <div class="relative">
+                <!-- Vertical Line -->
+                <div class="timeline-line"></div>
+
+                <!-- Timeline Items -->
+                <div class="space-y-8">
+                    
+                    <!-- Loop 1 -->
+                    <div class="relative pl-14">
+                        <div class="absolute left-4 w-4 h-4 rounded-full bg-blue-500 top-2 z-10 transform -translate-x-1/2"></div>
+                        <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-6">
+                            <h3 class="text-lg font-bold text-white mb-3">Loop Cycle 1</h3>
+                            <ul class="text-slate-300 space-y-2 mb-4 list-disc list-inside">
+                                <li><code>i</code> initializes to <strong>1</strong>.</li>
+                                <li>Condition Check: Is <code>1 <= 10</code>? <span class="bg-green-500/20 text-green-400 px-2 py-0.5 rounded font-bold">TRUE</span></li>
+                                <li>Math: <code>a = 2 * 1</code> (a becomes 2).</li>
+                            </ul>
+                            <div class="flex gap-4 items-center">
+                                <div class="bg-black/50 border border-slate-700 rounded p-3 text-center w-24">
+                                    <div class="text-xs text-slate-500">i</div>
+                                    <div class="font-mono text-xl text-blue-400">1</div>
+                                </div>
+                                <div class="bg-black/50 border border-slate-700 rounded p-3 text-center w-24">
+                                    <div class="text-xs text-slate-500">a</div>
+                                    <div class="font-mono text-xl text-green-400">2</div>
+                                </div>
+                                <div class="flex-grow bg-black/80 rounded border border-green-900 p-3 font-mono text-sm text-green-400">
+                                    > Output: 2
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loop 2 -->
+                    <div class="relative pl-14">
+                        <div class="absolute left-4 w-4 h-4 rounded-full bg-blue-500 top-2 z-10 transform -translate-x-1/2"></div>
+                        <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-6">
+                            <h3 class="text-lg font-bold text-white mb-3">Loop Cycle 2</h3>
+                            <ul class="text-slate-300 space-y-2 mb-4 list-disc list-inside">
+                                <li><code>i++</code> triggers. <code>i</code> becomes <strong>2</strong>.</li>
+                                <li>Condition Check: Is <code>2 <= 10</code>? <span class="bg-green-500/20 text-green-400 px-2 py-0.5 rounded font-bold">TRUE</span></li>
+                                <li>Math: <code>a = 2 * 2</code> (a becomes 4).</li>
+                            </ul>
+                            <div class="flex gap-4 items-center">
+                                <div class="bg-black/50 border border-slate-700 rounded p-3 text-center w-24">
+                                    <div class="text-xs text-slate-500">i</div>
+                                    <div class="font-mono text-xl text-blue-400">2</div>
+                                </div>
+                                <div class="bg-black/50 border border-slate-700 rounded p-3 text-center w-24">
+                                    <div class="text-xs text-slate-500">a</div>
+                                    <div class="font-mono text-xl text-green-400">4</div>
+                                </div>
+                                <div class="flex-grow bg-black/80 rounded border border-green-900 p-3 font-mono text-sm text-green-400">
+                                    > Output: 4
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loop Skipping visual -->
+                    <div class="relative pl-14 py-4">
+                        <div class="absolute left-4 w-4 h-4 rounded-full bg-slate-600 top-1/2 z-10 transform -translate-x-1/2 -translate-y-1/2"></div>
+                        <div class="text-slate-500 font-mono italic text-center w-full">... loops 3 through 9 execute ...</div>
+                    </div>
+
+                    <!-- Loop 10 -->
+                    <div class="relative pl-14">
+                        <div class="absolute left-4 w-4 h-4 rounded-full bg-blue-500 top-2 z-10 transform -translate-x-1/2"></div>
+                        <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-6">
+                            <h3 class="text-lg font-bold text-white mb-3">Loop Cycle 10</h3>
+                            <ul class="text-slate-300 space-y-2 mb-4 list-disc list-inside">
+                                <li><code>i++</code> triggers. <code>i</code> becomes <strong>10</strong>.</li>
+                                <li>Condition Check: Is <code>10 <= 10</code>? <span class="bg-green-500/20 text-green-400 px-2 py-0.5 rounded font-bold">TRUE</span></li>
+                                <li>Math: <code>a = 2 * 10</code> (a becomes 20).</li>
+                            </ul>
+                            <div class="flex gap-4 items-center">
+                                <div class="bg-black/50 border border-slate-700 rounded p-3 text-center w-24">
+                                    <div class="text-xs text-slate-500">i</div>
+                                    <div class="font-mono text-xl text-blue-400">10</div>
+                                </div>
+                                <div class="bg-black/50 border border-slate-700 rounded p-3 text-center w-24">
+                                    <div class="text-xs text-slate-500">a</div>
+                                    <div class="font-mono text-xl text-green-400">20</div>
+                                </div>
+                                <div class="flex-grow bg-black/80 rounded border border-green-900 p-3 font-mono text-sm text-green-400">
+                                    > Output: 20
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Termination -->
+                    <div class="relative pl-14">
+                        <div class="absolute left-4 w-4 h-4 rounded-full bg-red-500 top-2 z-10 transform -translate-x-1/2"></div>
+                        <div class="bg-red-900/20 border border-red-500/30 rounded-xl p-6">
+                            <h3 class="text-lg font-bold text-red-400 mb-3">Loop Termination</h3>
+                            <ul class="text-slate-300 space-y-2 list-disc list-inside">
+                                <li><code>i++</code> triggers. <code>i</code> becomes <strong>11</strong>.</li>
+                                <li>Condition Check: Is <code>11 <= 10</code>? <span class="bg-red-500/20 text-red-400 px-2 py-0.5 rounded font-bold">FALSE</span></li>
+                                <li>The condition fails. The program jumps out of the loop, hits <code>getch()</code>, and the program terminates.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Homework Challenge -->
+        <section class="fade-in-section bg-gradient-to-br from-indigo-900/50 to-purple-900/50 border border-purple-500/30 rounded-2xl p-8 shadow-2xl relative overflow-hidden">
+            <!-- Decorative background element -->
+            <div class="absolute -top-24 -right-24 w-48 h-48 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20"></div>
+            
+            <h2 class="text-2xl font-bold mb-4 text-purple-300 flex items-center">
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                Instructor's Homework Challenge
+            </h2>
+            <p class="text-slate-300 mb-6">
+                At the end of the video, the instructor points out that the current code only prints the raw answers in a vertical column. She challenges you to format the output like a real mathematical equation.
+            </p>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-black/40 rounded p-4 border border-slate-700">
+                    <h4 class="text-xs text-slate-500 uppercase tracking-wider mb-2">Current Output</h4>
+                    <div class="font-mono text-slate-400">
+                        2<br>4<br>6<br>8<br>...
+                    </div>
+                </div>
+                <div class="bg-black/40 rounded p-4 border border-purple-500/50">
+                    <h4 class="text-xs text-purple-400 uppercase tracking-wider mb-2">Goal Output</h4>
+                    <div class="font-mono text-green-400">
+                        2 x 1 = 2<br>2 x 2 = 4<br>2 x 3 = 6<br>...
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 bg-slate-900/80 rounded-lg p-5 border-l-4 border-yellow-500">
+                <h4 class="font-bold text-yellow-500 mb-2">💡 Hint for your studies:</h4>
+                <p class="text-slate-300 text-sm leading-relaxed">
+                    To solve this, you need to print three integer values in a single <code>printf</code> statement: the <code>number</code>, the <code>i</code>, and the <code>a</code>. Try modifying your print statement to include three <code>%d</code> placeholders separated by "x" and "="!<br><br>
+                    <em>Example concept:</em> <code class="bg-slate-800 text-pink-300 px-2 py-1 rounded">printf("%d x %d = %d\n", var1, var2, var3);</code>
+                </p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Scroll Animation Script -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const sections = document.querySelectorAll('.fade-in-section');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                    }
+                });
+            }, {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.15 // Triggers when 15% of the element is visible
+            });
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>

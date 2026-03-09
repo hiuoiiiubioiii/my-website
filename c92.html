@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: Functions Dry Run (GATE 2019)</title>
+    <style>
+        /* Base Styles & Vertical Feed Layout */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;600&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .feed-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Header Styling */
+        .header-card {
+            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header-card h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.2rem;
+        }
+
+        .header-card p {
+            margin: 0;
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Card (Feed Item) Styling */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border-left: 5px solid transparent;
+        }
+
+        .card.concept { border-left-color: #f59e0b; }
+        .card.code { border-left-color: #10b981; }
+        .card.step { border-left-color: #3b82f6; }
+        .card.conclusion { border-left-color: #8b5cf6; }
+
+        .card h2 {
+            margin-top: 0;
+            color: #111827;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-badge {
+            background-color: #eff6ff;
+            color: #3b82f6;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        /* Code Block Styling */
+        pre {
+            background-color: #1e293b;
+            color: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        code .keyword { color: #c678dd; }
+        code .type { color: #e5c07b; }
+        code .function { color: #61afef; }
+        code .string { color: #98c379; }
+        code .comment { color: #7f848e; font-style: italic; }
+
+        /* --- VISUALIZATIONS: Memory Blocks --- */
+        .memory-visual {
+            background-color: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .ram-block {
+            background: white;
+            border: 2px solid #94a3b8;
+            border-radius: 8px;
+            min-width: 200px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .ram-block.main-mem { border-color: #3b82f6; }
+        .ram-block.jumble-mem { border-color: #f59e0b; }
+        .ram-block.destroyed { 
+            opacity: 0.4; 
+            text-decoration: line-through;
+            border-style: dashed;
+        }
+
+        .ram-header {
+            background-color: #f1f5f9;
+            padding: 8px 15px;
+            font-weight: bold;
+            text-align: center;
+            border-bottom: 2px solid #94a3b8;
+        }
+        
+        .main-mem .ram-header { background-color: #eff6ff; color: #1d4ed8; border-bottom-color: #3b82f6; }
+        .jumble-mem .ram-header { background-color: #fffbeb; color: #b45309; border-bottom-color: #f59e0b; }
+
+        .ram-body {
+            padding: 15px;
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+        }
+
+        .variable-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .var-name {
+            font-family: 'Fira Code', monospace;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #475569;
+        }
+
+        .var-value {
+            border: 2px solid #cbd5e1;
+            border-radius: 6px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #0f172a;
+            background: #f8fafc;
+        }
+
+        .highlight-update {
+            animation: pulse-green 1.5s infinite;
+            border-color: #10b981;
+            color: #047857;
+            background: #ecfdf5;
+        }
+
+        .highlight-pass {
+            animation: pulse-orange 1.5s infinite;
+            border-color: #f59e0b;
+        }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        @keyframes pulse-orange {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+
+        .formula-box {
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            padding: 10px 15px;
+            font-family: 'Fira Code', monospace;
+            margin: 10px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        hr {
+            border: 0;
+            height: 1px;
+            background: #e2e8f0;
+            margin: 20px 0;
+        }
+
+        .warning-box {
+            background-color: #fef2f2;
+            border: 1px solid #f87171;
+            border-radius: 8px;
+            padding: 15px;
+            color: #991b1b;
+            margin-top: 15px;
+        }
+
+        .warning-box strong { color: #7f1d1d; }
+
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+
+    <!-- Header -->
+    <div class="header-card">
+        <h1>Functions in C: Dry Run Masterclass</h1>
+        <p>GATE 2019 Question Analysis & Memory Visualizations</p>
+    </div>
+
+    <!-- The Problem -->
+    <div class="card code">
+        <h2>The Code Problem</h2>
+        <p>The instructor emphasizes: <strong>Never just guess the output.</strong> You must draw memory blocks and trace the variable values step-by-step (a "dry run") with pen and paper.</p>
+        <p>What will the following code print?</p>
+<pre><code><span class="comment">#include &lt;stdio.h&gt;</span>
+
+<span class="type">int</span> <span class="function">jumble</span>(<span class="type">int</span> x, <span class="type">int</span> y) 
+{
+    x = 2 * x + y;
+    <span class="keyword">return</span> x;
+}
+
+<span class="type">int</span> <span class="function">main</span>() 
+{
+    <span class="type">int</span> x = 2, y = 5;
+    
+    y = <span class="function">jumble</span>(y, x);  <span class="comment">// First Call</span>
+    x = <span class="function">jumble</span>(y, x);  <span class="comment">// Second Call</span>
+    
+    <span class="function">printf</span>(<span class="string">"%d\n"</span>, x);
+    <span class="keyword">return</span> 0;
+}</code></pre>
+    </div>
+
+    <!-- Core Concepts -->
+    <div class="card concept">
+        <h2>Instructor's Core Concepts</h2>
+        <p>Before we run the code, keep these rules taught in the lecture in mind:</p>
+        <ul>
+            <li><strong>Pass by Value:</strong> When <code>main</code> calls <code>jumble</code>, it only sends <em>copies</em> of the numbers. Modifying variables inside <code>jumble</code> does not alter the variables inside <code>main</code> directly.</li>
+            <li><strong>Variable Scope:</strong> The <code>x</code> and <code>y</code> in <code>main</code> are entirely separate from the <code>x</code> and <code>y</code> in <code>jumble</code>. They live in different memory blocks.</li>
+        </ul>
+        <div class="warning-box">
+            <strong>⚠️ The Trap (Positional Argument Matching):</strong> 
+            Functions map incoming values by their <em>position</em>, not their name! If a function expects <code>(int x, int y)</code> and you call it via <code>jumble(y, x)</code>, the <strong>first</strong> item passed gets assigned to the <strong>first</strong> parameter. 
+        </div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="card step">
+        <h2><span class="step-badge">Step 1</span> Main Function Starts</h2>
+        <p>Execution always begins at <code>main()</code>. The computer allocates a block of memory for <code>main</code> and initializes our two local variables.</p>
+        
+        <div class="memory-visual">
+            <div class="ram-block main-mem">
+                <div class="ram-header">Memory: main()</div>
+                <div class="ram-body">
+                    <div class="variable-box">
+                        <span class="var-name">x</span>
+                        <div class="var-value">2</div>
+                    </div>
+                    <div class="variable-box">
+                        <span class="var-name">y</span>
+                        <div class="var-value">5</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="card step">
+        <h2><span class="step-badge">Step 2</span> First Function Call</h2>
+        <p>Code: <code>y = jumble(y, x);</code></p>
+        <p>Using the current values in <code>main</code>, we are calling <code>jumble(5, 2)</code>. A new memory block is created for <code>jumble</code>.</p>
+        <ul>
+            <li>The first parameter <code>x</code> receives the first argument: <strong>5</strong>.</li>
+            <li>The second parameter <code>y</code> receives the second argument: <strong>2</strong>.</li>
+        </ul>
+
+        <div class="memory-visual">
+            <div class="ram-block jumble-mem">
+                <div class="ram-header">Memory: jumble() (Call 1)</div>
+                <div class="ram-body">
+                    <div class="variable-box">
+                        <span class="var-name">x</span>
+                        <div class="var-value highlight-pass">5</div>
+                    </div>
+                    <div class="variable-box">
+                        <span class="var-name">y</span>
+                        <div class="var-value highlight-pass">2</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <p><strong>Inside jumble:</strong></p>
+        <div class="formula-box">
+            x = 2 * x + y;<br>
+            x = 2 * 5 + 2;<br>
+            x = 10 + 2 = 12;
+        </div>
+        <p>The local <code>x</code> inside <code>jumble</code> updates to <strong>12</strong>. The function executes <code>return x;</code>, sending <strong>12</strong> back to <code>main</code>.</p>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="card step">
+        <h2><span class="step-badge">Step 3</span> Back to Main (Update Y)</h2>
+        <p>The <code>jumble()</code> memory block from Step 2 is destroyed (erased from the whiteboard). Back in <code>main</code>, the returned value (12) is assigned to <code>y</code>.</p>
+        <p>Code: <code>y = 12;</code></p>
+
+        <div class="memory-visual">
+            <div class="ram-block main-mem">
+                <div class="ram-header">Memory: main()</div>
+                <div class="ram-body">
+                    <div class="variable-box">
+                        <span class="var-name">x</span>
+                        <div class="var-value">2</div>
+                    </div>
+                    <div class="variable-box">
+                        <span class="var-name">y</span>
+                        <div class="var-value highlight-update">12</div>
+                    </div>
+                </div>
+            </div>
+            <div class="ram-block jumble-mem destroyed">
+                <div class="ram-header">jumble()</div>
+                <div class="ram-body"><p style="margin:0; font-size: 0.9rem;">Block Destroyed</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="card step">
+        <h2><span class="step-badge">Step 4</span> Second Function Call</h2>
+        <p>Code: <code>x = jumble(y, x);</code></p>
+        <p>Using the <em>updated</em> values in <code>main</code>, we are calling <code>jumble(12, 2)</code>. A brand new memory block is created.</p>
+        <ul>
+            <li>The first parameter <code>x</code> receives the first argument: <strong>12</strong>.</li>
+            <li>The second parameter <code>y</code> receives the second argument: <strong>2</strong>.</li>
+        </ul>
+
+        <div class="memory-visual">
+            <div class="ram-block jumble-mem">
+                <div class="ram-header">Memory: jumble() (Call 2)</div>
+                <div class="ram-body">
+                    <div class="variable-box">
+                        <span class="var-name">x</span>
+                        <div class="var-value highlight-pass">12</div>
+                    </div>
+                    <div class="variable-box">
+                        <span class="var-name">y</span>
+                        <div class="var-value highlight-pass">2</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <p><strong>Inside jumble:</strong></p>
+        <div class="formula-box">
+            x = 2 * x + y;<br>
+            x = 2 * 12 + 2;<br>
+            x = 24 + 2 = 26;
+        </div>
+        <p>The local <code>x</code> inside <code>jumble</code> updates to <strong>26</strong>. The function executes <code>return x;</code>, sending <strong>26</strong> back to <code>main</code>.</p>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="card step">
+        <h2><span class="step-badge">Step 5</span> Back to Main (Update X)</h2>
+        <p>The second <code>jumble()</code> memory block is destroyed. Back in <code>main</code>, the returned value (26) is assigned to <code>x</code>.</p>
+        <p>Code: <code>x = 26;</code></p>
+
+        <div class="memory-visual">
+            <div class="ram-block main-mem">
+                <div class="ram-header">Memory: main()</div>
+                <div class="ram-body">
+                    <div class="variable-box">
+                        <span class="var-name">x</span>
+                        <div class="var-value highlight-update">26</div>
+                    </div>
+                    <div class="variable-box">
+                        <span class="var-name">y</span>
+                        <div class="var-value">12</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conclusion -->
+    <div class="card conclusion">
+        <h2>🏁 Final Output</h2>
+        <p>Code: <code>printf("%d\n", x);</code></p>
+        <p>Looking at our final <code>main()</code> memory block, the value of <code>x</code> is <strong>26</strong>.</p>
+        
+        <div style="background: #111827; color: #10b981; padding: 20px; border-radius: 8px; font-family: 'Fira Code', monospace; margin-top: 15px; display: flex; align-items: center; gap: 10px;">
+            <span>&gt; Terminal Output:</span>
+            <span style="font-size: 1.5rem; font-weight: bold; color: white;">26</span>
+        </div>
+        
+        <p style="margin-top: 20px;"><em>The instructor verifies this exact output on her laptop at the end of the video, proving the manual dry-run method yields 100% accurate results.</em></p>
+    </div>
+
+</div>
+
+</body>
+</html>

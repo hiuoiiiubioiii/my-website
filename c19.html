@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitwise Operators in C - Study Feed</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        code, .mono {
+            font-family: 'Fira Code', monospace;
+        }
+        .bit-box {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .bit-discarded {
+            opacity: 0.2;
+            transform: scale(0.9) translateY(10px);
+            background-color: #ef4444 !important; /* red */
+            color: white;
+        }
+        .bit-new {
+            background-color: #22c55e !important; /* green */
+            color: white;
+            animation: popIn 0.5s ease-out forwards;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        /* Smooth scrolling for the vertical feed */
+        html {
+            scroll-behavior: smooth;
+        }
+        .feed-card {
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="antialiased pb-20">
+
+    <!-- Header -->
+    <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-lg">
+        <div class="max-w-4xl mx-auto px-6 py-4">
+            <p class="text-sm font-semibold text-blue-400 uppercase tracking-wider mb-1">Jenny's Lectures - Notes</p>
+            <h1 class="text-2xl md:text-3xl font-bold">Operators in C: Bitwise (Part 2)</h1>
+            <p class="text-slate-300 text-sm mt-2">Scroll down to learn Left Shift, Right Shift, and Bitwise NOT.</p>
+        </div>
+    </header>
+
+    <!-- Main Feed -->
+    <main class="max-w-4xl mx-auto px-6 mt-8 space-y-10">
+
+        <!-- Pre-requisite Section -->
+        <section class="feed-card bg-white rounded-2xl p-6 md:p-8 border-l-4 border-blue-500">
+            <h2 class="text-xl font-bold mb-4 flex items-center text-slate-800">
+                <span class="bg-blue-100 text-blue-600 p-2 rounded-lg mr-3 text-lg">💡</span>
+                Prerequisite: The Binary Conversion Shortcut
+            </h2>
+            <p class="mb-4 text-slate-600 text-lg">Bitwise operators manipulate data at the <strong>bit level</strong> (0s and 1s). To quickly convert a decimal number to 8-bit binary, use this memory trick:</p>
+            <div class="bg-slate-900 text-white rounded-xl p-4 overflow-x-auto">
+                <div class="flex justify-between min-w-max text-center font-mono text-lg">
+                    <div class="px-3 border-r border-slate-700"><span class="block text-slate-400 text-xs mb-1">128</span>0</div>
+                    <div class="px-3 border-r border-slate-700"><span class="block text-slate-400 text-xs mb-1">64</span>0</div>
+                    <div class="px-3 border-r border-slate-700"><span class="block text-slate-400 text-xs mb-1">32</span>0</div>
+                    <div class="px-3 border-r border-slate-700"><span class="block text-slate-400 text-xs mb-1">16</span>0</div>
+                    <div class="px-3 border-r border-slate-700"><span class="block text-blue-400 text-xs font-bold mb-1">8</span><span class="text-blue-400 font-bold">1</span></div>
+                    <div class="px-3 border-r border-slate-700"><span class="block text-slate-400 text-xs mb-1">4</span>0</div>
+                    <div class="px-3 border-r border-slate-700"><span class="block text-blue-400 text-xs font-bold mb-1">2</span><span class="text-blue-400 font-bold">1</span></div>
+                    <div class="px-3"><span class="block text-slate-400 text-xs mb-1">1</span>0</div>
+                </div>
+            </div>
+            <p class="mt-4 text-slate-600"><em>Example:</em> To get <strong>10</strong>, place a <code class="bg-slate-100 px-1 rounded">1</code> under <strong>8</strong> and <strong>2</strong> (because 8 + 2 = 10). The rest are <code class="bg-slate-100 px-1 rounded">0</code>s. Binary: <code class="font-bold">00001010</code></p>
+        </section>
+
+        <!-- LEFT SHIFT SECTION -->
+        <section class="feed-card bg-white rounded-2xl p-6 md:p-8">
+            <h2 class="text-3xl font-bold mb-2 text-slate-800">1. Left Shift Operator <code class="text-blue-600 bg-blue-50 px-2 rounded">&lt;&lt;</code></h2>
+            <p class="text-lg text-slate-600 mb-6">Shifts the bits of the first operand to the <strong>left</strong> by the number of positions specified by the second operand.</p>
+            
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-6">
+                <p class="font-mono font-semibold text-slate-800">Syntax: <span class="text-blue-600">variable</span> &lt;&lt; <span class="text-purple-600">number_of_shifts</span></p>
+                <div class="mt-3 bg-slate-900 text-slate-50 p-4 rounded-lg font-mono text-sm">
+                    <span class="text-pink-400">int</span> a = 10;<br>
+                    <span class="text-pink-400">int</span> c = a &lt;&lt; <span class="text-purple-400">2</span>; <span class="text-slate-500">// Shift bits of 'a' left by 2 places</span>
+                </div>
+            </div>
+
+            <!-- Visualization: Left Shift -->
+            <div class="border border-slate-200 rounded-xl p-6 bg-white shadow-inner mb-8">
+                <h3 class="font-bold text-lg mb-4 flex justify-between items-center">
+                    <span>Visualizing: <code class="text-blue-600">10 &lt;&lt; 2</code></span>
+                    <button id="btn-ls" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition font-semibold">Animate Shift</button>
+                </h3>
+                
+                <div class="flex flex-col gap-4 overflow-x-auto pb-4">
+                    <!-- Before -->
+                    <div class="flex items-center min-w-max">
+                        <span class="w-20 text-slate-500 font-semibold text-sm">Original (10):</span>
+                        <div class="flex border-2 border-slate-800 rounded overflow-hidden font-mono text-xl">
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 bit-box ls-b1">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 bit-box ls-b2">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 bit-box">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 bit-box">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 bit-box font-bold text-blue-600">1</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 bit-box">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 bit-box font-bold text-blue-600">1</div>
+                            <div class="w-12 h-12 flex items-center justify-center bg-slate-50 bit-box">0</div>
+                        </div>
+                    </div>
+                    <!-- After -->
+                    <div class="flex items-center min-w-max">
+                        <span class="w-20 text-slate-500 font-semibold text-sm">Shifted:</span>
+                        <div class="flex border-2 border-slate-800 rounded overflow-hidden font-mono text-xl" id="ls-result-container">
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 ls-r">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 ls-r">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 ls-r font-bold text-blue-600">1</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 ls-r">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 ls-r font-bold text-blue-600">1</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 ls-r">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 ls-r bit-box text-transparent">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center bg-slate-50 ls-r bit-box text-transparent">0</div>
+                        </div>
+                    </div>
+                    <p id="ls-caption" class="text-sm text-slate-500 mt-2 h-5 transition-opacity">Click "Animate Shift" to see the bits move.</p>
+                </div>
+            </div>
+
+            <!-- The Math Shortcut -->
+            <div class="bg-green-50 border border-green-200 rounded-xl p-6">
+                <h4 class="font-bold text-green-800 text-lg mb-2">🚀 The Mathematical Shortcut</h4>
+                <p class="text-green-700 mb-4">You don't need to draw boxes in an exam! Left shifting is basically multiplying by powers of 2.</p>
+                <div class="bg-white rounded-lg p-4 font-mono text-lg border border-green-200 text-center text-slate-800 shadow-sm">
+                    Result = Number &times; 2<sup>(shift_amount)</sup>
+                </div>
+                <ul class="mt-4 space-y-2 text-slate-700">
+                    <li><code class="font-semibold">10 &lt;&lt; 2</code> &rarr; 10 &times; 2<sup>2</sup> &rarr; 10 &times; 4 = <strong class="text-green-600 text-lg">40</strong></li>
+                    <li><code class="font-semibold">10 &lt;&lt; 4</code> &rarr; 10 &times; 2<sup>4</sup> &rarr; 10 &times; 16 = <strong class="text-green-600 text-lg">160</strong></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- RIGHT SHIFT SECTION -->
+        <section class="feed-card bg-white rounded-2xl p-6 md:p-8">
+            <h2 class="text-3xl font-bold mb-2 text-slate-800">2. Right Shift Operator <code class="text-blue-600 bg-blue-50 px-2 rounded">&gt;&gt;</code></h2>
+            <p class="text-lg text-slate-600 mb-6">Shifts the bits of the first operand to the <strong>right</strong> by the number of positions specified by the second operand.</p>
+            
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-6">
+                <p class="font-mono font-semibold text-slate-800">Syntax: <span class="text-blue-600">variable</span> &gt;&gt; <span class="text-purple-600">number_of_shifts</span></p>
+                <div class="mt-3 bg-slate-900 text-slate-50 p-4 rounded-lg font-mono text-sm">
+                    <span class="text-pink-400">int</span> a = 10;<br>
+                    <span class="text-pink-400">int</span> c = a &gt;&gt; <span class="text-purple-400">2</span>; <span class="text-slate-500">// Shift bits of 'a' right by 2 places</span>
+                </div>
+            </div>
+
+            <!-- Visualization: Right Shift -->
+            <div class="border border-slate-200 rounded-xl p-6 bg-white shadow-inner mb-8">
+                <h3 class="font-bold text-lg mb-4 flex justify-between items-center">
+                    <span>Visualizing: <code class="text-blue-600">10 &gt;&gt; 2</code></span>
+                    <button id="btn-rs" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition font-semibold">Animate Shift</button>
+                </h3>
+                
+                <div class="flex flex-col gap-4 overflow-x-auto pb-4">
+                    <!-- Before -->
+                    <div class="flex items-center min-w-max">
+                        <span class="w-20 text-slate-500 font-semibold text-sm">Original (10):</span>
+                        <div class="flex border-2 border-slate-800 rounded overflow-hidden font-mono text-xl">
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 bit-box">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 bit-box">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 bit-box">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 bit-box">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 bit-box font-bold text-blue-600">1</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 bit-box">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 bit-box rs-b1 font-bold text-blue-600">1</div>
+                            <div class="w-12 h-12 flex items-center justify-center bg-slate-50 bit-box rs-b2">0</div>
+                        </div>
+                    </div>
+                    <!-- After -->
+                    <div class="flex items-center min-w-max">
+                        <span class="w-20 text-slate-500 font-semibold text-sm">Shifted:</span>
+                        <div class="flex border-2 border-slate-800 rounded overflow-hidden font-mono text-xl" id="rs-result-container">
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 rs-r bit-box text-transparent">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 rs-r bit-box text-transparent">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 rs-r">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 rs-r">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 rs-r">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 rs-r">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 rs-r font-bold text-blue-600">1</div>
+                            <div class="w-12 h-12 flex items-center justify-center bg-slate-50 rs-r">0</div>
+                        </div>
+                    </div>
+                    <p id="rs-caption" class="text-sm text-slate-500 mt-2 h-5 transition-opacity">Click "Animate Shift" to see the bits move.</p>
+                </div>
+            </div>
+
+            <!-- The Math Shortcut -->
+            <div class="bg-green-50 border border-green-200 rounded-xl p-6">
+                <h4 class="font-bold text-green-800 text-lg mb-2">🚀 The Mathematical Shortcut</h4>
+                <p class="text-green-700 mb-4">Right shifting is basically integer division by powers of 2. Drop any decimals!</p>
+                <div class="bg-white rounded-lg p-4 font-mono text-lg border border-green-200 text-center text-slate-800 shadow-sm">
+                    Result = Number &divide; 2<sup>(shift_amount)</sup>
+                </div>
+                <ul class="mt-4 space-y-2 text-slate-700">
+                    <li><code class="font-semibold">10 &gt;&gt; 2</code> &rarr; 10 &divide; 2<sup>2</sup> &rarr; 10 &divide; 4 = 2.5 &rarr; Drop decimal &rarr; <strong class="text-green-600 text-lg">2</strong></li>
+                    <li><code class="font-semibold">10 &gt;&gt; 4</code> &rarr; 10 &divide; 2<sup>4</sup> &rarr; 10 &divide; 16 = 0.625 &rarr; Drop decimal &rarr; <strong class="text-green-600 text-lg">0</strong></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- BITWISE NOT SECTION -->
+        <section class="feed-card bg-white rounded-2xl p-6 md:p-8">
+            <h2 class="text-3xl font-bold mb-2 text-slate-800">3. Bitwise NOT <code class="text-blue-600 bg-blue-50 px-2 rounded">~</code> (One's Complement)</h2>
+            <p class="text-lg text-slate-600 mb-6">A unary operator (takes only one number) that inverts every single bit. <code class="bg-slate-100 px-1">0</code> becomes <code class="bg-slate-100 px-1">1</code>, and <code class="bg-slate-100 px-1">1</code> becomes <code class="bg-slate-100 px-1">0</code>.</p>
+            
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-6">
+                <div class="mt-3 bg-slate-900 text-slate-50 p-4 rounded-lg font-mono text-sm">
+                    <span class="text-pink-400">int</span> a = 5;<br>
+                    <span class="text-pink-400">int</span> b = ~a; <span class="text-slate-500">// Inverts all bits of 'a'</span>
+                </div>
+            </div>
+
+            <!-- Visualization: Bitwise NOT -->
+            <div class="border border-slate-200 rounded-xl p-6 bg-white shadow-inner mb-8">
+                <h3 class="font-bold text-lg mb-4 flex justify-between items-center">
+                    <span>Visualizing: <code class="text-blue-600">~5</code> (Using 4-bits for simplicity)</span>
+                    <button id="btn-not" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition font-semibold">Invert Bits</button>
+                </h3>
+                
+                <div class="flex flex-col gap-4 overflow-x-auto pb-4">
+                    <!-- Before -->
+                    <div class="flex items-center min-w-max">
+                        <span class="w-24 text-slate-500 font-semibold text-sm">Original (5):</span>
+                        <div class="flex border-2 border-slate-800 rounded overflow-hidden font-mono text-xl">
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 not-b">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 not-b font-bold text-blue-600">1</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 not-b">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center bg-slate-50 not-b font-bold text-blue-600">1</div>
+                        </div>
+                    </div>
+                    <!-- After -->
+                    <div class="flex items-center min-w-max">
+                        <span class="w-24 text-slate-500 font-semibold text-sm">Inverted:</span>
+                        <div class="flex border-2 border-slate-800 rounded overflow-hidden font-mono text-xl">
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 not-r text-transparent">1</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 not-r text-transparent">0</div>
+                            <div class="w-12 h-12 flex items-center justify-center border-r border-slate-400 bg-slate-50 not-r text-transparent">1</div>
+                            <div class="w-12 h-12 flex items-center justify-center bg-slate-50 not-r text-transparent">0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p class="text-sm text-yellow-800"><strong>Wait, isn't 1010 equal to 10?</strong> <br> In computers, if the left-most bit is a <code class="bg-yellow-100 px-1 rounded">1</code>, the system treats it as a <strong>negative number</strong> stored in 2's complement form. Manually calculating this binary to a negative decimal is tedious.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- The Math Shortcut -->
+            <div class="bg-green-50 border border-green-200 rounded-xl p-6">
+                <h4 class="font-bold text-green-800 text-lg mb-2">🚀 The Mathematical Shortcut</h4>
+                <p class="text-green-700 mb-4">To find the exact integer output of a Bitwise NOT instantly, use this algebra trick:</p>
+                <div class="bg-white rounded-lg p-4 font-mono text-lg border border-green-200 text-center text-slate-800 shadow-sm">
+                    Result = -(Number + 1)
+                </div>
+                <ul class="mt-4 space-y-2 text-slate-700">
+                    <li><code class="font-semibold">~5</code> &rarr; -(5 + 1) = <strong class="text-green-600 text-lg">-6</strong></li>
+                    <li><code class="font-semibold">~10</code> &rarr; -(10 + 1) = <strong class="text-green-600 text-lg">-11</strong></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- PRACTICE PROBLEMS SECTION -->
+        <section class="feed-card bg-slate-900 text-white rounded-2xl p-6 md:p-8 mb-10">
+            <h2 class="text-2xl font-bold mb-4 text-blue-400 flex items-center">
+                <span class="mr-2">📝</span> Practice / Homework
+            </h2>
+            <p class="text-slate-300 mb-6">Test your knowledge of operator precedence and the shortcuts taught in this lecture. <strong>Assume <code>int a = 10;</code></strong></p>
+            
+            <div class="space-y-4 font-mono text-lg">
+                <div class="bg-slate-800 p-4 rounded-lg flex justify-between items-center group cursor-pointer" onclick="toggleAnswer('ans1')">
+                    <span>1. (a + 1) &lt;&lt; 2</span>
+                    <span class="text-slate-500 text-sm group-hover:text-white transition">Tap for answer</span>
+                </div>
+                <div id="ans1" class="hidden bg-slate-700 p-4 rounded-lg text-green-400 text-sm border-l-4 border-green-500">
+                    <strong>Step 1:</strong> Parentheses first: 10 + 1 = 11.<br>
+                    <strong>Step 2:</strong> Shortcut: 11 * 2^2 = 11 * 4 = <strong>44</strong>.
+                </div>
+
+                <div class="bg-slate-800 p-4 rounded-lg flex justify-between items-center group cursor-pointer" onclick="toggleAnswer('ans2')">
+                    <span>2. (a + 2) &gt;&gt; 1</span>
+                    <span class="text-slate-500 text-sm group-hover:text-white transition">Tap for answer</span>
+                </div>
+                <div id="ans2" class="hidden bg-slate-700 p-4 rounded-lg text-green-400 text-sm border-l-4 border-green-500">
+                    <strong>Step 1:</strong> Parentheses first: 10 + 2 = 12.<br>
+                    <strong>Step 2:</strong> Shortcut: 12 / 2^1 = 12 / 2 = <strong>6</strong>.
+                </div>
+
+                <div class="bg-slate-800 p-4 rounded-lg flex justify-between items-center group cursor-pointer" onclick="toggleAnswer('ans3')">
+                    <span>3. ~(a + 3)</span>
+                    <span class="text-slate-500 text-sm group-hover:text-white transition">Tap for answer</span>
+                </div>
+                <div id="ans3" class="hidden bg-slate-700 p-4 rounded-lg text-green-400 text-sm border-l-4 border-green-500">
+                    <strong>Step 1:</strong> Parentheses first: 10 + 3 = 13.<br>
+                    <strong>Step 2:</strong> Shortcut: -(13 + 1) = <strong>-14</strong>.
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="text-center text-slate-500 text-sm mt-12 pb-8">
+        Designed for Students based on Jenny's Lectures
+    </footer>
+
+    <!-- Interactive Logic -->
+    <script>
+        // Left Shift Logic
+        const btnLs = document.getElementById('btn-ls');
+        let lsState = false;
+        btnLs.addEventListener('click', () => {
+            const b1 = document.querySelector('.ls-b1');
+            const b2 = document.querySelector('.ls-b2');
+            const rsElements = document.querySelectorAll('.ls-r');
+            const caption = document.getElementById('ls-caption');
+
+            if(!lsState) {
+                // Animate
+                b1.classList.add('bit-discarded');
+                b2.classList.add('bit-discarded');
+                
+                // Show new bits
+                rsElements.forEach((el, index) => {
+                    el.classList.remove('text-transparent');
+                    if(index >= 6) {
+                        el.classList.add('bit-new');
+                    }
+                });
+                caption.innerHTML = "<span class='text-red-500'>2 bits discarded (left).</span> <span class='text-green-600'>2 zeros appended (right).</span> Decimal = 40";
+                btnLs.innerText = "Reset";
+            } else {
+                // Reset
+                b1.classList.remove('bit-discarded');
+                b2.classList.remove('bit-discarded');
+                rsElements.forEach((el, index) => {
+                    if(index >= 6) {
+                        el.classList.add('text-transparent');
+                        el.classList.remove('bit-new');
+                    } else if(el.innerText === "0") {
+                        // keep visible 
+                    }
+                });
+                caption.innerText = "Click \"Animate Shift\" to see the bits move.";
+                btnLs.innerText = "Animate Shift";
+            }
+            lsState = !lsState;
+        });
+
+        // Right Shift Logic
+        const btnRs = document.getElementById('btn-rs');
+        let rsState = false;
+        btnRs.addEventListener('click', () => {
+            const b1 = document.querySelector('.rs-b1');
+            const b2 = document.querySelector('.rs-b2');
+            const rsElements = document.querySelectorAll('.rs-r');
+            const caption = document.getElementById('rs-caption');
+
+            if(!rsState) {
+                b1.classList.add('bit-discarded');
+                b2.classList.add('bit-discarded');
+                
+                rsElements.forEach((el, index) => {
+                    el.classList.remove('text-transparent');
+                    if(index < 2) {
+                        el.classList.add('bit-new');
+                    }
+                });
+                caption.innerHTML = "<span class='text-red-500'>2 bits discarded (right).</span> <span class='text-green-600'>2 zeros prepended (left).</span> Decimal = 2";
+                btnRs.innerText = "Reset";
+            } else {
+                b1.classList.remove('bit-discarded');
+                b2.classList.remove('bit-discarded');
+                rsElements.forEach((el, index) => {
+                    if(index < 2) {
+                        el.classList.add('text-transparent');
+                        el.classList.remove('bit-new');
+                    }
+                });
+                caption.innerText = "Click \"Animate Shift\" to see the bits move.";
+                btnRs.innerText = "Animate Shift";
+            }
+            rsState = !rsState;
+        });
+
+        // NOT Logic
+        const btnNot = document.getElementById('btn-not');
+        let notState = false;
+        btnNot.addEventListener('click', () => {
+            const notRElements = document.querySelectorAll('.not-r');
+            
+            if(!notState) {
+                notRElements.forEach(el => {
+                    el.classList.remove('text-transparent');
+                    el.classList.add('bit-new');
+                    if(el.innerText === "1") el.classList.add('font-bold', 'text-blue-600');
+                });
+                btnNot.innerText = "Reset";
+            } else {
+                notRElements.forEach(el => {
+                    el.classList.add('text-transparent');
+                    el.classList.remove('bit-new', 'font-bold', 'text-blue-600');
+                });
+                btnNot.innerText = "Invert Bits";
+            }
+            notState = !notState;
+        });
+
+        // Homework Toggle Logic
+        function toggleAnswer(id) {
+            const el = document.getElementById(id);
+            if(el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                el.classList.add('block', 'animate-pulse');
+                setTimeout(() => el.classList.remove('animate-pulse'), 500);
+            } else {
+                el.classList.add('hidden');
+                el.classList.remove('block');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Break Statement in C | Study Feed</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* --- BASE STYLES --- */
+        :root {
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --primary: #3b82f6;
+            --danger: #ef4444;
+            --success: #10b981;
+            --code-bg: #0f172a;
+            --timeline-line: #cbd5e1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding-bottom: 100px;
+        }
+
+        header {
+            background-color: var(--card-bg);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 3px solid var(--primary);
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        /* --- FEED LAYOUT --- */
+        .feed-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+            position: relative;
+        }
+
+        /* The vertical timeline line */
+        .feed-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 40px;
+            width: 3px;
+            background-color: var(--timeline-line);
+            z-index: 0;
+        }
+
+        .feed-item {
+            position: relative;
+            margin-bottom: 40px;
+            padding-left: 60px;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .feed-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Timeline Dots */
+        .feed-item::before {
+            content: '';
+            position: absolute;
+            left: 14px;
+            top: 20px;
+            width: 15px;
+            height: 15px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            border: 4px solid var(--bg-color);
+            z-index: 1;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            border: 1px solid #e2e8f0;
+        }
+
+        h2 {
+            font-size: 1.3rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .highlight {
+            background-color: #dbeafe;
+            color: #1e3a8a;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9em;
+        }
+
+        .warning-box {
+            background-color: #fee2e2;
+            border-left: 4px solid var(--danger);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+
+        .warning-box strong {
+            color: var(--danger);
+        }
+
+        /* --- CODE BLOCKS --- */
+        pre {
+            background-color: var(--code-bg);
+            color: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .code-keyword { color: #f472b6; }
+        .code-type { color: #38bdf8; }
+        .code-func { color: #a3e635; }
+        .code-string { color: #fcd34d; }
+        .code-comment { color: #64748b; font-style: italic; }
+
+        /* --- VISUALIZATIONS (WHITEBOARD RECREATION) --- */
+        .visualization {
+            background-color: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .vis-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        /* Memory Board */
+        .memory-board {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .memory-box {
+            background: white;
+            border: 2px solid #94a3b8;
+            border-radius: 6px;
+            width: 80px;
+            text-align: center;
+            box-shadow: 2px 2px 0px #94a3b8;
+        }
+
+        .memory-label {
+            background: #e2e8f0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            padding: 4px;
+            border-bottom: 2px solid #94a3b8;
+            font-weight: 600;
+        }
+
+        .memory-val {
+            font-size: 1.5rem;
+            font-weight: 700;
+            padding: 10px;
+            color: var(--primary);
+        }
+
+        .memory-val.crossed {
+            text-decoration: line-through;
+            color: var(--text-muted);
+            font-size: 1rem;
+            display: block;
+            padding: 5px;
+        }
+
+        /* Terminal Output */
+        .terminal {
+            background: #1e293b;
+            color: #10b981;
+            font-family: 'Fira Code', monospace;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .terminal span { color: white; }
+
+        /* Break Arrow Animation */
+        .break-flow {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+            padding: 15px;
+            background: #fee2e2;
+            border-radius: 8px;
+            border: 2px solid var(--danger);
+        }
+
+        .break-keyword {
+            font-family: 'Fira Code', monospace;
+            color: var(--danger);
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .jump-arrow {
+            width: 100px;
+            height: 40px;
+            stroke: var(--danger);
+            stroke-width: 3;
+            fill: none;
+        }
+
+        .homework-box {
+            background: linear-gradient(135deg, #e0e7ff, #ede9fe);
+            border: 1px solid #c7d2fe;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        @media(max-width: 600px) {
+            .feed-container::before { left: 20px; }
+            .feed-item { padding-left: 40px; }
+            .feed-item::before { left: -6px; }
+            .memory-board { justify-content: space-between; gap: 10px; }
+            .memory-box { width: 30%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>The <span class="highlight">break</span> Statement in C</h1>
+        <p>Scroll to learn • No clicks required</p>
+    </header>
+
+    <div class="feed-container">
+
+        <!-- Section 1: Introduction -->
+        <article class="feed-item">
+            <div class="card">
+                <h2>1. Introduction & Basic Rules</h2>
+                <p>The instructor introduces <code>break</code> as a vital part of "Control Statements" in C.</p>
+                <ul>
+                    <li><strong>It is a Keyword:</strong> C is case-sensitive. You must type <span class="highlight">break;</span> in all lowercase. Using <code>Break</code> or <code>BREAK</code> causes a compiler error.</li>
+                    <li><strong>Primary Purpose:</strong> It forces an <strong>early exit</strong> from a loop before the loop's natural condition becomes false.</li>
+                </ul>
+                <div class="warning-box">
+                    <strong>⚠️ The "If" Confusion Rule:</strong><br>
+                    You can ONLY use <code>break</code> inside <strong>Loops</strong> (<code>for</code>, <code>while</code>, <code>do-while</code>) or <strong>Switch</strong> statements. If you put a <code>break</code> inside an <code>if-else</code> block that is NOT nested inside a loop or switch, the compiler will throw an error.
+                </div>
+            </div>
+        </article>
+
+        <!-- Section 2: Scenario -->
+        <article class="feed-item">
+            <div class="card">
+                <h2>2. The "Early Exit" Concept</h2>
+                <p>To explain <em>why</em> we need <code>break</code>, the instructor sets up a scenario on the whiteboard:</p>
+                <ul>
+                    <li>You want a program that asks the user to enter exactly <strong>5 numbers</strong>.</li>
+                    <li>It will add these numbers together and print the sum.</li>
+                    <li><strong>The Catch:</strong> If the user enters a <strong>negative number</strong> (like -1, -5), the program should instantly stop asking for more numbers, exit the loop early, and print the sum of the positive numbers entered so far.</li>
+                </ul>
+            </div>
+        </article>
+
+        <!-- Section 3: For Loop Code -->
+        <article class="feed-item">
+            <div class="card">
+                <h2>3. Program 1: Using break in a <code>for</code> loop</h2>
+                <p>Because we know exactly how many iterations we want (5), the instructor writes a <code>for</code> loop.</p>
+<pre><code><span class="code-type">void</span> <span class="code-func">main</span>() {
+    <span class="code-type">int</span> a, i, sum = <span class="code-string">0</span>; <span class="code-comment">// sum=0 avoids 'garbage values'</span>
+
+    <span class="code-keyword">for</span>(i = <span class="code-string">1</span>; i <= <span class="code-string">5</span>; i++) {
+        <span class="code-func">printf</span>(<span class="code-string">"Enter a number: "</span>);
+        <span class="code-func">scanf</span>(<span class="code-string">"%d"</span>, &a);
+        
+        <span class="code-comment">// The Break Condition</span>
+        <span class="code-keyword">if</span>(a < <span class="code-string">0</span>) {
+            <span class="code-keyword">break</span>; <span class="code-comment">// Instantly throws control out of the loop</span>
+        }
+        
+        sum = sum + a; 
+    }
+    
+    <span class="code-func">printf</span>(<span class="code-string">"%d"</span>, sum); 
+}</code></pre>
+            </div>
+        </article>
+
+        <!-- Section 4: For Loop Dry Run Visualization -->
+        <article class="feed-item">
+            <div class="card visualization">
+                <div class="vis-title">Visual Dry Run: The Board Recreation</div>
+                <p>Let's trace what happens if the user enters: <strong>1, 5, 2, -10</strong></p>
+                
+                <div class="memory-board">
+                    <div class="memory-box">
+                        <div class="memory-label">a</div>
+                        <span class="memory-val crossed">1</span>
+                        <span class="memory-val crossed">5</span>
+                        <span class="memory-val crossed">2</span>
+                        <div class="memory-val" style="color:var(--danger)">-10</div>
+                    </div>
+                    <div class="memory-box">
+                        <div class="memory-label">i</div>
+                        <span class="memory-val crossed">1</span>
+                        <span class="memory-val crossed">2</span>
+                        <span class="memory-val crossed">3</span>
+                        <div class="memory-val">4</div>
+                    </div>
+                    <div class="memory-box">
+                        <div class="memory-label">sum</div>
+                        <span class="memory-val crossed">0</span>
+                        <span class="memory-val crossed">1</span>
+                        <span class="memory-val crossed">6</span>
+                        <div class="memory-val">8</div>
+                    </div>
+                </div>
+
+                <div class="break-flow">
+                    <div class="break-keyword">if(a < 0) { break; }</div>
+                    <svg class="jump-arrow" viewBox="0 0 100 40">
+                        <path d="M 0 30 Q 50 -10 90 30" />
+                        <polygon points="90,30 85,20 95,20" fill="#ef4444" stroke="none"/>
+                    </svg>
+                    <div class="break-keyword" style="color:var(--text-main); font-size:1rem;">Jumps to printf!</div>
+                </div>
+
+                <div class="terminal">
+                    Enter a number: <span>1</span><br>
+                    Enter a number: <span>5</span><br>
+                    Enter a number: <span>2</span><br>
+                    Enter a number: <span style="color:var(--danger)">-10</span><br>
+                    8
+                </div>
+                <p style="margin-top: 15px; font-size:0.9rem; color:var(--text-muted);"><em>Because <code>-10 < 0</code> is true, iteration 4 and 5 are skipped. The loop breaks immediately, and the sum stays at 8.</em></p>
+            </div>
+        </article>
+
+        <!-- Section 5: While Loop Code -->
+        <article class="feed-item">
+            <div class="card">
+                <h2>4. Program 2: Infinite <code>while</code> loop</h2>
+                <p>The instructor asks: <em>What if we don't want to limit the user to 5 numbers? What if we want them to enter numbers forever until they type a negative number?</em></p>
+                <p>Since we don't know the exact number of iterations, a <code>while(1)</code> loop (infinite loop) is the best choice.</p>
+<pre><code><span class="code-type">void</span> <span class="code-func">main</span>() {
+    <span class="code-type">int</span> a, sum = <span class="code-string">0</span>; <span class="code-comment">// No 'i' counter needed</span>
+
+    <span class="code-keyword">while</span>(<span class="code-string">1</span>) { <span class="code-comment">// 1 means TRUE, loops forever</span>
+        <span class="code-func">printf</span>(<span class="code-string">"Enter a number: "</span>);
+        <span class="code-func">scanf</span>(<span class="code-string">"%d"</span>, &a);
+        
+        <span class="code-keyword">if</span>(a < <span class="code-string">0</span>) {
+            <span class="code-keyword">break</span>; <span class="code-comment">// The ONLY way out of this loop!</span>
+        }
+        
+        sum = sum + a; 
+    }
+    
+    <span class="code-func">printf</span>(<span class="code-string">"%d"</span>, sum); 
+}</code></pre>
+            </div>
+        </article>
+
+        <!-- Section 6: While Loop Dry Run Visualization -->
+        <article class="feed-item">
+            <div class="card visualization">
+                <div class="vis-title">Visual Dry Run: The Infinite Loop</div>
+                
+                <div class="memory-board">
+                    <div class="memory-box">
+                        <div class="memory-label">a</div>
+                        <span class="memory-val crossed">1</span>
+                        <span class="memory-val crossed">2</span>
+                        <div class="memory-val" style="color:var(--danger)">-5</div>
+                    </div>
+                    <div class="memory-box">
+                        <div class="memory-label">sum</div>
+                        <span class="memory-val crossed">0</span>
+                        <span class="memory-val crossed">1</span>
+                        <div class="memory-val">3</div>
+                    </div>
+                </div>
+
+                <div class="terminal">
+                    Enter a number: <span>1</span><br>
+                    Enter a number: <span>2</span><br>
+                    Enter a number: <span style="color:var(--danger)">-5</span><br>
+                    3
+                </div>
+                <p style="margin-top: 15px; font-size:0.9rem; color:var(--text-muted);"><em>Without the <code>break</code> statement, this program would run forever because <code>while(1)</code> is hard-coded to be true. The break statement saves the program from crashing.</em></p>
+            </div>
+        </article>
+
+        <!-- Section 7: Conclusion & Homework -->
+        <article class="feed-item">
+            <div class="card">
+                <h2>5. Instructor's Final Clarification</h2>
+                <p>Beginners often get confused when they hear "break must be inside a loop" but then see <code>break</code> sitting inside an <code>if</code> statement.</p>
+                <p>The instructor clarifies on the board: The <code>if</code> statement itself is nested <em>inside</em> the <code>while</code> or <code>for</code> loop. The rule is simply that you cannot have a standalone <code>if</code> block out in the open <code>main()</code> function with a <code>break</code> inside it.</p>
+                
+                <div class="homework-box">
+                    <h3 style="color: #4f46e5; margin-bottom: 10px;">📝 Homework Assignment</h3>
+                    <p style="margin: 0; font-size: 0.95rem; color: #4338ca;">
+                        Rewrite the exact same logic (adding numbers until a negative number is entered), but use a <strong><code>do-while</code></strong> loop instead of a <code>for</code> or <code>while</code> loop!
+                    </p>
+                </div>
+            </div>
+        </article>
+
+    </div>
+
+    <!-- JavaScript for scroll-triggered fade-in animation -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const feedItems = document.querySelectorAll('.feed-item');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.15 // Trigger when 15% of the card is visible
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target); // Only animate once
+                    }
+                });
+            }, observerOptions);
+
+            feedItems.forEach(item => {
+                observer.observe(item);
+            });
+        });
+    </script>
+</body>
+</html>

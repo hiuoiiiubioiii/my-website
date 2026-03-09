@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming Notes: Strings (printf & puts)</title>
+    <style>
+        /* CSS Reset & Variables */
+        :root {
+            --bg-color: #f4f7f6;
+            --text-main: #333;
+            --text-light: #666;
+            --accent-blue: #0056b3;
+            --card-bg: #ffffff;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --memory-border: #ccc;
+            --highlight: #ffd700;
+            --danger: #d9534f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Vertical Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0 20px 0;
+        }
+
+        header h1 {
+            color: var(--accent-blue);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        /* Feed Cards */
+        section {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--accent-blue);
+        }
+
+        h2 {
+            color: var(--accent-blue);
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            margin: 20px 0 10px 0;
+            color: #222;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        /* Code Blocks */
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .keyword { color: #569cd6; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; }
+
+        /* Output Box */
+        .console-output {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            margin-bottom: 20px;
+            border-left: 5px solid #0f0;
+        }
+
+        /* Visualizations */
+        .visualization-box {
+            background: #eef2f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            overflow-x: auto;
+        }
+
+        .memory-array {
+            display: inline-flex;
+            border: 2px solid var(--memory-border);
+            border-radius: 4px;
+            background: #fff;
+        }
+
+        .memory-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-right: 1px solid var(--memory-border);
+            min-width: 50px;
+        }
+
+        .memory-cell:last-child {
+            border-right: none;
+        }
+
+        .mem-index {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            padding: 2px 0;
+            background: #f9f9f9;
+            width: 100%;
+            border-bottom: 1px dashed var(--memory-border);
+        }
+
+        .mem-val {
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 10px 0;
+            color: var(--accent-blue);
+        }
+
+        .mem-addr {
+            font-size: 0.75rem;
+            color: #888;
+            padding: 2px 0;
+            width: 100%;
+            border-top: 1px dashed var(--memory-border);
+            background: #f9f9f9;
+        }
+
+        .pointer-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .pointer-var {
+            background: var(--accent-blue);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        /* Callout Notes */
+        .note {
+            background: #fff3cd;
+            border-left: 5px solid #ffecb5;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+
+        .danger-note {
+            background: #f8d7da;
+            border-left: 5px solid var(--danger);
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+
+        .space-char {
+            display: inline-block;
+            width: 10px;
+            border-bottom: 2px solid #555;
+            margin: 0 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <header>
+            <h1>C Programming: Strings</h1>
+            <p>In-depth Lecture Notes: Using <code>printf</code>, <code>puts</code>, and Memory Layout</p>
+        </header>
+
+        <!-- Topic 1: The Basics -->
+        <section>
+            <h2>1. The Basic Setup: Read & Print</h2>
+            <p>To use strings in C, we declare an array of characters. We can then ask the user for input and display it back on the screen.</p>
+            
+<pre><code><span class="keyword">char</span> name[30];               <span class="comment">// Declare array of size 30</span>
+printf(<span class="string">"Enter name: "</span>);      <span class="comment">// Prompt the user</span>
+scanf(<span class="string">"%s"</span>, name);           <span class="comment">// Read the string</span>
+printf(<span class="string">"%s"</span>, name);          <span class="comment">// Print the string</span></code></pre>
+
+            <div class="note">
+                <strong>💡 Instructor Note:</strong> Notice there is NO <code>&</code> symbol before <code>name</code> in the <code>scanf</code> function. Why? Because the name of an array acts as a base pointer to its very first memory address. It already provides the address!
+            </div>
+        </section>
+
+        <!-- Topic 2: Memory Visualization -->
+        <section>
+            <h2>2. Visualizing String Memory</h2>
+            <p>Let's assume the user enters the name <strong>"Jayanti"</strong> and presses Enter. Here is exactly what the compiler draws in your computer's memory.</p>
+            
+            <div class="visualization-box">
+                <div class="pointer-box">
+                    <div class="pointer-var">name (Pointer) = 2000</div>
+                    <div>⬇️</div>
+                </div>
+                <div class="memory-array">
+                    <div class="memory-cell">
+                        <div class="mem-index">0</div>
+                        <div class="mem-val">'J'</div>
+                        <div class="mem-addr">2000</div>
+                    </div>
+                    <div class="memory-cell">
+                        <div class="mem-index">1</div>
+                        <div class="mem-val">'a'</div>
+                        <div class="mem-addr">2001</div>
+                    </div>
+                    <div class="memory-cell">
+                        <div class="mem-index">2</div>
+                        <div class="mem-val">'y'</div>
+                        <div class="mem-addr">2002</div>
+                    </div>
+                    <div class="memory-cell">
+                        <div class="mem-index">3</div>
+                        <div class="mem-val">'a'</div>
+                        <div class="mem-addr">2003</div>
+                    </div>
+                    <div class="memory-cell">
+                        <div class="mem-index">4</div>
+                        <div class="mem-val">'n'</div>
+                        <div class="mem-addr">2004</div>
+                    </div>
+                    <div class="memory-cell">
+                        <div class="mem-index">5</div>
+                        <div class="mem-val">'t'</div>
+                        <div class="mem-addr">2005</div>
+                    </div>
+                    <div class="memory-cell">
+                        <div class="mem-index">6</div>
+                        <div class="mem-val">'i'</div>
+                        <div class="mem-addr">2006</div>
+                    </div>
+                    <div class="memory-cell" style="background-color: #ffeeba;">
+                        <div class="mem-index">7</div>
+                        <div class="mem-val">'\0'</div>
+                        <div class="mem-addr">2007</div>
+                    </div>
+                    <div class="memory-cell">
+                        <div class="mem-index">...</div>
+                        <div class="mem-val">?</div>
+                        <div class="mem-addr">...</div>
+                    </div>
+                    <div class="memory-cell">
+                        <div class="mem-index">29</div>
+                        <div class="mem-val">?</div>
+                        <div class="mem-addr">2029</div>
+                    </div>
+                </div>
+            </div>
+
+            <p><strong>Key Takeaways:</strong></p>
+            <ul>
+                <li>The string takes up 7 bytes for "Jayanti".</li>
+                <li>The compiler automatically adds the <strong>Null Character (<code>\0</code>)</strong> at index 7. This is the absolute rule in C to tell the computer "The string ends here."</li>
+                <li>Indices 8 through 29 hold "garbage values" because we didn't fill them.</li>
+            </ul>
+        </section>
+
+        <!-- Topic 3: Formatting with Printf -->
+        <section>
+            <h2>3. Advanced Formatting Output (<code>printf</code>)</h2>
+            <p>We don't always want to print the whole string. We can use specific format specifiers to control how the string looks on the screen.</p>
+
+            <h3>Scenario A: Precision (Limiting Length)</h3>
+            <p>Adding a decimal point and a number limits how many characters print.</p>
+<pre><code>printf(<span class="string">"%.5s"</span>, name);</code></pre>
+            <div class="console-output">Jayan</div>
+            <p><em>Explanation: The compiler starts at index 0 and strictly cuts off the printing after 5 characters.</em></p>
+
+            <h3>Scenario B: Field Width + Precision</h3>
+            <p>We can reserve "space" on the screen (Field Width) and restrict characters (Precision).</p>
+<pre><code>printf(<span class="string">"%10.5s"</span>, name);</code></pre>
+            <div class="console-output"><span class="space-char"></span><span class="space-char"></span><span class="space-char"></span><span class="space-char"></span><span class="space-char"></span>Jayan</div>
+            <p><em>Explanation: The `10` creates a 10-character wide box. The `.5` grabs "Jayan". Because C right-aligns by default, it leaves 5 blank spaces at the beginning, followed by our 5 letters.</em></p>
+        </section>
+
+        <!-- Topic 4: Puts Function -->
+        <section>
+            <h2>4. Introducing <code>puts()</code></h2>
+            <p><code>puts()</code> is a predefined function inside the <code>&lt;stdio.h&gt;</code> header file used exclusively for printing strings. It is much simpler to type than <code>printf</code>.</p>
+
+<pre><code>puts(name);</code></pre>
+
+            <div class="note">
+                <strong>🔥 The Golden Rule of <code>puts()</code>:</strong> <br>
+                <code>puts()</code> automatically adds a newline character (<code>\n</code>) at the end of your string. <code>printf()</code> does NOT do this.
+            </div>
+
+            <h3>Visualizing the Difference</h3>
+            <p>If we write two print statements back-to-back, look at the behavior:</p>
+            
+            <p><strong>Using printf:</strong></p>
+<pre><code>printf(<span class="string">"%s"</span>, name);
+printf(<span class="string">"%s"</span>, name);</code></pre>
+            <div class="console-output">JayantiJayanti</div>
+            
+            <p><strong>Using puts:</strong></p>
+<pre><code>puts(name);
+puts(name);</code></pre>
+            <div class="console-output">Jayanti<br>Jayanti</div>
+        </section>
+
+        <!-- Topic 5: Exam-style Tricky Pointers -->
+        <section>
+            <h2>5. Tricky Pointer Printing (Important for Exams)</h2>
+            <p>The compiler determines exactly *what* to print based on the starting memory address you give it. Let's look at three trick questions.</p>
+
+            <h3>Trick 1: Using the Address-of Operator</h3>
+<pre><code>printf(<span class="string">"%s"</span>, &amp;name);</code></pre>
+            <p><strong>Output:</strong> <code>Jayanti</code></p>
+            <p><em>Why?</em> Because the address of the whole array (<code>&amp;name</code>) resolves to the exact same memory location (2000) as the name of the array itself.</p>
+
+            <h3>Trick 2: Shifting the Starting Address</h3>
+<pre><code>printf(<span class="string">"%s"</span>, &amp;name[2]);</code></pre>
+            <p><strong>Output:</strong> <code>yanti</code></p>
+            <p><em>Why?</em> We are explicitly telling the compiler: "Start reading at the address of index 2 (which is 2002, where 'y' is)". The compiler starts at 'y' and keeps printing until it hits the <code>\0</code> null character.</p>
+
+            <h3>Trick 3: The Crash Scenario</h3>
+<pre><code>printf(<span class="string">"%s"</span>, name[2]);</code></pre>
+            <div class="danger-note">
+                <strong>⚠️ ERROR / CRASH</strong><br>
+                The <code>%s</code> format specifier expects a memory address (a pointer) to know where to start looking. <code>name[2]</code> does NOT provide an address; it provides the literal character <code>'y'</code>. The compiler gets confused trying to read a character as a memory address, and the program will crash!
+            </div>
+        </section>
+
+    </div>
+
+</body>
+</html>

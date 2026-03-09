@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture Notes: Comparing Strings in C</title>
+    <style>
+        /* Global Styles */
+        :root {
+            --bg-color: #f4f7f6;
+            --text-main: #333;
+            --text-muted: #666;
+            --primary: #4A90E2;
+            --accent-red: #E74C3C;
+            --accent-green: #2ECC71;
+            --card-bg: #ffffff;
+            --code-bg: #282c34;
+            --highlight: #FFF3CD;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Vertical Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            padding-bottom: 50px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 40px 0 20px 0;
+        }
+        header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Topic Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-top: 4px solid var(--primary);
+        }
+
+        .card h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h3 {
+            margin: 20px 0 10px 0;
+            color: #2c3e50;
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* Callout Boxes */
+        .note-box {
+            background-color: var(--highlight);
+            padding: 15px 20px;
+            border-left: 5px solid #F1C40F;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+            font-size: 0.95rem;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: #abb2bf;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+        .code-comment { color: #5c6370; font-style: italic; }
+        .code-keyword { color: #c678dd; }
+        .code-string { color: #98c379; }
+        .code-func { color: #61afef; }
+        .code-type { color: #e5c07b; }
+
+        /* Visualizations */
+        .visualization-box {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .memory-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 15px;
+        }
+
+        .memory-label {
+            font-weight: bold;
+            width: 80px;
+            color: #2c3e50;
+        }
+
+        .memory-array {
+            display: flex;
+            gap: 5px;
+        }
+
+        .memory-cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .cell-box {
+            width: 45px;
+            height: 45px;
+            background: white;
+            border: 2px solid #bdc3c7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 4px;
+            color: #2c3e50;
+        }
+
+        .cell-index {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .cell-box.highlight {
+            border-color: var(--accent-red);
+            background-color: #fadbd8;
+        }
+
+        .cell-box.null {
+            color: #7f8c8d;
+            background-color: #ecf0f1;
+        }
+
+        /* ASCII Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+
+        /* Assignment Card */
+        .assignment-card {
+            border-top-color: #9b59b6;
+            background-color: #fdfbfd;
+        }
+        .assignment-card h2 {
+            color: #8e44ad;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header Section -->
+        <header>
+            <h1>📚 Comparing Strings in C</h1>
+            <p>Comprehensive Lecture Notes & Memory Visualizations</p>
+        </header>
+
+        <!-- Topic 1 -->
+        <div class="card">
+            <h2>🔍 1. Introduction to String Comparison</h2>
+            <p>In C, we cannot compare strings using the standard <code>==</code> operator because strings are arrays (pointers). Instead, we compare them using <strong>Lexicographical Comparison</strong> (character-by-character from left to right).</p>
+            
+            <h3>How it works:</h3>
+            <ul>
+                <li><strong>Example 1:</strong> <code>computer</code> vs <code>computer</code>. Result: <strong>Equal</strong>.</li>
+                <li><strong>Example 2:</strong> <code>Computer</code> vs <code>computer</code>. Result: <strong>Not Equal</strong>. The very first characters ('C' vs 'c') are different due to case sensitivity.</li>
+            </ul>
+
+            <div class="note-box">
+                <strong>Instructor's Note:</strong> There are two ways to do this. We can use the predefined C function <code>strcmp()</code>, or we can write our own custom logic using loops. We will learn both!
+            </div>
+        </div>
+
+        <!-- Topic 2 -->
+        <div class="card">
+            <h2>⚙️ 2. Deep Dive: The <code>strcmp()</code> Function</h2>
+            <p>To use the built-in function, you must include the header file <code>&lt;string.h&gt;</code>.</p>
+            
+            <h3>The Prototype (Under the hood)</h3>
+            <pre><code><span class="code-type">int</span> <span class="code-func">strcmp</span>(<span class="code-keyword">const char</span> *str1, <span class="code-keyword">const char</span> *str2);</code></pre>
+            
+            <ul>
+                <li><code>char *str1</code>: A pointer to the base address of the first string.</li>
+                <li><code>const</code>: Means the content at the memory location cannot be changed by this function. It makes the string read-only during comparison.</li>
+                <li><code>int</code>: The function returns an integer based on the comparison.</li>
+            </ul>
+
+            <h3>Understanding the Return Values</h3>
+            <p>The function subtracts the ASCII value of the characters. It returns three possible values:</p>
+            
+            <table>
+                <tr>
+                    <th>Return Value</th>
+                    <th>Meaning</th>
+                    <th>Condition</th>
+                </tr>
+                <tr>
+                    <td><strong>0 (Zero)</strong></td>
+                    <td>Strings are identical</td>
+                    <td>Both strings match perfectly, including case.</td>
+                </tr>
+                <tr>
+                    <td><strong>+ve (Positive)</strong></td>
+                    <td>str1 > str2</td>
+                    <td>The first unmatched character in <code>str1</code> has a larger ASCII value than in <code>str2</code>.</td>
+                </tr>
+                <tr>
+                    <td><strong>-ve (Negative)</strong></td>
+                    <td>str1 < str2</td>
+                    <td>The first unmatched character in <code>str1</code> has a smaller ASCII value than in <code>str2</code>.</td>
+                </tr>
+            </table>
+
+            <h3>ASCII Logic Example</h3>
+            <p>If we compare <code>str1 = "computer"</code> (lowercase 'c') with <code>str2 = "Computer"</code> (uppercase 'C'):</p>
+            <div class="visualization-box">
+                <p>ASCII of 'c' = 99<br>ASCII of 'C' = 67</p>
+                <p><strong>Math:</strong> 99 > 67. Therefore, `str1` is greater.<br><strong>Result:</strong> Returns a Positive (+ve) value.</p>
+            </div>
+        </div>
+
+        <!-- Topic 3 -->
+        <div class="card">
+            <h2>💻 3. Basic Program Using <code>strcmp()</code></h2>
+            <p>Here is how we use the predefined function in a real C program.</p>
+            
+            <pre><code><span class="code-keyword">#include</span> &lt;stdio.h&gt;
+<span class="code-keyword">#include</span> &lt;string.h&gt;
+
+<span class="code-type">void</span> <span class="code-func">main</span>() {
+    <span class="code-type">char</span> s1[] = <span class="code-string">"Hello"</span>;
+    <span class="code-type">char</span> s2[] = <span class="code-string">"Welcome"</span>;
+    <span class="code-type">int</span> value; <span class="code-comment">// To store the return result</span>
+
+    value = <span class="code-func">strcmp</span>(s1, s2);
+
+    <span class="code-keyword">if</span> (value == <span class="code-keyword">0</span>) {
+        <span class="code-func">printf</span>(<span class="code-string">"Same"</span>);
+    } <span class="code-keyword">else</span> {
+        <span class="code-func">printf</span>(<span class="code-string">"Not same"</span>);
+    }
+}</code></pre>
+        </div>
+
+        <!-- Topic 4 -->
+        <div class="card">
+            <h2>🧠 4. Writing Custom Comparison Logic</h2>
+            <p>What if we aren't allowed to use <code>strcmp()</code>? We must write our own logic using a <code>for</code> loop to traverse the memory array.</p>
+
+            <h3>Memory Visualization</h3>
+            <p>Let's compare <code>s1 = "Hello"</code> and <code>s2 = "Hi"</code>.</p>
+            
+            <div class="visualization-box">
+                <div class="memory-row">
+                    <div class="memory-label">s1</div>
+                    <div class="memory-array">
+                        <div class="memory-cell"><div class="cell-box">H</div><div class="cell-index">0</div></div>
+                        <div class="memory-cell"><div class="cell-box highlight">e</div><div class="cell-index">1</div></div>
+                        <div class="memory-cell"><div class="cell-box">l</div><div class="cell-index">2</div></div>
+                        <div class="memory-cell"><div class="cell-box">l</div><div class="cell-index">3</div></div>
+                        <div class="memory-cell"><div class="cell-box">o</div><div class="cell-index">4</div></div>
+                        <div class="memory-cell"><div class="cell-box null">\0</div><div class="cell-index">5</div></div>
+                    </div>
+                </div>
+                <div class="memory-row">
+                    <div class="memory-label">s2</div>
+                    <div class="memory-array">
+                        <div class="memory-cell"><div class="cell-box">H</div><div class="cell-index">0</div></div>
+                        <div class="memory-cell"><div class="cell-box highlight">i</div><div class="cell-index">1</div></div>
+                        <div class="memory-cell"><div class="cell-box null">\0</div><div class="cell-index">2</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <h3>The Logic Breakdown</h3>
+            <p>We need to loop through the indices. But when does the loop stop? We stop when <strong>either</strong> string reaches its Null character <code>\0</code>.</p>
+            
+            <div class="note-box">
+                <strong>Crucial Condition:</strong> We use the Logical OR operator (<code>||</code>). The loop continues as long as: <br>
+                <code>s1[i] != '\0' || s2[i] != '\0'</code>
+            </div>
+
+            <h3>Dry Run (Tracing the code)</h3>
+            <ul>
+                <li><strong>i = 0:</strong> Compare <code>s1[0] ('H')</code> and <code>s2[0] ('H')</code>. They match. Loop continues.</li>
+                <li><strong>i = 1:</strong> Compare <code>s1[1] ('e')</code> and <code>s2[1] ('i')</code>. They <strong>DO NOT</strong> match (Highlighted in red above).</li>
+                <li>At index 1, we set a <code>flag = 1</code> and instantly <code>break;</code> out of the loop. There is no need to check the rest!</li>
+            </ul>
+        </div>
+
+        <!-- Topic 5 -->
+        <div class="card">
+            <h2>👨‍💻 5. Final Custom Implementation (IDE)</h2>
+            <p>Here is the full, complete code without using predefined functions, written in the IDE.</p>
+
+            <pre><code><span class="code-keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="code-type">void</span> <span class="code-func">main</span>() {
+    <span class="code-type">int</span> flag = <span class="code-keyword">0</span>, i; <span class="code-comment">// 0 means we assume they are the same</span>
+    <span class="code-type">char</span> s1[<span class="code-keyword">30</span>], s2[<span class="code-keyword">30</span>];
+
+    <span class="code-func">printf</span>(<span class="code-string">"Enter string 1: "</span>);
+    <span class="code-func">gets</span>(s1);
+    <span class="code-func">printf</span>(<span class="code-string">"Enter string 2: "</span>);
+    <span class="code-func">gets</span>(s2);
+
+    <span class="code-comment">// Loop until BOTH strings reach null</span>
+    <span class="code-keyword">for</span>(i = <span class="code-keyword">0</span>; s1[i] != <span class="code-string">'\0'</span> || s2[i] != <span class="code-string">'\0'</span>; i++) {
+        
+        <span class="code-comment">// If a mismatch is found</span>
+        <span class="code-keyword">if</span>(s1[i] != s2[i]) {
+            flag = <span class="code-keyword">1</span>; <span class="code-comment">// Flag 1 means "Not Same"</span>
+            <span class="code-keyword">break</span>;    <span class="code-comment">// Stop looping</span>
+        }
+    }
+
+    <span class="code-comment">// Final Check</span>
+    <span class="code-keyword">if</span>(flag == <span class="code-keyword">0</span>) {
+        <span class="code-func">printf</span>(<span class="code-string">"same"</span>);
+    } <span class="code-keyword">else</span> {
+        <span class="code-func">printf</span>(<span class="code-string">"not same"</span>);
+    }
+}</code></pre>
+        </div>
+
+        <!-- Assignment -->
+        <div class="card assignment-card">
+            <h2>🎯 Instructor's Challenge</h2>
+            <p>At the end of the video, the instructor leaves you with an assignment to test your understanding of the loop condition.</p>
+            
+            <p><strong>The Task:</strong> In the <code>for</code> loop above, change the Logical OR (<code>||</code>) to a Logical AND (<code>&&</code>).</p>
+            
+            <pre><code><span class="code-comment">// Change this:</span>
+<span class="code-keyword">for</span>(i = <span class="code-keyword">0</span>; s1[i] != <span class="code-string">'\0'</span> <span class="code-keyword">||</span> s2[i] != <span class="code-string">'\0'</span>; i++)
+
+<span class="code-comment">// To this:</span>
+<span class="code-keyword">for</span>(i = <span class="code-keyword">0</span>; s1[i] != <span class="code-string">'\0'</span> <span class="code-keyword">&&</span> s2[i] != <span class="code-string">'\0'</span>; i++)</code></pre>
+
+            <div class="note-box">
+                <strong>Think about it:</strong> If you use <code>&&</code>, the loop stops as soon as the <em>shorter</em> string ends. Run the code and test it with <code>"Hello"</code> and <code>"Hello Jenny"</code>. What does the program output? Why does it fail? (Write your answer down as part of your study review!)
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

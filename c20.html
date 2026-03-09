@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: The Comma Operator</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --feed-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #0ea5e9;
+            --accent-glow: rgba(14, 165, 233, 0.4);
+            --code-bg: #0b1120;
+            --highlight: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Progress Bar for Vertical Feed */
+        #progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--accent);
+            width: 0%;
+            z-index: 1000;
+            transition: width 0.1s ease-out;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        header {
+            text-align: center;
+            padding: 4rem 1rem 2rem;
+            border-bottom: 1px solid #334155;
+            background: linear-gradient(180deg, rgba(15,23,42,1) 0%, rgba(30,41,59,1) 100%);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+        }
+
+        /* Feed Cards */
+        .card {
+            background: var(--feed-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            border: 1px solid #334155;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideUp 0.6s forwards;
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent);
+            border-bottom: 2px solid #334155;
+            padding-bottom: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Code Blocks (Whiteboard Simulation) */
+        .whiteboard {
+            background: var(--code-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+            color: #e2e8f0;
+            margin: 1.5rem 0;
+            border-left: 4px solid var(--accent);
+            overflow-x: auto;
+        }
+
+        .keyword { color: #c678dd; }
+        .variable { color: #e06c75; }
+        .number { color: #d19a66; }
+        .string { color: #98c379; }
+        .comment { color: #5c6370; font-style: italic; }
+
+        /* Memory Box Visualization */
+        .memory-visual {
+            display: flex;
+            gap: 2rem;
+            margin: 1.5rem 0;
+            padding: 1.5rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            justify-content: center;
+        }
+
+        .memory-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .box-label {
+            font-weight: bold;
+            color: var(--text-muted);
+        }
+
+        .box-value {
+            border: 2px solid var(--accent);
+            border-radius: 6px;
+            padding: 1rem 1.5rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: var(--code-bg);
+            position: relative;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .crossed-out {
+            text-decoration: line-through;
+            color: var(--danger);
+            opacity: 0.7;
+        }
+
+        /* Callouts */
+        .rule-box {
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--warning);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .error-box {
+            background: rgba(239, 68, 68, 0.1);
+            border-left: 4px solid var(--danger);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .step-list {
+            margin-left: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .step-list li {
+            margin-bottom: 0.8rem;
+            padding-left: 0.5rem;
+        }
+
+        .highlight {
+            color: var(--highlight);
+            font-weight: bold;
+        }
+        
+        /* Delays for cascading load effect */
+        .card:nth-child(2) { animation-delay: 0.1s; }
+        .card:nth-child(3) { animation-delay: 0.2s; }
+        .card:nth-child(4) { animation-delay: 0.3s; }
+        .card:nth-child(5) { animation-delay: 0.4s; }
+        .card:nth-child(6) { animation-delay: 0.5s; }
+        .card:nth-child(7) { animation-delay: 0.6s; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Scroll Progress -->
+    <div id="progress-bar"></div>
+
+    <header>
+        <h1>Operators in C (Special)</h1>
+        <p class="subtitle">Deep Dive: The Comma ( , ) Operator | Based on Jenny's Lectures</p>
+    </header>
+
+    <main class="feed-container">
+
+        <!-- Topic 1 -->
+        <section class="card">
+            <h2>1. Introduction to Special Operators</h2>
+            <p>After covering Arithmetic, Relational, Logical, and Bitwise operators, we have a few "Miscellaneous" or "Special" operators left to learn.</p>
+            <div class="whiteboard">
+                <span class="comment">// Special Operators in C</span><br><br>
+                1. <span class="highlight">,</span> (Comma Operator) -> <i>Focus of this lesson</i><br>
+                2. <span class="keyword">sizeof</span>() (Unary operator)<br>
+                3. <span class="highlight">*</span> and <span class="highlight">&amp;</span> (Pointer operators)<br>
+                4. <span class="highlight">.</span> and <span class="highlight">-&gt;</span> (Member selection operators)
+            </div>
+        </section>
+
+        <!-- Topic 2 -->
+        <section class="card">
+            <h2>2. The Golden Rules of the Comma</h2>
+            <p>The comma in C has a dual personality. It can act as a simple <strong>Separator</strong> or as an actual <strong>Operator</strong>.</p>
+            
+            <div class="rule-box">
+                <strong>Rule 1: Precedence</strong><br>
+                The comma operator has the <strong>LEAST (lowest) precedence</strong> of all operators in C. It is even lower than the assignment operator (<code>=</code>).
+            </div>
+            
+            <div class="rule-box">
+                <strong>Rule 2: Associativity</strong><br>
+                It evaluates expressions from <strong>Left to Right</strong>.
+            </div>
+
+            <div class="rule-box">
+                <strong>Rule 3: Operator Functionality</strong><br>
+                When acting as an operator, it evaluates the first operand (left), <strong>rejects/discards its value</strong>, evaluates the second operand (right), and <strong>returns the right value</strong>.
+            </div>
+        </section>
+
+        <!-- Topic 3 -->
+        <section class="card">
+            <h2>3. Comma as a Separator</h2>
+            <p>When declaring variables or passing arguments to functions, the comma is <strong>just a separator</strong>. It does not perform any operation.</p>
+            <div class="whiteboard">
+                <span class="keyword">int</span> <span class="variable">a</span>, <span class="variable">b</span>, <span class="variable">c</span>;<br>
+                <span class="keyword">int</span> <span class="variable">a</span> = <span class="number">10</span>, <span class="variable">b</span> = <span class="number">5</span>, <span class="variable">c</span> = <span class="number">10</span>;
+            </div>
+            <p>Here, it merely tells the compiler that you are listing multiple variables of the same data type.</p>
+        </section>
+
+        <!-- Topic 4 -->
+        <section class="card">
+            <h2>4. Concept: Precedence Clash (No Brackets)</h2>
+            <p>What happens when we use the comma as an operator alongside the assignment operator without any parentheses?</p>
+            <div class="whiteboard">
+                <span class="keyword">int</span> <span class="variable">a</span>;<br>
+                <span class="variable">a</span> = <span class="number">5</span>, <span class="number">4</span>;
+            </div>
+            <ul class="step-list">
+                <li>We have two operators: <code>=</code> and <code>,</code></li>
+                <li>Because <code>=</code> has <strong>higher precedence</strong>, <code>a = 5</code> executes first!</li>
+                <li>The comma operator then looks at <code>4</code>. It evaluates it, but the value is rejected because it isn't assigned to anything.</li>
+            </ul>
+            
+            <div class="memory-visual">
+                <div class="memory-box">
+                    <span class="box-label">Memory: Variable a</span>
+                    <span class="box-value">5</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Topic 5 -->
+        <section class="card">
+            <h2>5. Concept: The Power of Parentheses</h2>
+            <p>Let's add parentheses to the exact same code. Parentheses have the highest precedence.</p>
+            <div class="whiteboard">
+                <span class="keyword">int</span> <span class="variable">a</span>;<br>
+                <span class="variable">a</span> = (<span class="number">5</span>, <span class="number">4</span>);
+            </div>
+            <ul class="step-list">
+                <li>The expression inside <code>()</code> evaluates first.</li>
+                <li><strong>Left operand (5):</strong> Evaluated and <span class="crossed-out">discarded</span>.</li>
+                <li><strong>Right operand (4):</strong> Evaluated and <strong>returned</strong>.</li>
+                <li>The expression becomes: <code>a = 4;</code></li>
+            </ul>
+            
+            <div class="memory-visual">
+                <div class="memory-box">
+                    <span class="box-label">Memory: Variable a</span>
+                    <span class="box-value">4</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Topic 6 -->
+        <section class="card">
+            <h2>6. Concept: The Declaration Trap</h2>
+            <p>Watch out for this very common syntax error!</p>
+            <div class="whiteboard">
+                <span class="keyword">int</span> <span class="variable">a</span> = <span class="number">5</span>, <span class="number">4</span>; <span class="comment">// ERROR!</span>
+            </div>
+            <div class="error-box">
+                <strong>Why does this throw an error?</strong><br>
+                Because this line begins with a data type (<code>int</code>), the compiler treats the comma as a <strong>separator</strong>. It creates <code>a=5</code>, sees the comma, and expects another valid variable name (like <code>b</code>). Finding a hardcoded <code>4</code> instead causes a compilation error!
+            </div>
+            <p><strong>The Fix:</strong> Use parentheses: <code>int a = (5, 4);</code></p>
+        </section>
+
+        <!-- Topic 7 -->
+        <section class="card">
+            <h2>7. Concept: Chaining and Functions</h2>
+            <p>The comma operator can chain multiple expressions. Let's see how it behaves with functions like <code>printf</code>.</p>
+            <div class="whiteboard">
+                <span class="keyword">int</span> <span class="variable">a</span>;<br>
+                <span class="variable">a</span> = (<span class="keyword">printf</span>(<span class="string">"Jenny"</span>), <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>);
+            </div>
+            <ul class="step-list">
+                <li>Associativity is Left-to-Right.</li>
+                <li><strong>Step 1:</strong> <code>printf("Jenny")</code> executes. "Jenny" prints to the screen. Its return value is <span class="crossed-out">discarded</span>.</li>
+                <li><strong>Step 2:</strong> <code>2</code> is evaluated and <span class="crossed-out">discarded</span>.</li>
+                <li><strong>Step 3:</strong> <code>3</code> is evaluated and <span class="crossed-out">discarded</span>.</li>
+                <li><strong>Step 4:</strong> <code>4</code> is the right-most value. It is <strong>returned</strong>.</li>
+            </ul>
+            <div class="memory-visual">
+                <div class="memory-box">
+                    <span class="box-label">Console Output</span>
+                    <span class="box-value" style="color: var(--string);">Jenny</span>
+                </div>
+                <div class="memory-box">
+                    <span class="box-label">Memory: a</span>
+                    <span class="box-value highlight">4</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Topic 8 -->
+        <section class="card">
+            <h2>8. Concept: Increment Operations & Comma</h2>
+            <p>Let's trace how the comma works with post and pre-increment operators. This is highly tested in exams!</p>
+            
+            <h3>Example A: With Parentheses</h3>
+            <div class="whiteboard">
+                <span class="keyword">int</span> <span class="variable">a</span> = <span class="number">8</span>, <span class="variable">b</span>;<br>
+                <span class="variable">b</span> = (<span class="variable">a++</span>, <span class="variable">++a</span>);
+            </div>
+            <ul class="step-list">
+                <li><code>()</code> evaluated first. Left to right.</li>
+                <li><code>a++</code> (Post-increment): Current value 8 is evaluated but <span class="crossed-out">discarded</span>. Memory <code>a</code> becomes 9.</li>
+                <li><code>++a</code> (Pre-increment): Memory <code>a</code> increments to 10. The value 10 is evaluated and <strong>returned</strong>.</li>
+                <li><code>b = 10</code>.</li>
+            </ul>
+            <div class="memory-visual">
+                <div class="memory-box">
+                    <span class="box-label">Memory: a</span>
+                    <span class="box-value"><span class="crossed-out" style="font-size: 1rem; position:absolute; top:-20px;">8, 9</span> 10</span>
+                </div>
+                <div class="memory-box">
+                    <span class="box-label">Memory: b</span>
+                    <span class="box-value">10</span>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 2rem;">Example B: Without Parentheses</h3>
+            <div class="whiteboard">
+                <span class="keyword">int</span> <span class="variable">a</span> = <span class="number">8</span>, <span class="variable">b</span>;<br>
+                <span class="variable">b</span> = <span class="variable">a++</span>, <span class="variable">++a</span>;
+            </div>
+            <ul class="step-list">
+                <li>Precedence alert! <code>=</code> is evaluated <strong>before</strong> <code>,</code>.</li>
+                <li><code>b = a++</code> executes first. <code>b</code> gets the original value of <code>a</code> (8). Then <code>a</code> becomes 9.</li>
+                <li>The comma moves execution to <code>++a</code>. <code>a</code> becomes 10. Value is discarded.</li>
+            </ul>
+            <div class="memory-visual">
+                <div class="memory-box">
+                    <span class="box-label">Memory: a</span>
+                    <span class="box-value"><span class="crossed-out" style="font-size: 1rem; position:absolute; top:-20px;">8, 9</span> 10</span>
+                </div>
+                <div class="memory-box">
+                    <span class="box-label">Memory: b</span>
+                    <span class="box-value highlight">8</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Topic 9 -->
+        <section class="card">
+            <h2>9. Instructor Assignments (Your Turn!)</h2>
+            <p>Based on the rules we just learned, predict the output of the following snippets in the comments!</p>
+            
+            <div class="whiteboard">
+                <span class="comment">// Assignment 1</span><br>
+                <span class="keyword">int</span> <span class="variable">a</span>;<br>
+                <span class="variable">a</span> = <span class="keyword">printf</span>(<span class="string">"Jenny"</span>), <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>;<br>
+                <span class="comment">What is the value of a? (Hint: Check precedence of '=' vs ',')</span>
+            </div>
+
+            <div class="whiteboard">
+                <span class="comment">// Assignment 2</span><br>
+                <span class="keyword">int</span> <span class="variable">a</span> = <span class="number">8</span>, <span class="variable">b</span>;<br>
+                <span class="variable">b</span> = <span class="variable">a++</span>, <span class="variable">++a</span>, <span class="variable">a</span> &gt;&gt; <span class="number">2</span>;<br>
+                <span class="comment">What are the final values of a and b?</span>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Update progress bar on scroll
+        window.onscroll = function() {
+            let winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            let height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            let scrolled = (winScroll / height) * 100;
+            document.getElementById("progress-bar").style.width = scrolled + "%";
+        };
+
+        // Simple Intersection Observer to fade in cards as user scrolls
+        const cards = document.querySelectorAll('.card');
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: "0px 0px -50px 0px"
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        cards.forEach(card => {
+            // Pause animation initially so it only triggers on scroll
+            card.style.animationPlayState = 'paused';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

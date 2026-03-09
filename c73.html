@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Pointers Study Feed</title>
+    <style>
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --accent: #3b82f6;
+            --danger: #ef4444;
+            --warning-bg: #fef3c7;
+            --warning-border: #f59e0b;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --memory-border: #374151;
+            --memory-fill: #f9fafb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* --- Vertical Feed Layout --- */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 3rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        .header-card {
+            text-align: center;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid #e5e7eb;
+            margin-bottom: 1rem;
+        }
+
+        .header-card h1 {
+            font-size: 2.5rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+        }
+
+        .header-card p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .feed-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeUp 0.6s ease-out forwards;
+        }
+
+        /* Animation delays for initial load */
+        .feed-card:nth-child(1) { animation-delay: 0.1s; }
+        .feed-card:nth-child(2) { animation-delay: 0.2s; }
+
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feed-card h2 {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .feed-card h2::before {
+            content: "📚";
+        }
+
+        .feed-card p {
+            margin-bottom: 1.5rem;
+            font-size: 1.05rem;
+        }
+
+        /* --- Code Blocks --- */
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        code.inline {
+            background: #e5e7eb;
+            color: #b91c1c;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        /* --- Warning Callouts --- */
+        .callout {
+            background: var(--warning-bg);
+            border-left: 5px solid var(--warning-border);
+            padding: 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1.5rem 0;
+        }
+
+        .callout strong {
+            color: #92400e;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        /* --- Memory Visualizations (Whiteboard Recreation) --- */
+        .visual-container {
+            background: #ffffff;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .memory-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 120px;
+        }
+
+        .var-name {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .var-box {
+            width: 80px;
+            height: 60px;
+            border: 3px solid var(--memory-border);
+            background: var(--memory-fill);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-family: monospace;
+            font-weight: bold;
+            border-radius: 6px;
+            position: relative;
+            box-shadow: 4px 4px 0px #cbd5e1;
+        }
+
+        .var-address {
+            margin-top: 10px;
+            font-family: monospace;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            background: #e2e8f0;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .pointer-status {
+            margin-top: 10px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #059669;
+            text-align: center;
+        }
+
+        .pointer-status.danger {
+            color: var(--danger);
+        }
+
+        .crossed-out {
+            text-decoration: line-through;
+            color: var(--danger);
+            margin-right: 8px;
+            font-size: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .feed-card {
+                padding: 1.5rem;
+            }
+            .visual-container {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="feed-container">
+        
+        <div class="header-card">
+            <h1>Pointer Assignment in C</h1>
+            <p>Scroll down to follow the lecture. Learn how to assign addresses vs. values using pointers.</p>
+        </div>
+
+        <!-- Section 1 -->
+        <article class="feed-card observer-target">
+            <h2>1. Initial Setup & Memory Visualization</h2>
+            <p>We begin by setting up standard integer variables and declaring our pointers. To understand pointers, you must visualize how they look in the computer's memory.</p>
+<pre>
+int a = 10, b = 11;
+int *p, *q;
+</pre>
+            
+            <div class="callout">
+                <strong>⚠️ Instructor Clarification:</strong>
+                <p>In the declaration line <code class="inline">int *p, *q;</code>, the asterisk (<code class="inline">*</code>) is <strong>NOT</strong> acting as a dereferencing/indirection operator. It simply tells the compiler: <em>"These variables are pointers that will hold memory addresses."</em></p>
+            </div>
+
+            <p>Here is what the memory looks like right now (assuming hypothetical addresses):</p>
+
+            <div class="visual-container">
+                <div class="memory-node">
+                    <div class="var-name">a</div>
+                    <div class="var-box">10</div>
+                    <div class="var-address">Addr: 1000</div>
+                </div>
+                <div class="memory-node">
+                    <div class="var-name">b</div>
+                    <div class="var-box">11</div>
+                    <div class="var-address">Addr: 1046</div>
+                </div>
+                <div class="memory-node">
+                    <div class="var-name">p</div>
+                    <div class="var-box" style="color:#9ca3af; font-size:1rem;">Garbage</div>
+                    <div class="var-address">Addr: 2000</div>
+                </div>
+                <div class="memory-node">
+                    <div class="var-name">q</div>
+                    <div class="var-box" style="color:#9ca3af; font-size:1rem;">Garbage</div>
+                    <div class="var-address">Addr: 3000</div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Section 2 -->
+        <article class="feed-card observer-target">
+            <h2>2. Direct Pointer Assignment (Address Copy)</h2>
+            <p>Now, let's assign the address of variable <code class="inline">a</code> to pointer <code class="inline">p</code>, and then assign <code class="inline">p</code> directly to <code class="inline">q</code>.</p>
+<pre>
+p = &a; 
+q = p;  // Direct Assignment
+</pre>
+            <p><strong>What is happening?</strong> You are taking whatever value is currently stored inside <code class="inline">p</code> (the address <code class="inline">1000</code>) and copying it into <code class="inline">q</code>. Now, <strong>both pointers are pointing to the exact same variable (a)</strong>.</p>
+
+            <div class="visual-container">
+                <div class="memory-node">
+                    <div class="var-name">a</div>
+                    <div class="var-box">10</div>
+                    <div class="var-address">Addr: 1000</div>
+                </div>
+                <div class="memory-node">
+                    <div class="var-name">p</div>
+                    <div class="var-box">1000</div>
+                    <div class="var-address">Addr: 2000</div>
+                    <div class="pointer-status">👉 Points to 'a'</div>
+                </div>
+                <div class="memory-node">
+                    <div class="var-name">q</div>
+                    <div class="var-box">1000</div>
+                    <div class="var-address">Addr: 3000</div>
+                    <div class="pointer-status">👉 Points to 'a'</div>
+                </div>
+            </div>
+            
+            <p>If we run <code class="inline">printf("a = %d %d %d", a, *p, *q);</code>, the output will be: <br><br><strong>Console:</strong> <code class="inline">10 10 10</code></p>
+        </article>
+
+        <!-- Section 3 -->
+        <article class="feed-card observer-target">
+            <h2>3. The Danger Zone (Uninitialized Dereferencing)</h2>
+            <p>What happens if we alter the code and try to assign <strong>values</strong> instead of addresses, but forget to initialize <code class="inline">q</code> first?</p>
+<pre>
+p = &a;
+*q = *p; // DANGER! 'q' has no address yet
+</pre>
+            <p>The right side (<code class="inline">*p</code>) works fine; it grabs the value <code class="inline">10</code>. But the left side tells the computer: <em>"Take this 10 and store it at the memory address currently held inside q."</em></p>
+
+            <div class="visual-container">
+                <div class="memory-node">
+                    <div class="var-name">p</div>
+                    <div class="var-box">1000</div>
+                    <div class="pointer-status">👉 Points to 'a'</div>
+                </div>
+                <div class="memory-node">
+                    <div class="var-name">q</div>
+                    <div class="var-box" style="border-color: red; color: red;">?@#*</div>
+                    <div class="pointer-status danger">💥 Points to nowhere!</div>
+                </div>
+            </div>
+
+            <div class="callout" style="background: #fee2e2; border-color: #ef4444;">
+                <strong style="color: #991b1b;">💥 Program Crash (Segmentation Fault)</strong>
+                <p>Because <code class="inline">q</code> holds a random garbage value, the computer attempts to access a random, illegal memory location to store the '10'. The program instantly crashes and stops working.</p>
+            </div>
+        </article>
+
+        <!-- Section 4 -->
+        <article class="feed-card observer-target">
+            <h2>4. Value Assignment Using Pointers</h2>
+            <p>To fix the crash, we must ensure <code class="inline">q</code> is pointing to a valid memory location before we dereference it. Let's point it to <code class="inline">b</code>.</p>
+<pre>
+p = &a;
+q = &b;
+*q = *p; // Overwriting the value inside 'b'
+</pre>
+            <p>This is <strong>Value Assignment</strong>. We are saying: "Go to the address inside <code class="inline">q</code> (which is <code class="inline">b</code>'s address, 1046) and overwrite whatever is there with the value found at the address inside <code class="inline">p</code> (which is 10)."</p>
+
+            <div class="visual-container">
+                <div class="memory-node">
+                    <div class="var-name">a</div>
+                    <div class="var-box">10</div>
+                    <div class="var-address">Addr: 1000</div>
+                </div>
+                <div class="memory-node">
+                    <div class="var-name">b</div>
+                    <div class="var-box"><span class="crossed-out">11</span>10</div>
+                    <div class="var-address">Addr: 1046</div>
+                </div>
+                <div class="memory-node">
+                    <div class="var-name">p</div>
+                    <div class="var-box">1000</div>
+                    <div class="pointer-status">👉 Points to 'a'</div>
+                </div>
+                <div class="memory-node">
+                    <div class="var-name">q</div>
+                    <div class="var-box">1046</div>
+                    <div class="pointer-status">👉 Points to 'b'</div>
+                </div>
+            </div>
+            <p>If we print <code class="inline">a, *p, *q</code> now, the output is: <br><br><strong>Console:</strong> <code class="inline">10 10 10</code></p>
+        </article>
+
+        <!-- Section 5 -->
+        <article class="feed-card observer-target">
+            <h2>5. VS Code Demo: Pointer Data Type Rules</h2>
+            <p>In the final part of the lecture, the instructor demonstrates a vital rule in her IDE. She changes the pointer declarations to <code class="inline">float</code>, but leaves the variables as <code class="inline">int</code>.</p>
+<pre>
+float *p, *q;
+int a = 10, b = 11;
+
+p = &a; // IDE Warning generated here!
+</pre>
+
+            <div class="callout">
+                <strong>🚨 Compiler Warning: Incompatible Pointer Type</strong>
+                <p>A pointer's data type must <strong>strictly match</strong> the data type of the variable whose address it is holding. You cannot store the address of an <code class="inline">int</code> inside a <code class="inline">float *</code>.</p>
+            </div>
+
+            <p>To fix this, she changes variables <code class="inline">a</code> and <code class="inline">b</code> to floats, and uses <code class="inline">%f</code> in the printf statement, resulting in a successful output of <code class="inline">10.000000</code>.</p>
+        </article>
+        
+        <div class="header-card" style="border: none; margin-top: 2rem;">
+            <p>✅ End of Lecture Notes. You're ready for Pointer Arithmetic!</p>
+        </div>
+
+    </main>
+
+    <!-- Simple script for scroll animations -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.15
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animation = `fadeUp 0.6s ease-out forwards`;
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            const cards = document.querySelectorAll('.observer-target');
+            cards.forEach(card => {
+                // Remove animation initially so the observer can trigger it
+                card.style.animation = 'none';
+                card.style.opacity = '0';
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>

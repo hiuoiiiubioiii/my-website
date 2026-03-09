@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes: Summing Two Arrays in C</title>
+    <style>
+        /* Base Styles & Typography */
+        :root {
+            --bg-color: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --secondary: #0ea5e9;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --card-bg: #ffffff;
+            --code-bg: #1e293b;
+            --code-text: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Vertical Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .page-header h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Content Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-top: 4px solid var(--primary);
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Callout Boxes */
+        .callout {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            border-left: 4px solid;
+        }
+
+        .callout.tip {
+            background-color: #eff6ff;
+            border-color: var(--primary);
+            color: #1e3a8a;
+        }
+
+        .callout.warning {
+            background-color: #fef2f2;
+            border-color: var(--danger);
+            color: #991b1b;
+        }
+
+        .callout strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        /* Code Blocks */
+        pre {
+            background-color: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 1.5rem 0;
+        }
+
+        code .comment { color: #64748b; }
+        code .keyword { color: #c678dd; }
+        code .function { color: #61afef; }
+        code .string { color: #98c379; }
+        code .number { color: #d19a66; }
+
+        /* Array Visualization Styles */
+        .viz-section {
+            margin: 2rem 0;
+            background: #f1f5f9;
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .array-row {
+            display: flex;
+            align-items: flex-end;
+            margin-bottom: 1.5rem;
+            gap: 1rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .array-label {
+            width: 80px;
+            font-weight: bold;
+            color: var(--primary);
+            flex-shrink: 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .array-blocks {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .array-cell-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .array-box {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border: 2px solid var(--text-muted);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--text-main);
+            position: relative;
+        }
+
+        .array-box.garbage {
+            color: var(--danger);
+            font-style: italic;
+            font-size: 1rem;
+        }
+
+        .array-box.result {
+            border-color: var(--success);
+            background-color: #ecfdf5;
+            color: #065f46;
+        }
+
+        .array-index {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        .array-address {
+            font-size: 0.75rem;
+            color: var(--accent);
+            margin-bottom: 0.25rem;
+            font-family: monospace;
+        }
+
+        .math-operator {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            padding: 0 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        hr {
+            border: 0;
+            height: 1px;
+            background: #e2e8f0;
+            margin: 2rem 0;
+        }
+
+        ul {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+    
+    <header class="page-header">
+        <h1>Arrays in C</h1>
+        <p>In-Depth Breakdown: Summing Two Arrays into a Third</p>
+    </header>
+
+    <!-- SECTION 1 -->
+    <section class="card">
+        <h2>📌 1. The Problem Statement</h2>
+        <p><strong>Question:</strong> Write a program (WAP) to read two arrays of size 5 and store the sum of these arrays into a third array.</p>
+        
+        <div class="callout tip">
+            <strong>💡 Instructor's Pro-Tip for Interviews</strong>
+            Never start coding immediately. When given a problem, take a moment to understand it clearly. Don't just read the problem and start writing syntax. If you have doubts, ask the interviewer clarifying questions. Break the problem down conceptually on a whiteboard first.
+        </div>
+    </section>
+
+    <!-- SECTION 2 -->
+    <section class="card">
+        <h2>👁️ 2. Visualizing the Concept</h2>
+        <p>Before writing code, the instructor visualizes memory allocation. We need three arrays, each of size 5. Because arrays are zero-indexed, the indices will run from <code>0</code> to <code>4</code>.</p>
+        
+        <p>The logic requires element-by-element addition. We will add elements that share the exact same index location:</p>
+        <ul>
+            <li><code>arr1[0] + arr2[0] = sumArr[0]</code></li>
+            <li><code>arr1[1] + arr2[1] = sumArr[1]</code></li>
+        </ul>
+
+        <div class="viz-section">
+            <div class="array-row">
+                <div class="array-label">arr1</div>
+                <div class="array-blocks">
+                    <div class="array-cell-container"><div class="array-box">10</div><div class="array-index">0</div></div>
+                    <div class="array-cell-container"><div class="array-box">0</div><div class="array-index">1</div></div>
+                    <div class="array-cell-container"><div class="array-box">-1</div><div class="array-index">2</div></div>
+                    <div class="array-cell-container"><div class="array-box">1</div><div class="array-index">3</div></div>
+                    <div class="array-cell-container"><div class="array-box">2</div><div class="array-index">4</div></div>
+                </div>
+            </div>
+            
+            <div class="array-row" style="margin-left: 96px;">
+                <div class="math-operator">+</div>
+            </div>
+
+            <div class="array-row">
+                <div class="array-label">arr2</div>
+                <div class="array-blocks">
+                    <div class="array-cell-container"><div class="array-box">0</div><div class="array-index">0</div></div>
+                    <div class="array-cell-container"><div class="array-box">5</div><div class="array-index">1</div></div>
+                    <div class="array-cell-container"><div class="array-box">4</div><div class="array-index">2</div></div>
+                    <div class="array-cell-container"><div class="array-box">3</div><div class="array-index">3</div></div>
+                    <div class="array-cell-container"><div class="array-box">1</div><div class="array-index">4</div></div>
+                </div>
+            </div>
+
+            <div class="array-row" style="margin-left: 96px; border-top: 2px dashed #94a3b8; padding-top: 1.5rem;">
+                <div class="math-operator">=</div>
+            </div>
+
+            <div class="array-row">
+                <div class="array-label">sumArr</div>
+                <div class="array-blocks">
+                    <div class="array-cell-container"><div class="array-box result">10</div><div class="array-index">0</div></div>
+                    <div class="array-cell-container"><div class="array-box result">5</div><div class="array-index">1</div></div>
+                    <div class="array-cell-container"><div class="array-box result">3</div><div class="array-index">2</div></div>
+                    <div class="array-cell-container"><div class="array-box result">4</div><div class="array-index">3</div></div>
+                    <div class="array-cell-container"><div class="array-box result">3</div><div class="array-index">4</div></div>
+                </div>
+            </div>
+        </div>
+        
+        <p><strong>Loop Requirements:</strong> Based on this visual, we need 3 loops:</p>
+        <ul>
+            <li>One loop to take user input for <code>arr1</code>.</li>
+            <li>One loop to take user input for <code>arr2</code>.</li>
+            <li>One loop to calculate the sum, store it in <code>sumArr</code>, and print it immediately.</li>
+        </ul>
+    </section>
+
+    <!-- SECTION 3 -->
+    <section class="card">
+        <h2>🧠 3. Memory "Dry Run" Trace</h2>
+        <p>This is the most crucial part of the lecture. The instructor explains exactly how the computer executes the code in RAM memory.</p>
+
+        <div class="callout warning">
+            <strong>⚠️ Important Memory Note: Garbage Values</strong>
+            When we declare arrays like <code>int arr1[5];</code> but haven't put numbers in them yet, the computer allocates the memory blocks, but they hold unpredictable data called <strong>garbage values</strong>.
+        </div>
+
+        <div class="viz-section">
+            <h4>State 1: Array Declaration (Memory Allocated)</h4>
+            <p style="font-size: 0.9rem; margin-bottom: 1rem;">Let's assume the base memory addresses are 100, 200, and 1000.</p>
+            <div class="array-row">
+                <div class="array-label" style="width:50px;">arr1</div>
+                <div class="array-blocks">
+                    <div class="array-cell-container"><div class="array-address">100</div><div class="array-box garbage">garb</div></div>
+                    <div class="array-cell-container"><div class="array-address">104</div><div class="array-box garbage">garb</div></div>
+                </div>
+                <span style="color:var(--text-muted); margin-bottom:20px;">... (up to index 4)</span>
+            </div>
+            <div class="array-row">
+                <div class="array-label" style="width:50px;">sumArr</div>
+                <div class="array-blocks">
+                    <div class="array-cell-container"><div class="array-address">1000</div><div class="array-box garbage">garb</div></div>
+                    <div class="array-cell-container"><div class="array-address">1004</div><div class="array-box garbage">garb</div></div>
+                </div>
+                <span style="color:var(--text-muted); margin-bottom:20px;">...</span>
+            </div>
+        </div>
+
+        <h4>State 2: The Logic Execution</h4>
+        <p>During the third loop, when <code>i = 0</code>:</p>
+        <ol>
+            <li>The computer looks at <code>sumArr[0] = arr1[0] + arr2[0]</code>.</li>
+            <li>It fetches values from memory addresses <code>100</code> and <code>200</code>.</li>
+            <li>Calculates <code>10 + 0 = 10</code>.</li>
+            <li>It overwrites the garbage value at memory address <code>1000</code> with the number <code>10</code>.</li>
+        </ol>
+        
+        <div class="viz-section" style="margin-top: 1rem;">
+            <div class="array-row" style="margin-bottom:0;">
+                <div class="array-label" style="width:50px;">sumArr</div>
+                <div class="array-blocks">
+                    <div class="array-cell-container"><div class="array-address">1000</div><div class="array-box result">10</div></div>
+                    <div class="array-cell-container"><div class="array-address">1004</div><div class="array-box garbage">garb</div></div>
+                </div>
+                <span style="color:var(--text-muted); margin-bottom:20px;">... (index 1 is still garbage until loop reaches i=1)</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 4 -->
+    <section class="card">
+        <h2>💻 4. The Final Code (Live IDE Version)</h2>
+        <p>At the end of the video, the instructor switches to VS Code. She changes the array names to <code>a</code>, <code>b</code>, and <code>c</code> for simplicity, and adds print statements to guide the user.</p>
+
+        <div class="callout tip">
+            <strong>💡 Instructor's Syntax Tip</strong>
+            If there is only <strong>one</strong> statement inside a <code>for</code> loop, you do not need to use curly braces <code>{}</code>. However, in our third loop, we calculate <em>and</em> print, so curly braces are mandatory there!
+        </div>
+
+<pre><code><span class="keyword">#include</span> <span class="string">&lt;stdio.h&gt;</span>
+
+<span class="keyword">int</span> <span class="function">main</span>() {
+    <span class="comment">// 1. Declare three arrays of size 5, and a loop counter 'i'</span>
+    <span class="keyword">int</span> a[<span class="number">5</span>], b[<span class="number">5</span>], c[<span class="number">5</span>];
+    <span class="keyword">int</span> i;
+
+    <span class="comment">// 2. Input for First Array</span>
+    <span class="function">printf</span>(<span class="string">"Enter first array elements:\n"</span>);
+    <span class="keyword">for</span>(i = <span class="number">0</span>; i < <span class="number">5</span>; i++) {
+        <span class="function">scanf</span>(<span class="string">"%d"</span>, &a[i]);
+    }
+
+    <span class="comment">// 3. Input for Second Array</span>
+    <span class="function">printf</span>(<span class="string">"Enter second array elements:\n"</span>);
+    <span class="keyword">for</span>(i = <span class="number">0</span>; i < <span class="number">5</span>; i++) {
+        <span class="function">scanf</span>(<span class="string">"%d"</span>, &b[i]);
+    }
+
+    <span class="comment">// 4. Calculating Sum and Printing (Requires curly braces for 2 statements)</span>
+    <span class="keyword">for</span>(i = <span class="number">0</span>; i < <span class="number">5</span>; i++) {
+        <span class="comment">// Core logic: overwrite garbage value with addition</span>
+        c[i] = a[i] + b[i];
+        
+        <span class="comment">// Printing the result immediately</span>
+        <span class="function">printf</span>(<span class="string">"Third array element at index %d is: %d\n"</span>, i, c[i]);
+    }
+
+    <span class="keyword">return</span> <span class="number">0</span>;
+}</code></pre>
+
+        <hr>
+        
+        <h3>Terminal Output</h3>
+        <p>When executing the code, it looks exactly like this:</p>
+<pre style="background-color: #0f172a; color: #38bdf8; padding: 1rem; border-left: 4px solid #38bdf8;"><code>Enter first array elements:
+1 1 1 1 1
+Enter second array elements:
+1 1 1 1 1
+
+Third array element at index 0 is: 2
+Third array element at index 1 is: 2
+Third array element at index 2 is: 2
+Third array element at index 3 is: 2
+Third array element at index 4 is: 2</code></pre>
+    </section>
+
+</div>
+
+</body>
+</html>

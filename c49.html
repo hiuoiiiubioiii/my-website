@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming Notes: Arrays</title>
+    <style>
+        /* --- GLOBAL STYLES --- */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+        :root {
+            --bg-color: #f4f6f8;
+            --surface: #ffffff;
+            --primary: #2563eb;
+            --primary-light: #eff6ff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --danger: #ef4444;
+            --danger-light: #fef2f2;
+            --success: #10b981;
+            --success-light: #ecfdf5;
+            --code-bg: #1e293b;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* --- VERTICAL FEED LAYOUT --- */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem; /* Creates the continuous scroll effect between cards */
+        }
+
+        .feed-card {
+            background: var(--surface);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border);
+        }
+
+        .feed-card h2 {
+            margin-top: 0;
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 0.5rem;
+            font-size: 1.75rem;
+        }
+
+        .feed-card h3 {
+            color: var(--text-main);
+            margin-top: 1.5rem;
+        }
+
+        /* --- CUSTOM CALLOUT BOXES --- */
+        .callout {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            border-left: 4px solid;
+        }
+        
+        .callout.info {
+            background-color: var(--primary-light);
+            border-color: var(--primary);
+        }
+
+        .callout.warning {
+            background-color: var(--danger-light);
+            border-color: var(--danger);
+        }
+
+        .callout.success {
+            background-color: var(--success-light);
+            border-color: var(--success);
+        }
+
+        .callout-title {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        /* --- MEMORY VISUALIZATION (WHITEBOARD SIMULATION) --- */
+        .visualization-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 3rem 0;
+            padding: 2rem;
+            background: #fdfdfd;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            position: relative;
+        }
+
+        .vis-title {
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+
+        .memory-array {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .memory-cell {
+            width: 70px;
+            height: 70px;
+            border: 3px solid var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.5rem;
+            font-weight: bold;
+            position: relative;
+            background: white;
+        }
+
+        /* Remove double borders between cells */
+        .memory-cell + .memory-cell {
+            margin-left: -3px;
+        }
+
+        .index-label {
+            position: absolute;
+            top: -30px;
+            font-size: 0.85rem;
+            color: var(--primary);
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .address-label {
+            position: absolute;
+            bottom: -35px;
+            font-size: 0.85rem;
+            color: var(--danger);
+            font-family: 'Fira Code', monospace;
+        }
+
+        .pointer-box {
+            margin-bottom: 2rem;
+            text-align: center;
+            background: var(--primary-light);
+            border: 2px solid var(--primary);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-family: 'Fira Code', monospace;
+            font-weight: bold;
+        }
+
+        .pointer-arrow {
+            width: 2px;
+            height: 30px;
+            background: var(--primary);
+            margin: 0 auto;
+            position: relative;
+        }
+        .pointer-arrow::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: -5px;
+            border-width: 6px;
+            border-style: solid;
+            border-color: var(--primary) transparent transparent transparent;
+        }
+
+        /* --- CODE BLOCKS --- */
+        pre {
+            background-color: var(--code-bg);
+            color: #f8f8f2;
+            padding: 1.25rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        code .keyword { color: #ff79c6; }
+        code .type { color: #8be9fd; }
+        code .function { color: #50fa7b; }
+        code .string { color: #f1fa8c; }
+        code .comment { color: #6272a4; }
+        code .number { color: #bd93f9; }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 3rem 1rem 1rem;
+        }
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--text-main);
+            margin: 0;
+        }
+        header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+        
+        /* Utility */
+        ul li { margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>📘 C Programming: Arrays</h1>
+        <p>Continuous Study Feed • Video Breakdown • Memory Visualizations</p>
+    </header>
+
+    <div class="feed-container">
+
+        <!-- CARD 1: THEORY -->
+        <article class="feed-card">
+            <h2>1. Array Theory & Core Rules</h2>
+            <p>Before diving into code, the instructor outlines the fundamental rules of arrays on the whiteboard. Think of an array as a single variable that holds multiple items.</p>
+            
+            <h3>What is an Array?</h3>
+            <ul>
+                <li><strong>Definition:</strong> A collection of more than one data item of the <strong>same data type</strong>. (You cannot mix <code>int</code> and <code>char</code>).</li>
+                <li><strong>Derived Data Type:</strong> It is built upon primitive types (like <code>int</code>, <code>char</code>, <code>float</code>).</li>
+                <li><strong>Memory:</strong> Elements are stored in <strong>contiguous (continuous) memory locations</strong>. There are no gaps between the elements inside the computer's memory.</li>
+            </ul>
+
+            <div class="callout success">
+                <span class="callout-title">✅ Advantages of Arrays</span>
+                <ul>
+                    <li><strong>Fast Access O(1):</strong> Accessing any element is incredibly fast using its index (e.g., <code>a[index]</code>).</li>
+                    <li><strong>Multidimensional Storage:</strong> Easily store data in grids, like 2D matrices or 3D arrays.</li>
+                </ul>
+            </div>
+
+            <div class="callout warning">
+                <span class="callout-title">⚠️ Drawbacks & Limitations</span>
+                <ul>
+                    <li><strong>Fixed Size:</strong> Once the size is declared, it <em>cannot</em> be changed while the program is running (runtime).</li>
+                    <li><strong>Costly Insert/Delete:</strong> Inserting an item in the middle requires shifting all subsequent elements, which slows down the computer.</li>
+                    <li><strong>No Bound Checking in C:</strong> C does not stop you from accessing an index outside the array size. It will just print random memory data, known as a <strong>Garbage Value</strong>.</li>
+                </ul>
+            </div>
+            <p><em>Note: Array indexing always <strong>starts from 0</strong>. An array of size 5 has indices 0, 1, 2, 3, 4.</em></p>
+        </article>
+
+        <!-- CARD 2: VISUALIZATION -->
+        <article class="feed-card">
+            <h2>2. Visualizing Array Memory (The Whiteboard)</h2>
+            <p>The instructor moves to a blank whiteboard to explain what happens inside the RAM when you type: <code>int a[5];</code></p>
+            
+            <div class="visualization-container">
+                <div class="vis-title">Internal Memory Allocation for `int a[5];`</div>
+                
+                <div class="pointer-box">
+                    Array Pointer 'a'<br>
+                    <span style="font-size:0.8rem; font-weight:normal;">Holds Base Address: 100</span>
+                </div>
+                <div class="pointer-arrow"></div>
+
+                <div class="memory-array">
+                    <div class="memory-cell">
+                        <span class="index-label">Index 0</span>
+                        15
+                        <span class="address-label">100</span>
+                    </div>
+                    <div class="memory-cell">
+                        <span class="index-label">Index 1</span>
+                        16
+                        <span class="address-label">104</span>
+                    </div>
+                    <div class="memory-cell">
+                        <span class="index-label">Index 2</span>
+                        -1
+                        <span class="address-label">108</span>
+                    </div>
+                    <div class="memory-cell">
+                        <span class="index-label">Index 3</span>
+                        0
+                        <span class="address-label">112</span>
+                    </div>
+                    <div class="memory-cell">
+                        <span class="index-label">Index 4</span>
+                        15
+                        <span class="address-label">116</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3>How does the compiler know the addresses?</h3>
+            <p>If an integer takes <strong>4 bytes</strong> of memory, and the Base Address (start) is <code>100</code>, the next element is exactly 4 bytes away at <code>104</code>.</p>
+            
+            <div class="callout info">
+                <span class="callout-title">🧠 The Secret Math Formula</span>
+                How does the computer instantly find <code>a[3]</code> without searching?<br><br>
+                <strong>Formula:</strong> <code>Base Address + (Index × Size of Data Type)</code><br>
+                <strong>Example for a[3]:</strong> <code>100 + (3 × 4) = 112</code>. The computer jumps straight to address 112!
+            </div>
+        </article>
+
+        <!-- CARD 3: READING & PRINTING -->
+        <article class="feed-card">
+            <h2>3. Reading and Printing Arrays</h2>
+            <p>To interact with all elements inside an array, we use <code>for</code> loops.</p>
+
+            <h3>Reading Input from the User</h3>
+<pre><code><span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) {
+    <span class="comment">// & symbol gets the specific memory address</span>
+    <span class="function">scanf</span>(<span class="string">"%d"</span>, &amp;a[i]); 
+}</code></pre>
+            <p>As <code>i</code> increases from 0 to 4, <code>scanf</code> places the user's typed number into the corresponding memory slot (as visualized above).</p>
+
+            <h3>Printing Output (Forward)</h3>
+<pre><code><span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) {
+    <span class="comment">// No & symbol needed here, we just want the value</span>
+    <span class="function">printf</span>(<span class="string">"%d\n"</span>, a[i]);
+}</code></pre>
+
+            <h3>Printing Output (Reverse Order)</h3>
+            <p>To print the array backward (Output: 15, 0, -1, 16, 15), we don't change the array; we just change the <em>loop logic</em>.</p>
+<pre><code><span class="comment">// Start at last index (4), stop at first index (0), decrease by 1</span>
+<span class="keyword">for</span>(<span class="type">int</span> i = <span class="number">4</span>; i &gt;= <span class="number">0</span>; i--) {
+    <span class="function">printf</span>(<span class="string">"%d\n"</span>, a[i]);
+}</code></pre>
+        </article>
+
+        <!-- CARD 4: IDE IMPLEMENTATION -->
+        <article class="feed-card">
+            <h2>4. Full IDE Implementation & Edge Cases</h2>
+            <p>The instructor moves to VS Code to put it all together. Here is the final, clean code snippet demonstrated:</p>
+
+<pre><code><span class="keyword">#include</span> <span class="string">&lt;stdio.h&gt;</span>
+
+<span class="type">void</span> <span class="function">main</span>() {
+    <span class="type">int</span> a[<span class="number">5</span>], i;
+    
+    <span class="function">printf</span>(<span class="string">"Enter the array elements:\n"</span>);
+    
+    <span class="comment">// Loop to Read Data</span>
+    <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) {
+        <span class="function">scanf</span>(<span class="string">"%d"</span>, &amp;a[i]);
+    }
+    
+    <span class="function">printf</span>(<span class="string">"\nPrinting array elements:\n"</span>);
+
+    <span class="comment">// Loop to Print Data Forward</span>
+    <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) {
+        <span class="function">printf</span>(<span class="string">"Array element at index %d is: %d\n"</span>, i, a[i]); 
+    }
+}</code></pre>
+
+            <h3>🚨 Compiler Edge Cases Tested</h3>
+            <ul>
+                <li><strong>Missing Size:</strong> Changing the code to <code>int a[];</code> immediately throws a compiler error: <em>"error: array size missing"</em>. Arrays <strong>must</strong> have a defined size.</li>
+                <li><strong>Math in Size:</strong> Changing the code to <code>int a[3+2];</code> <strong>works perfectly</strong>. The compiler evaluates 3+2 before runtime, officially setting the size to 5.</li>
+            </ul>
+        </article>
+
+    </div>
+
+</body>
+</html>

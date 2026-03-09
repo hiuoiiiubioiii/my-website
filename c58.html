@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Programming: Matrix Row & Column Sum</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --primary: #3b82f6;
+            --primary-light: #eff6ff;
+            --row-color: #10b981;
+            --row-light: #d1fae5;
+            --col-color: #f43f5e;
+            --col-light: #ffe4e6;
+            --code-bg: #1e1e1e;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        /* Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideUp 0.6s forwards ease-out;
+        }
+
+        .card:nth-child(2) { animation-delay: 0.1s; }
+        .card:nth-child(3) { animation-delay: 0.2s; }
+        .card:nth-child(4) { animation-delay: 0.3s; }
+        .card:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 { font-size: 2.2rem; margin-bottom: 10px; color: #111827; line-height: 1.2;}
+        h2 { font-size: 1.5rem; margin-bottom: 20px; color: var(--primary); border-bottom: 2px solid var(--primary-light); padding-bottom: 10px; display: inline-block;}
+        h3 { font-size: 1.2rem; margin: 20px 0 10px; color: #111827;}
+        p { margin-bottom: 15px; color: var(--text-muted); font-size: 1.05rem;}
+        
+        .tag {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        /* Matrix Visualization */
+        .matrix-board {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            background: #f8fafc;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.2rem;
+            position: relative;
+        }
+
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 60px) 80px;
+            gap: 15px;
+            text-align: center;
+            align-items: center;
+        }
+
+        .cell {
+            background: white;
+            padding: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+            transition: 0.3s;
+            font-weight: 600;
+        }
+
+        .row-sum { color: var(--row-color); font-weight: bold; text-align: left; padding-left: 10px;}
+        .col-sum { color: var(--col-color); font-weight: bold; }
+        
+        .empty-cell { background: transparent; border: none; box-shadow: none; }
+
+        /* Logic Visualization */
+        .logic-split {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        @media(max-width: 600px) {
+            .logic-split { flex-direction: column; }
+        }
+
+        .logic-box {
+            flex: 1;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid;
+        }
+
+        .logic-box.row-box { background: var(--row-light); border-color: var(--row-color); }
+        .logic-box.col-box { background: var(--col-light); border-color: var(--col-color); }
+        
+        code.inline {
+            background: #e5e7eb;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9em;
+            color: #b91c1c;
+        }
+
+        /* Dry Run Timeline */
+        .timeline {
+            border-left: 3px solid #cbd5e1;
+            margin-left: 20px;
+            padding-left: 30px;
+        }
+
+        .timeline-step {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .timeline-step::before {
+            content: '';
+            position: absolute;
+            left: -40px;
+            top: 5px;
+            width: 16px;
+            height: 16px;
+            background: var(--primary);
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px var(--primary);
+        }
+
+        .vars-box {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .critical-warning {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+            color: #991b1b;
+        }
+
+        /* Code Block */
+        pre {
+            background: var(--code-bg);
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 12px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .c-type { color: #569cd6; }
+        .c-func { color: #dcdcaa; }
+        .c-string { color: #ce9178; }
+        .c-keyword { color: #c586c0; }
+        .c-comment { color: #6a9955; font-style: italic;}
+
+        /* Homework Card */
+        .homework-card {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+        }
+        .homework-card h2, .homework-card p {
+            color: white;
+            border-color: rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <main class="feed-container">
+
+        <!-- HEADER / INTRO -->
+        <article class="card">
+            <span class="tag">C Programming • 2D Arrays</span>
+            <h1>Sum of Individual Rows & Columns in a Matrix</h1>
+            <p>In this lesson, we will build a C program that calculates and prints the sum of each row and each column independently in a 3x3 matrix. Scroll down to master the logic step-by-step.</p>
+            
+            <div class="matrix-board">
+                <div class="matrix-grid">
+                    <div class="cell">1</div><div class="cell">2</div><div class="cell">1</div><div class="row-sum">→ 4</div>
+                    <div class="cell">2</div><div class="cell">3</div><div class="cell">5</div><div class="row-sum">→ 10</div>
+                    <div class="cell">0</div><div class="cell">5</div><div class="cell">-1</div><div class="row-sum">→ 4</div>
+                    
+                    <div class="col-sum">↓ 3</div><div class="col-sum">↓ 10</div><div class="col-sum">↓ 5</div><div class="empty-cell"></div>
+                </div>
+            </div>
+        </article>
+
+        <!-- THE CORE LOGIC -->
+        <article class="card">
+            <h2>1. The Two "Tricks" (The Logic)</h2>
+            <p>To solve this, we define two loop counters: <strong>i</strong> (outer loop) and <strong>j</strong> (inner loop). We also need variables to store our running totals: <code class="inline">sumRow</code> and <code class="inline">sumCol</code>.</p>
+            
+            <div class="logic-split">
+                <div class="logic-box row-box">
+                    <h3 style="margin-top: 0; color: var(--row-color);">Summing Rows</h3>
+                    <p>We use standard traversal: <code class="inline">a[i][j]</code>.</p>
+                    <p>Here, <code class="inline">i</code> (Row 0) stays the same while <code class="inline">j</code> increments (Col 0, Col 1, Col 2), dragging us horizontally.</p>
+                </div>
+                <div class="logic-box col-box">
+                    <h3 style="margin-top: 0; color: var(--col-color);">Summing Columns</h3>
+                    <p>We <em>swap</em> the indices: <code class="inline">a[j][i]</code>.</p>
+                    <p>Here, the column index <code class="inline">i</code> stays the same, while the row index <code class="inline">j</code> increments, pulling us vertically down the matrix.</p>
+                </div>
+            </div>
+
+            <div class="critical-warning">
+                <strong>CRITICAL INSTRUCTOR WARNING:</strong> You MUST reset <code class="inline">sumRow = 0;</code> and <code class="inline">sumCol = 0;</code> inside the outer loop, right before the inner loop starts. If you don't, Row 1's sum will be added to Row 0's sum instead of starting fresh!
+            </div>
+        </article>
+
+        <!-- THE DRY RUN -->
+        <article class="card">
+            <h2>2. The Whiteboard "Dry Run"</h2>
+            <p>Let's manually trace the code for the first row and column to see how the computer updates its memory.</p>
+
+            <div class="timeline">
+                <div class="timeline-step">
+                    <h3>Outer Loop Starts: i = 0</h3>
+                    <p>We initialize our trackers inside the outer loop.</p>
+                    <div class="vars-box">
+                        <span>i = 0</span> | <span>sumRow = 0</span> | <span>sumCol = 0</span>
+                    </div>
+                </div>
+
+                <div class="timeline-step">
+                    <h3>Inner Loop: j = 0</h3>
+                    <p>Summing the very first element (Row 0, Col 0 is '1').</p>
+                    <div class="vars-box">
+                        <span>sumRow = 0 + a[0][0] ➔ 1</span><br>
+                        <span>sumCol = 0 + a[0][0] ➔ 1</span>
+                    </div>
+                </div>
+
+                <div class="timeline-step">
+                    <h3>Inner Loop: j = 1</h3>
+                    <p>Row moves right (a[0][1] = 2). Col moves down (a[1][0] = 2).</p>
+                    <div class="vars-box">
+                        <span>sumRow = 1 + a[0][1] ➔ 3</span><br>
+                        <span>sumCol = 1 + a[1][0] ➔ 3</span>
+                    </div>
+                </div>
+
+                <div class="timeline-step">
+                    <h3>Inner Loop: j = 2</h3>
+                    <p>Row moves right (a[0][2] = 1). Col moves down (a[2][0] = 0).</p>
+                    <div class="vars-box">
+                        <span>sumRow = 3 + a[0][2] ➔ 4</span><br>
+                        <span>sumCol = 3 + a[2][0] ➔ 3</span>
+                    </div>
+                </div>
+
+                <div class="timeline-step">
+                    <h3>Inner Loop Finishes</h3>
+                    <p>The code prints the result and moves to the next outer loop iteration <code class="inline">i = 1</code>. <strong>The sums are immediately reset to 0!</strong></p>
+                    <div class="vars-box" style="background: #dcfce7; color: #166534; font-weight: bold;">
+                        OUTPUT: sumRow=4, sumCol=3
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- FINAL CODE -->
+        <article class="card">
+            <h2>3. Final Practical Implementation</h2>
+            <p>Here is the final C Code written in VS Code by the instructor. Notice the formatting adjustments to print the matrix nicely before showing the sums.</p>
+
+<pre><code><span class="c-keyword">#include</span><span class="c-string">&lt;stdio.h&gt;</span>
+
+<span class="c-type">int</span> <span class="c-func">main</span>() {
+    <span class="c-type">int</span> a[<span class="c-string">3</span>][<span class="c-string">3</span>], i, j, sumRow, sumCol;
+    
+    <span class="c-comment">// 1. Take input from user</span>
+    <span class="c-func">printf</span>(<span class="c-string">"Enter matrix:\n"</span>);
+    <span class="c-keyword">for</span>(i=<span class="c-string">0</span>; i&lt;<span class="c-string">3</span>; i++) {
+        <span class="c-keyword">for</span>(j=<span class="c-string">0</span>; j&lt;<span class="c-string">3</span>; j++) {
+            <span class="c-func">scanf</span>(<span class="c-string">"%d"</span>, &a[i][j]);
+        }
+    }
+    
+    <span class="c-comment">// 2. Print the matrix visually</span>
+    <span class="c-func">printf</span>(<span class="c-string">"Matrix is:\n"</span>);
+    <span class="c-keyword">for</span>(i=<span class="c-string">0</span>; i&lt;<span class="c-string">3</span>; i++) {
+        <span class="c-keyword">for</span>(j=<span class="c-string">0</span>; j&lt;<span class="c-string">3</span>; j++) {
+            <span class="c-func">printf</span>(<span class="c-string">"%d\t"</span>, a[i][j]); <span class="c-comment">// \t adds a tab space</span>
+        }
+        <span class="c-func">printf</span>(<span class="c-string">"\n"</span>); <span class="c-comment">// next line after a row</span>
+    }
+    
+    <span class="c-comment">// 3. Calculate and print sums</span>
+    <span class="c-keyword">for</span>(i=<span class="c-string">0</span>; i&lt;<span class="c-string">3</span>; i++) {
+        <span class="c-comment">// Critical Reset Step</span>
+        sumRow = <span class="c-string">0</span>;
+        sumCol = <span class="c-string">0</span>;
+        
+        <span class="c-keyword">for</span>(j=<span class="c-string">0</span>; j&lt;<span class="c-string">3</span>; j++) {
+            sumRow = sumRow + a[i][j]; <span class="c-comment">// Normal traversal</span>
+            sumCol = sumCol + a[j][i]; <span class="c-comment">// Swapped traversal</span>
+        }
+        
+        <span class="c-func">printf</span>(<span class="c-string">"\nsumRow=%d, sumCol=%d"</span>, sumRow, sumCol);
+    }
+    
+    <span class="c-keyword">return</span> <span class="c-string">0</span>;
+}</code></pre>
+        </article>
+
+        <!-- HOMEWORK -->
+        <article class="card homework-card">
+            <h2>🎓 Instructor's Challenge</h2>
+            <p>At the end of the lecture, the instructor left a challenge to verify your understanding:</p>
+            <p style="font-size: 1.1rem; font-weight: 600; margin-top: 20px;">
+                "Modify the code above so that in addition to printing the sum of the rows and columns, it also calculates and prints the sum of the diagonal elements."
+            </p>
+            <p style="opacity: 0.8; margin-top: 15px;">
+                <em>Hint: A diagonal element exists where the row index equals the column index (e.g., a[i][i]). You'll need to declare a new variable outside the loops so it doesn't reset on every row!</em>
+            </p>
+        </article>
+
+    </main>
+
+    <script>
+        // Simple Intersection Observer to fade in cards as you scroll down the feed
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.card').forEach(card => {
+            // Pause animation initially until user scrolls to it
+            card.style.animationPlayState = 'paused';
+            observer.observe(card);
+        });
+    </script>
+</body>
+</html>

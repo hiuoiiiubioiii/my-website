@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Notes: Matrix Multiplication Logic</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;600&display=swap');
+
+        :root {
+            --bg-color: #f8fafc;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --card-bg: #ffffff;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-yellow: #f59e0b;
+            --border-color: #e2e8f0;
+            --highlight: #bfdbfe;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        .feed-container {
+            max-width: 800px;
+            width: 100%;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--accent-blue);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border-color);
+        }
+
+        .callout {
+            background-color: #fffbeb;
+            border-left: 4px solid var(--accent-yellow);
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .callout strong {
+            color: #b45309;
+        }
+
+        /* --- Matrix Visualizer CSS --- */
+        .visualizer-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+        }
+
+        .matrix-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .matrix-title {
+            font-family: 'Fira Code', monospace;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--accent-blue);
+        }
+
+        .matrix-with-indices {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .col-indices {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-left: 2rem; /* align with matrix */
+            margin-bottom: 0.5rem;
+            color: var(--accent-red);
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .matrix-body-row {
+            display: flex;
+            align-items: center;
+        }
+
+        .row-indices {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            color: var(--accent-red);
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            margin-right: 0.5rem;
+            height: 100%;
+        }
+
+        .matrix {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            background: var(--card-bg);
+            padding: 1rem;
+            position: relative;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.2rem;
+        }
+
+        /* Matrix brackets using pseudo-elements */
+        .matrix::before, .matrix::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 10px;
+            border: 2px solid var(--text-main);
+        }
+        .matrix::before {
+            left: 0;
+            border-right: none;
+        }
+        .matrix::after {
+            right: 0;
+            border-left: none;
+        }
+
+        .cell {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .highlight-row { background-color: rgba(59, 130, 246, 0.2); border-radius: 4px;}
+        .highlight-col { background-color: rgba(16, 185, 129, 0.2); border-radius: 4px;}
+
+        /* --- Math Steps CSS --- */
+        .math-step {
+            background-color: #f1f5f9;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .math-result {
+            font-weight: bold;
+            color: var(--accent-green);
+        }
+
+        .rule-box {
+            background-color: #eff6ff;
+            border: 2px dashed var(--accent-blue);
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            margin: 1.5rem 0;
+        }
+
+        .rule-formula {
+            font-size: 1.3rem;
+            font-family: 'Fira Code', monospace;
+            color: var(--text-main);
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+
+        .homework-box {
+            background-color: #fef2f2;
+            border-left: 4px solid var(--accent-red);
+            padding: 1rem;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1rem;
+        }
+
+        .answer-key {
+            background-color: #ecfdf5;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            font-size: 0.95rem;
+            border: 1px solid #a7f3d0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <header>
+            <h1>Program to Print Multiplication of 2 Matrices</h1>
+            <p>Complete logical breakdown & visualization before writing the C code.</p>
+        </header>
+
+        <!-- Section 1: Introduction -->
+        <section class="card">
+            <h2>📝 1. Instructor's Opening Advice</h2>
+            <div class="callout">
+                <strong>Golden Rule for Programmers:</strong> 
+                <p>Never jump straight to your laptop to start coding. Always use a pen and paper first to trace out the underlying math, logic, and matrix indices. Write down the program logic by hand first!</p>
+            </div>
+            <p>In this lesson, we aren't writing code yet. We are mapping out the exact Row × Column arithmetic so we understand how our nested <code>for</code> loops will need to operate.</p>
+        </section>
+
+        <!-- Section 2: Setup -->
+        <section class="card">
+            <h2>🔢 2. Setting up the Example Matrices</h2>
+            <p>The instructor sets up two <strong>3×3 matrices</strong>. Because we are preparing to write code, she labels the rows and columns using <strong>0-based indexing</strong> (0, 1, 2) rather than standard math indexing (1, 2, 3).</p>
+            
+            <div class="visualizer-container">
+                <!-- Matrix A -->
+                <div class="matrix-wrapper">
+                    <div class="matrix-title">Matrix A (3x3)</div>
+                    <div class="matrix-with-indices">
+                        <div class="col-indices">
+                            <span>0</span><span>1</span><span>2</span>
+                        </div>
+                        <div class="matrix-body-row">
+                            <div class="row-indices">
+                                <span>0</span><span>1</span><span>2</span>
+                            </div>
+                            <div class="matrix">
+                                <div class="cell highlight-row">1</div><div class="cell highlight-row">5</div><div class="cell highlight-row">6</div>
+                                <div class="cell">2</div><div class="cell">2</div><div class="cell">5</div>
+                                <div class="cell">1</div><div class="cell">7</div><div class="cell">5</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="font-size: 2rem; font-weight: bold; color: var(--text-muted);">×</div>
+
+                <!-- Matrix B -->
+                <div class="matrix-wrapper">
+                    <div class="matrix-title">Matrix B (3x3)</div>
+                    <div class="matrix-with-indices">
+                        <div class="col-indices">
+                            <span>0</span><span>1</span><span>2</span>
+                        </div>
+                        <div class="matrix-body-row">
+                            <div class="row-indices">
+                                <span>0</span><span>1</span><span>2</span>
+                            </div>
+                            <div class="matrix">
+                                <div class="cell highlight-col">1</div><div class="cell">2</div><div class="cell">3</div>
+                                <div class="cell highlight-col">0</div><div class="cell">1</div><div class="cell">5</div>
+                                <div class="cell highlight-col">1</div><div class="cell">0</div><div class="cell">2</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p><em>*Notice the blue and green highlights above? Matrix multiplication is always <strong>Row of 1st Matrix × Column of 2nd Matrix</strong>.</em></p>
+        </section>
+
+        <!-- Section 3: Calculation -->
+        <section class="card">
+            <h2>🧮 3. The Step-by-Step Calculation</h2>
+            <p>To find the value for the Resultant Matrix at index <code>[0, 0]</code>, we multiply <strong>Row 0 of A</strong> by <strong>Column 0 of B</strong>, element by element, and add them together.</p>
+
+            <h3>Calculating Row 0 of Resultant Matrix</h3>
+            <div class="math-step">
+                <span>Index [0,0]: (1×1) + (5×0) + (6×1) = 1 + 0 + 6</span>
+                <span class="math-result">7</span>
+            </div>
+            <div class="math-step">
+                <span>Index [0,1]: (1×2) + (5×1) + (6×0) = 2 + 5 + 0</span>
+                <span class="math-result">7</span>
+            </div>
+            <div class="math-step">
+                <span>Index [0,2]: (1×3) + (5×5) + (6×2) = 3 + 25 + 12</span>
+                <span class="math-result">40</span>
+            </div>
+
+            <br>
+            <h3>Calculating Row 1 of Resultant Matrix</h3>
+            <div class="math-step">
+                <span>Index [1,0]: (2×1) + (2×0) + (5×1) = 2 + 0 + 5</span>
+                <span class="math-result">7</span>
+            </div>
+            <div class="math-step">
+                <span>Index [1,1]: (2×2) + (2×1) + (5×0) = 4 + 2 + 0</span>
+                <span class="math-result">6</span>
+            </div>
+            <div class="math-step">
+                <span>Index [1,2]: (2×3) + (2×5) + (5×2) = 6 + 10 + 10</span>
+                <span class="math-result">26</span>
+            </div>
+
+            <br>
+            <h3>Calculating Row 2 of Resultant Matrix</h3>
+            <div class="math-step">
+                <span>Index [2,0]: (1×1) + (7×0) + (5×1) = 1 + 0 + 5</span>
+                <span class="math-result">6</span>
+            </div>
+            <div class="math-step">
+                <span>Index [2,1]: (1×2) + (7×1) + (5×0) = 2 + 7 + 0</span>
+                <span class="math-result">9</span>
+            </div>
+            <div class="math-step">
+                <span>Index [2,2]: (1×3) + (7×5) + (5×2) = 3 + 35 + 10</span>
+                <span class="math-result">48</span>
+            </div>
+        </section>
+
+        <!-- Section 4: Result -->
+        <section class="card">
+            <h2>🎯 4. The Resultant Matrix</h2>
+            <p>After performing all 9 calculations, we populate our final Resultant Matrix (which we will refer to as matrix <code>C</code> in our code).</p>
+
+            <div class="visualizer-container">
+                <div class="matrix-wrapper">
+                    <div class="matrix-title">Resultant Matrix C (3x3)</div>
+                    <div class="matrix-with-indices">
+                        <div class="col-indices">
+                            <span>0</span><span>1</span><span>2</span>
+                        </div>
+                        <div class="matrix-body-row">
+                            <div class="row-indices">
+                                <span>0</span><span>1</span><span>2</span>
+                            </div>
+                            <div class="matrix">
+                                <div class="cell" style="font-weight: bold; color: var(--accent-green)">7</div>
+                                <div class="cell" style="font-weight: bold; color: var(--accent-green)">7</div>
+                                <div class="cell" style="font-weight: bold; color: var(--accent-green)">40</div>
+                                
+                                <div class="cell" style="font-weight: bold; color: var(--accent-green)">7</div>
+                                <div class="cell" style="font-weight: bold; color: var(--accent-green)">6</div>
+                                <div class="cell" style="font-weight: bold; color: var(--accent-green)">26</div>
+                                
+                                <div class="cell" style="font-weight: bold; color: var(--accent-green)">6</div>
+                                <div class="cell" style="font-weight: bold; color: var(--accent-green)">9</div>
+                                <div class="cell" style="font-weight: bold; color: var(--accent-green)">48</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Golden Rules for Programming -->
+        <section class="card">
+            <h2>⚠️ 5. The Golden Rules for Programming</h2>
+            <p>You cannot just multiply any two random matrices. Before your loops even run, your program must check if multiplication is mathematically possible.</p>
+            
+            <p>If Matrix A is <code>m × n</code> (rows × cols) and Matrix B is <code>p × q</code> (rows × cols):</p>
+
+            <div class="rule-box">
+                <p><strong>RULE 1: The Multiplication Check</strong></p>
+                <p>You can only multiply if the <strong>Columns of A</strong> equal the <strong>Rows of B</strong>.</p>
+                <div class="rule-formula">if (n == p)</div>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem; color: var(--text-muted)"><em>(If not equal, your code must print an error and stop).</em></p>
+            </div>
+
+            <div class="rule-box">
+                <p><strong>RULE 2: The Size of the Result</strong></p>
+                <p>If they can be multiplied, the resulting Matrix C will always have the dimensions:</p>
+                <div class="rule-formula">m × q</div>
+                <p style="font-size: 0.9rem; margin-top: 0.5rem; color: var(--text-muted)"><em>(Rows of A × Columns of B).</em></p>
+            </div>
+        </section>
+
+        <!-- Section 6: Homework -->
+        <section class="card">
+            <h2>🧠 6. Test Your Logic (Homework)</h2>
+            <p>Apply the Golden Rules to answer the questions the instructor left on the board:</p>
+
+            <div class="homework-box">
+                <strong>Question 1:</strong>
+                <p>Matrix A is <code>3 × 4</code>. Matrix B is <code>3 × 2</code>.</p>
+                <p>Can they be multiplied? If yes, what is the size of Resultant Matrix C?</p>
+                
+                <div class="answer-key">
+                    <strong>Answer:</strong> ❌ No, they cannot be multiplied. The columns of A (4) do not equal the rows of B (3). 
+                </div>
+            </div>
+
+            <div class="homework-box">
+                <strong>Question 2:</strong>
+                <p>Matrix A is <code>2 × 3</code>. Matrix B is <code>3 × 2</code>.</p>
+                <p>Can they be multiplied? If yes, what is the size of Resultant Matrix C?</p>
+
+                <div class="answer-key">
+                    <strong>Answer:</strong> ✅ Yes, they can. Columns of A (3) equals rows of B (3). By Rule 2, the Resultant Matrix C will be <code>2 × 2</code>.
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 7: Next Steps -->
+        <section class="card">
+            <h2>⏭️ 7. What's Next?</h2>
+            <p>In the next video, we will take this exact logic and write a C program. Because we are mapping rows to columns across multiple dimensions, we will be using <strong>three nested <code>for</code> loops</strong> (typically utilizing <code>i</code>, <code>j</code>, and <code>k</code> index variables).</p>
+            <p>Keep these notes handy as we translate the hand-written math directly into code!</p>
+        </section>
+
+    </div>
+
+</body>
+</html>

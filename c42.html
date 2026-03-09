@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Continue Statement in C - Study Notes</title>
+    <style>
+        /* Base Styles */
+        :root {
+            --bg-color: #f3f6f9;
+            --card-bg: #ffffff;
+            --primary: #2563eb;
+            --secondary: #1e40af;
+            --danger: #ef4444;
+            --success: #10b981;
+            --text-main: #1f2937;
+            --text-light: #4b5563;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --border: #e5e7eb;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.7;
+        }
+
+        /* Vertical Feed Layout */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            color: var(--text-light);
+        }
+
+        /* Feed Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--border);
+        }
+
+        .card h2 {
+            font-size: 1.8rem;
+            color: var(--secondary);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 10px;
+        }
+
+        .card h3 {
+            font-size: 1.3rem;
+            margin: 20px 0 10px 0;
+            color: var(--text-main);
+        }
+
+        p, ul {
+            margin-bottom: 15px;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        /* Highlight text */
+        .highlight-blue { background: rgba(37, 99, 235, 0.1); color: var(--primary); padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .highlight-red { background: rgba(239, 68, 68, 0.1); color: var(--danger); padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+
+        /* Code Blocks */
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.05rem;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .keyword { color: #569cd6; }
+        .variable { color: #9cdcfe; }
+        .string { color: #ce9178; }
+        .comment { color: #6a9955; font-style: italic; }
+        .control-flow { font-weight: bold; background: rgba(255,255,255,0.1); padding: 2px 5px; border-radius: 4px;}
+
+        /* Visualizations */
+        .visual-diagram {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            position: relative;
+            text-align: center;
+        }
+
+        /* Arrows */
+        .arrow-box {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+        
+        /* Flowchart */
+        .flowchart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        .flow-node {
+            background: white;
+            border: 2px solid var(--primary);
+            padding: 15px 25px;
+            border-radius: 8px;
+            font-weight: bold;
+            min-width: 250px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .flow-diamond {
+            background: #eff6ff;
+            border: 2px solid var(--secondary);
+            border-radius: 50%; /* Using circle/ellipse for diamond text readability */
+            padding: 20px;
+            font-weight: bold;
+            text-align: center;
+            min-width: 250px;
+        }
+        .flow-arrow {
+            font-size: 1.5rem;
+            color: var(--text-light);
+        }
+        .flow-split {
+            display: flex;
+            width: 100%;
+            justify-content: center;
+            gap: 50px;
+        }
+        .flow-branch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Memory Trace Visualization */
+        .memory-state {
+            display: flex;
+            justify-content: space-around;
+            background: #e0e7ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0 25px 0;
+        }
+        .memory-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .memory-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--secondary);
+        }
+        .memory-value {
+            background: white;
+            border: 2px solid var(--secondary);
+            height: 50px;
+            width: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+        .memory-value.updated {
+            background: #dcfce7;
+            border-color: var(--success);
+            color: var(--success);
+        }
+        .memory-value.skipped {
+            background: #fee2e2;
+            border-color: var(--danger);
+            color: var(--danger);
+            text-decoration: line-through;
+        }
+
+        .trace-step {
+            border-left: 4px solid var(--primary);
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+    
+    <header>
+        <h1>Continue Statement in C</h1>
+        <p>In-depth Visual Study Notes & Whiteboard Breakdown</p>
+    </header>
+
+    <!-- Section 1 & 2: Intro and Break Recap -->
+    <section class="card">
+        <h2>1. Context & Recap: How <code>break</code> works</h2>
+        <p>Before understanding `continue`, we must recall how the <span class="highlight-red">break</span> statement behaves. They are both control statements used within loops, but they do very different things.</p>
+        
+        <h3>The `break` Behavior</h3>
+        <p>When a `break` statement is encountered inside a loop, it immediately <strong>terminates the loop completely</strong>. The program control is thrown completely out of the loop, and no further iterations occur.</p>
+        
+        <pre><code><span class="keyword">for</span> (initialization; condition; update) {
+    S1;
+    S2;
+    <span class="keyword">if</span> (condition) {
+        <span class="keyword control-flow" style="color: #ef4444;">break;</span> <span class="comment">// TERMINATES LOOP</span>
+    }
+    S3; <span class="comment">// Skipped forever</span>
+    S4; <span class="comment">// Skipped forever</span>
+}
+<span class="comment">// Control jumps down here immediately ↘️</span></code></pre>
+        
+        <div class="visual-diagram">
+            <p><strong>Visual Flow of Break:</strong></p>
+            <div style="font-size: 24px; color: #ef4444; font-weight: bold;">
+                [Loop Body] ➔ 💥 BREAK ➔ ⤓ Jumps OUT of loop entirely
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Core Concept -->
+    <section class="card">
+        <h2>2. Core Concept: How <code>continue</code> works</h2>
+        <p>Unlike `break`, `continue` does <strong>not</strong> throw you out of the loop entirely. Instead, it is used to <span class="highlight-blue">skip specific statements for the current iteration only</span>.</p>
+        <p>When `continue` is triggered, the program skips the remaining code below it and jumps straight back to the <strong>update expression</strong> (e.g., `i++`) to start the next iteration.</p>
+
+        <pre><code><span class="keyword">for</span> (initialization; condition; <span class="variable highlight-blue">update (i++)</span>) {
+    S1;
+    S2;
+    <span class="keyword">if</span> (condition) {
+        <span class="keyword control-flow" style="color: #60a5fa;">continue;</span> <span class="comment">// JUMPS UP TO UPDATE ⤴️</span>
+    }
+    <s style="color: #ef4444;">S3;</s> <span class="comment">// Skipped for THIS iteration only</span>
+    <s style="color: #ef4444;">S4;</s> <span class="comment">// Skipped for THIS iteration only</span>
+}</code></pre>
+
+        <div class="visual-diagram">
+            <p><strong>Visual Flow of Continue:</strong></p>
+            <div style="font-size: 24px; color: #2563eb; font-weight: bold;">
+                [Loop Body] ➔ ⤴️ CONTINUE ➔ ↺ Jumps UP to Loop Update (i++)
+            </div>
+            <p style="margin-top:10px; color: var(--danger);"><strong>S3 and S4 get crossed out (X) for that cycle!</strong></p>
+        </div>
+    </section>
+
+    <!-- Section 4: Analogy -->
+    <section class="card">
+        <h2>3. The Real-Life Analogy: "Jenny's DSA Classes"</h2>
+        <p>Imagine there are <strong>100 Data Structures and Algorithms (DSA) classes</strong>. Most students must attend all 100 classes.</p>
+        <p>However, a student named "Jenny" already knows DSA perfectly. If the student checking in is Jenny, she gets to <strong>skip</strong> today's classes, but the loop <strong>continues</strong> for the next student in line.</p>
+
+        <pre><code><span class="keyword">for</span> (<span class="keyword">int</span> class = 1; class <= 100; class++) {
+    <span class="keyword">if</span> (student_name == <span class="string">"Jenny"</span>) {
+        <span class="keyword">continue</span>; <span class="comment">// Jenny skips the class</span>
+    }
+    <span class="comment">// Other students attend the class</span>
+    Attend_Class(); 
+}</code></pre>
+        <ul>
+            <li><strong>If name == "Jenny"</strong>: The `continue` triggers. The `Attend_Class()` step is skipped. Loop goes to the next student.</li>
+            <li><strong>If name != "Jenny"</strong>: The student attends the class normally.</li>
+        </ul>
+    </section>
+
+    <!-- Section 5: Flowchart -->
+    <section class="card">
+        <h2>4. The Logical Flowchart</h2>
+        <p>Here is how the computer logically reads a `continue` statement inside a loop, exactly as drawn on the whiteboard.</p>
+
+        <div class="visual-diagram flowchart">
+            <div class="flow-diamond">Loop Condition (i <= 5)</div>
+            <div class="flow-arrow">↓ (True)</div>
+            <div class="flow-node">Execute S1, S2</div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-diamond" style="background: #fff0f0; border-color: #ef4444;">if (continue condition)</div>
+            
+            <div class="flow-split">
+                <div class="flow-branch">
+                    <div class="flow-arrow">↓ (False)</div>
+                    <div class="flow-node">Execute Remaining Statements (S3, S4)</div>
+                    <div class="flow-arrow">↓</div>
+                    <div class="flow-node" style="background: #f0fdf4; border-color: #10b981;">Update Expression (i++)</div>
+                    <div class="flow-arrow">↺ (Loops back to top)</div>
+                </div>
+                
+                <div class="flow-branch">
+                    <div class="flow-arrow">→ (True)</div>
+                    <div class="flow-node" style="background: #e0e7ff; color: #2563eb; border-color: #2563eb;">CONTINUE triggers!</div>
+                    <div class="flow-arrow">↓ (Bypasses S3, S4)</div>
+                    <div class="flow-node" style="background: #f0fdf4; border-color: #10b981;">Jumps straight to Update (i++)</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 6: Program & Memory Trace -->
+    <section class="card">
+        <h2>5. Real C Program & Memory Trace</h2>
+        <p><strong>The Goal:</strong> Ask the user to input 5 numbers and calculate their sum. <strong>However</strong>, if the user enters a negative number, the program should ignore it (skip it), NOT add it to the sum, and ask for the next number.</p>
+
+        <pre><code><span class="keyword">#include</span> &lt;stdio.h&gt;
+
+<span class="keyword">void</span> main() {
+    <span class="keyword">int</span> i, a, sum = <span class="variable">0</span>;
+
+    <span class="keyword">for</span>(i = <span class="variable">1</span>; i <= <span class="variable">5</span>; i++) {
+        printf(<span class="string">"Enter an Integer: "</span>);
+        scanf(<span class="string">"%d"</span>, &a);
+
+        <span class="keyword">if</span> (a < <span class="variable">0</span>) {
+            <span class="keyword control-flow">continue;</span> <span class="comment">// Skips the sum addition below</span>
+        }
+
+        sum = sum + a; <span class="comment">// Statement to skip if a < 0</span>
+    }
+    printf(<span class="string">"Sum = %d"</span>, sum);
+}</code></pre>
+
+        <h3>Whiteboard Memory Trace (Step-by-Step)</h3>
+        
+        <div class="trace-step">
+            <p><strong>Initialization:</strong> Variables are created in memory.</p>
+            <div class="memory-state">
+                <div class="memory-box"><span class="memory-label">i</span><div class="memory-value">1</div></div>
+                <div class="memory-box"><span class="memory-label">a</span><div class="memory-value">?</div></div>
+                <div class="memory-box"><span class="memory-label">sum</span><div class="memory-value">0</div></div>
+            </div>
+        </div>
+
+        <div class="trace-step">
+            <p><strong>Iteration 1 (User enters 1):</strong> <code>1 < 0</code> is False. Continue is ignored.</p>
+            <div class="memory-state">
+                <div class="memory-box"><span class="memory-label">i</span><div class="memory-value">1</div></div>
+                <div class="memory-box"><span class="memory-label">a</span><div class="memory-value">1</div></div>
+                <div class="memory-box"><span class="memory-label">sum</span><div class="memory-value updated">1</div></div>
+            </div>
+            <p><em>Math: sum = 0 + 1 ➔ 1</em></p>
+        </div>
+
+        <div class="trace-step">
+            <p><strong>Iteration 2 (User enters 2):</strong> <code>2 < 0</code> is False. Continue is ignored.</p>
+            <div class="memory-state">
+                <div class="memory-box"><span class="memory-label">i</span><div class="memory-value">2</div></div>
+                <div class="memory-box"><span class="memory-label">a</span><div class="memory-value">2</div></div>
+                <div class="memory-box"><span class="memory-label">sum</span><div class="memory-value updated">3</div></div>
+            </div>
+            <p><em>Math: sum = 1 + 2 ➔ 3</em></p>
+        </div>
+
+        <div class="trace-step" style="border-color: var(--danger); background: #fef2f2; padding: 15px; border-radius: 8px;">
+            <p style="color: var(--danger);"><strong>Iteration 3 (User enters -10) THE CONTINUE TRIGGER:</strong> <br><code>-10 < 0</code> is <strong>TRUE</strong>.</p>
+            <p>The <code>continue;</code> statement executes. The line <code>sum = sum + a;</code> is <strong>crossed out</strong> for this iteration. <code>-10</code> is completely ignored.</p>
+            <div class="memory-state" style="background: white;">
+                <div class="memory-box"><span class="memory-label">i</span><div class="memory-value">3</div></div>
+                <div class="memory-box"><span class="memory-label">a</span><div class="memory-value skipped">-10</div></div>
+                <div class="memory-box"><span class="memory-label">sum</span><div class="memory-value">3</div></div>
+            </div>
+            <p><em>Math: Skipped! Sum remains 3. Control loops back up to i++.</em></p>
+        </div>
+
+        <div class="trace-step">
+            <p><strong>Iteration 4 (User enters 0):</strong> <code>0 < 0</code> is False. Continue is ignored.</p>
+            <div class="memory-state">
+                <div class="memory-box"><span class="memory-label">i</span><div class="memory-value">4</div></div>
+                <div class="memory-box"><span class="memory-label">a</span><div class="memory-value">0</div></div>
+                <div class="memory-box"><span class="memory-label">sum</span><div class="memory-value updated">3</div></div>
+            </div>
+            <p><em>Math: sum = 3 + 0 ➔ 3</em></p>
+        </div>
+
+        <p><strong>Final Audio Note from Instructor:</strong> If she had used <code>break</code> instead of <code>continue</code>, entering <code>-10</code> would have killed the loop entirely right there. The program would have skipped asking for the 4th and 5th numbers. Because she used <code>continue</code>, it just skipped the negative number and kept the loop going!</p>
+
+    </section>
+</div>
+
+</body>
+</html>

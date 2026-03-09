@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Study Notes: Tricky Pointers in C</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;600&display=swap');
+
+        :root {
+            --bg-color: #f4f7f6;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --card-bg: #ffffff;
+            --primary: #3182ce;
+            --secondary: #e53e3e;
+            --accent: #d6bcfa;
+            --code-bg: #1a202c;
+            --code-text: #e2e8f0;
+            --ptr-p: #3182ce; /* Blue for pointer P */
+            --ptr-q: #dd6b20; /* Orange for pointer Q */
+            --modified: #e53e3e; /* Red for changed values */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding-bottom: 100px;
+        }
+
+        .header-block {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #2b6cb0, #4299e1);
+            color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+        }
+
+        .header-block h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header-block p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Feed Cards */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            border-left: 5px solid var(--primary);
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card p {
+            margin-bottom: 15px;
+            font-size: 1.05rem;
+        }
+
+        /* Code Blocks */
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+
+        .highlight { color: #fbd38d; }
+        .comment { color: #a0aec0; font-style: italic; }
+
+        /* Memory Map Visualizer */
+        .memory-visualizer {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 25px 0;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .array-container {
+            display: flex;
+            gap: 4px;
+        }
+
+        .cell {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 70px;
+            position: relative;
+        }
+
+        .cell-index {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .cell-value {
+            width: 100%;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #edf2f7;
+            border: 2px solid #cbd5e0;
+            font-weight: 700;
+            font-size: 1.2rem;
+            border-radius: 6px;
+        }
+
+        .cell-value.changed {
+            background: #fed7d7;
+            border-color: var(--secondary);
+            color: var(--secondary);
+            animation: pulse 1s ease;
+        }
+
+        .cell-address {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        /* Pointers */
+        .pointers-row {
+            display: flex;
+            gap: 4px;
+            height: 40px;
+            margin-top: 5px;
+        }
+
+        .pointer-space {
+            width: 70px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .ptr {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            color: white;
+            font-family: 'Fira Code', monospace;
+            position: relative;
+        }
+
+        .ptr::before {
+            content: '↑';
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: inherit;
+            font-size: 1.2rem;
+        }
+
+        .ptr.p { background-color: var(--ptr-p); color: var(--ptr-p); }
+        .ptr.q { background-color: var(--ptr-q); color: var(--ptr-q); }
+        .ptr.p::before { color: var(--ptr-p); }
+        .ptr.q::before { color: var(--ptr-q); }
+        
+        .ptr span { color: white; }
+
+        /* Logic Breakdown Boxes */
+        .logic-box {
+            background: #ebf8ff;
+            border: 1px solid #bee3f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .logic-step {
+            display: flex;
+            margin-bottom: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border-left: 3px solid var(--primary);
+        }
+
+        .step-num {
+            font-weight: bold;
+            color: var(--primary);
+            margin-right: 15px;
+            min-width: 65px;
+        }
+
+        .alert-box {
+            background: #fff5f5;
+            border-left: 4px solid var(--secondary);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .hw-box {
+            background: #faf5ff;
+            border-left: 5px solid #805ad5;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="feed-container">
+    
+    <!-- Header -->
+    <header class="header-block">
+        <h1>Ultimate Pointer Study Notes</h1>
+        <p>Instructor: Jayanti Khatri Lamba | Tricky C Pointer Arithmetic & Operations</p>
+    </header>
+
+    <!-- Section 1 -->
+    <section class="card">
+        <h2>📌 1. The Setup & Initial Memory Map</h2>
+        <p>Before we run any operations, let's look at the starting code. We define an integer array and assign pointer <code>p</code> to point to the base address of the array.</p>
+        <pre><code>void main() {
+    int a[] = {10, 11, -1, 56, 67, 5, 4};
+    int *p, *q;
+    p = a; <span class="comment">// p points to base address (100)</span></code></pre>
+
+        <div class="alert-box">
+            <strong>Instructor Note:</strong> We assume the base address is <code>100</code>. Because it's an <code>int</code> array, each element takes up 4 bytes, so addresses increment by 4.
+        </div>
+
+        <div class="memory-visualizer">
+            <div class="array-container">
+                <div class="cell"><span class="cell-index">Index 0</span><div class="cell-value">10</div><span class="cell-address">100</span></div>
+                <div class="cell"><span class="cell-index">Index 1</span><div class="cell-value">11</div><span class="cell-address">104</span></div>
+                <div class="cell"><span class="cell-index">Index 2</span><div class="cell-value">-1</div><span class="cell-address">108</span></div>
+                <div class="cell"><span class="cell-index">Index 3</span><div class="cell-value">56</div><span class="cell-address">112</span></div>
+                <div class="cell"><span class="cell-index">Index 4</span><div class="cell-value">67</div><span class="cell-address">116</span></div>
+                <div class="cell"><span class="cell-index">Index 5</span><div class="cell-value">5</div><span class="cell-address">120</span></div>
+                <div class="cell"><span class="cell-index">Index 6</span><div class="cell-value">4</div><span class="cell-address">124</span></div>
+            </div>
+            <div class="pointers-row">
+                <div class="pointer-space"><div class="ptr p"><span>p</span></div></div>
+                <div class="pointer-space"></div>
+                <div class="pointer-space"></div>
+                <div class="pointer-space"></div>
+                <div class="pointer-space"></div>
+                <div class="pointer-space"></div>
+                <div class="pointer-space"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2 -->
+    <section class="card">
+        <h2>🖨️ 2. Basic Dereferencing</h2>
+        <pre><code>    printf("%d\n", *p);</code></pre>
+        <p>The <code>*</code> (indirection/dereference operator) goes to the address stored in <code>p</code> (which is 100) and pulls out the value.</p>
+        <p><strong>Output:</strong> <code>10</code></p>
+    </section>
+
+    <!-- Section 3 -->
+    <section class="card">
+        <h2>⚠️ 3. The "Tricky" Triple Print (Crucial Interview Concept)</h2>
+        <p>This is the most important line in the lecture. Notice that there are three operations separated by commas inside the printf function.</p>
+        <pre><code>    printf("%d %d %d\n", (*p)++, *p++, *++p);</code></pre>
+        
+        <div class="alert-box">
+            <strong>The Golden Rule:</strong> Function arguments in C (like in GCC compilers) are evaluated from <strong>Right-to-Left</strong>, but printed Left-to-Right. Let's break down the execution right to left!
+        </div>
+
+        <div class="logic-box">
+            <div class="logic-step">
+                <div class="step-num">Step 1<br>(Right)</div>
+                <div><strong>Evaluate <code>*++p</code></strong>: Pre-increment the pointer first. <code>p</code> moves from 100 to 104. Then dereference it. The value at 104 is <code>11</code>. (Passed to printf: 11)</div>
+            </div>
+            <div class="logic-step">
+                <div class="step-num">Step 2<br>(Middle)</div>
+                <div><strong>Evaluate <code>*p++</code></strong>: Post-increment the pointer. Dereference the current address <em>first</em>. <code>p</code> is at 104, so value is <code>11</code>. After returning 11, <code>p</code> increments to 108. (Passed to printf: 11)</div>
+            </div>
+            <div class="logic-step" style="border-color: var(--secondary);">
+                <div class="step-num" style="color: var(--secondary);">Step 3<br>(Left)</div>
+                <div><strong>Evaluate <code>(*p)++</code></strong>: Post-increment the <em>value</em>. <code>p</code> is at 108. The value is <code>-1</code>. It returns <code>-1</code> to printf, and <em>then</em> increments the actual array value in memory by 1 (-1 + 1 = 0). The array is permanently modified! (Passed to printf: -1)</div>
+            </div>
+        </div>
+
+        <p>Because the print matches the %d placeholders left-to-right, the final <strong>Output is: <code>-1 11 11</code></strong></p>
+
+        <h3>Updated Memory Map:</h3>
+        <p>Notice that <code>p</code> has moved to Index 2, and the value at Index 2 has permanently changed to 0!</p>
+        <div class="memory-visualizer">
+            <div class="array-container">
+                <div class="cell"><span class="cell-index">Index 0</span><div class="cell-value">10</div><span class="cell-address">100</span></div>
+                <div class="cell"><span class="cell-index">Index 1</span><div class="cell-value">11</div><span class="cell-address">104</span></div>
+                <div class="cell"><span class="cell-index">Index 2</span><div class="cell-value changed">0</div><span class="cell-address">108</span></div>
+                <div class="cell"><span class="cell-index">Index 3</span><div class="cell-value">56</div><span class="cell-address">112</span></div>
+                <div class="cell"><span class="cell-index">Index 4</span><div class="cell-value">67</div><span class="cell-address">116</span></div>
+                <div class="cell"><span class="cell-index">Index 5</span><div class="cell-value">5</div><span class="cell-address">120</span></div>
+                <div class="cell"><span class="cell-index">Index 6</span><div class="cell-value">4</div><span class="cell-address">124</span></div>
+            </div>
+            <div class="pointers-row">
+                <div class="pointer-space"></div>
+                <div class="pointer-space"></div>
+                <div class="pointer-space"><div class="ptr p"><span>p</span></div></div>
+                <div class="pointer-space"></div>
+                <div class="pointer-space"></div>
+                <div class="pointer-space"></div>
+                <div class="pointer-space"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4 -->
+    <section class="card">
+        <h2>➡️ 4. Pointer Arithmetic (Setting up Q)</h2>
+        <pre><code>    q = p + 3;
+    printf("%d\n", *q - 3);</code></pre>
+        <p><strong>Logic:</strong> <code>p</code> is at address 108. Adding 3 means jumping forward 3 integers (12 bytes). 108 + 12 = 120. <code>q</code> now points to address 120.</p>
+        <p>For the print statement: Dereference <code>q</code>. The value at 120 is <code>5</code>. Then subtract 3. (5 - 3 = 2).</p>
+        <p><strong>Output:</strong> <code>2</code></p>
+
+        <div class="memory-visualizer">
+            <div class="array-container">
+                <div class="cell"><span class="cell-index">Index 0</span><div class="cell-value">10</div><span class="cell-address">100</span></div>
+                <div class="cell"><span class="cell-index">Index 1</span><div class="cell-value">11</div><span class="cell-address">104</span></div>
+                <div class="cell"><span class="cell-index">Index 2</span><div class="cell-value">0</div><span class="cell-address">108</span></div>
+                <div class="cell"><span class="cell-index">Index 3</span><div class="cell-value">56</div><span class="cell-address">112</span></div>
+                <div class="cell"><span class="cell-index">Index 4</span><div class="cell-value">67</div><span class="cell-address">116</span></div>
+                <div class="cell"><span class="cell-index">Index 5</span><div class="cell-value">5</div><span class="cell-address">120</span></div>
+                <div class="cell"><span class="cell-index">Index 6</span><div class="cell-value">4</div><span class="cell-address">124</span></div>
+            </div>
+            <div class="pointers-row">
+                <div class="pointer-space"></div>
+                <div class="pointer-space"></div>
+                <div class="pointer-space"><div class="ptr p"><span>p</span></div></div>
+                <div class="pointer-space"></div>
+                <div class="pointer-space"></div>
+                <div class="pointer-space"><div class="ptr q"><span>q</span></div></div>
+                <div class="pointer-space"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 5 -->
+    <section class="card">
+        <h2>🔙 5. Pre-Decrementing a Pointer</h2>
+        <pre><code>    printf("%d\n", *--p + 5);</code></pre>
+        <p><strong>Logic:</strong> The unary operators <code>*</code> and <code>--</code> have higher precedence than <code>+</code>. They evaluate right-to-left.</p>
+        <ol>
+            <li><code>--p</code>: Pre-decrement moves <code>p</code> back one space from 108 to 104.</li>
+            <li><code>*p</code>: Dereference value at 104, which is <code>11</code>.</li>
+            <li><code>+ 5</code>: Add 5. (11 + 5 = 16).</li>
+        </ol>
+        <p><strong>Output:</strong> <code>16</code></p>
+
+        <div class="memory-visualizer">
+            <div class="array-container">
+                <div class="cell"><span class="cell-index">Index 0</span><div class="cell-value">10</div><span class="cell-address">100</span></div>
+                <div class="cell"><span class="cell-index">Index 1</span><div class="cell-value">11</div><span class="cell-address">104</span></div>
+                <div class="cell"><span class="cell-index">Index 2</span><div class="cell-value">0</div><span class="cell-address">108</span></div>
+                <div class="cell"><span class="cell-index">Index 3</span><div class="cell-value">56</div><span class="cell-address">112</span></div>
+                <div class="cell"><span class="cell-index">Index 4</span><div class="cell-value">67</div><span class="cell-address">116</span></div>
+                <div class="cell"><span class="cell-index">Index 5</span><div class="cell-value">5</div><span class="cell-address">120</span></div>
+                <div class="cell"><span class="cell-index">Index 6</span><div class="cell-value">4</div><span class="cell-address">124</span></div>
+            </div>
+            <div class="pointers-row">
+                <div class="pointer-space"></div>
+                <div class="pointer-space"><div class="ptr p"><span>p</span></div></div>
+                <div class="pointer-space"></div>
+                <div class="pointer-space"></div>
+                <div class="pointer-space"></div>
+                <div class="pointer-space"><div class="ptr q"><span>q</span></div></div>
+                <div class="pointer-space"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 6 -->
+    <section class="card">
+        <h2>➕ 6. Final Addition</h2>
+        <pre><code>    printf("%d\n", *p + *q);
+} <span class="comment">// End of main program</span></code></pre>
+        <p><strong>Logic:</strong> Simply dereference both pointers based on their final positions.</p>
+        <ul>
+            <li><code>*p</code> is at 104, value is <code>11</code>.</li>
+            <li><code>*q</code> is at 120, value is <code>5</code>.</li>
+            <li>11 + 5 = 16.</li>
+        </ul>
+        <p><strong>Output:</strong> <code>16</code></p>
+    </section>
+
+    <!-- Section 7 (Homework) -->
+    <section class="card hw-box">
+        <h2>📝 Your Homework Assignment</h2>
+        <p>The instructor left this block of code to test your understanding. Based on the <strong>final memory map above</strong>, what is the output of the following block?</p>
+        <pre><code>q--;
+printf("%d\n", *(q+2) - 3);
+printf("%d\n", *(p+2) - 2);
+printf("%d\n", *(p++ - 2) - 1);</code></pre>
+
+        <div class="logic-box">
+            <h3>💡 Instructor's Hints for Success:</h3>
+            <ol>
+                <li><code>q--</code> permanently moves the pointer back 4 bytes.</li>
+                <li><code>*(q+2)</code> does <strong>not</strong> permanently move <code>q</code>. It just calculates a temporary address, looks ahead 2 spaces, and grabs the value.</li>
+                <li>Watch out for <code>p++</code> inside parentheses! Remember associativity rules and that postfix means it evaluates the expression first, and moves <code>p</code> afterward.</li>
+            </ol>
+        </div>
+    </section>
+
+</div>
+
+<script>
+    // Simple Intersection Observer to create the smooth vertical feed fade-in effect
+    document.addEventListener("DOMContentLoaded", () => {
+        const cards = document.querySelectorAll('.card');
+        
+        const observerOptions = {
+            threshold: 0.15, // Trigger when 15% of the card is visible
+            rootMargin: "0px 0px -50px 0px"
+        };
+
+        const cardObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    // Optional: Stop observing once it's visible if you don't want it to hide again on scroll up
+                    // observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        cards.forEach(card => {
+            cardObserver.observe(card);
+        });
+    });
+</script>
+
+</body>
+</html>

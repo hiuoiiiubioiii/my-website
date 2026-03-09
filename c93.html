@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GATE 2000: C Programming Study Notes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f7f6;
+            --text-main: #333;
+            --accent-blue: #2563eb;
+            --accent-light: #eff6ff;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --box-main: #fcfcfc;
+            --border-color: #e5e7eb;
+            --static-color: #10b981; /* Green for static */
+            --local-color: #ef4444; /* Red for destroyed local */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Vertical Feed Container */
+        .feed-container {
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        /* Feed Cards */
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border-color);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        h1 { font-size: 2rem; color: var(--accent-blue); margin-bottom: 0.5rem; }
+        h2 { font-size: 1.5rem; color: #111; margin-bottom: 1rem; border-bottom: 2px solid var(--accent-light); padding-bottom: 0.5rem;}
+        h3 { font-size: 1.2rem; margin-bottom: 0.5rem; color: #444; }
+        p { margin-bottom: 1rem; font-size: 1.05rem; }
+        
+        .highlight {
+            background-color: #fef08a;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .golden-rule {
+            background-color: var(--accent-light);
+            border-left: 5px solid var(--accent-blue);
+            padding: 1.5rem;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+        }
+
+        /* Code Snippet Styling */
+        pre {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .keyword { color: #569cd6; }
+        .type { color: #4ec9b0; }
+        .number { color: #b5cea8; }
+
+        /* Whiteboard / Memory Visualization Styling */
+        .whiteboard {
+            background: #fdfbf7;
+            border: 2px dashed #cbd5e1;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .whiteboard-title {
+            text-align: center;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.85rem;
+        }
+
+        .memory-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 600px) {
+            .memory-grid { grid-template-columns: 1fr; }
+        }
+
+        .func-box {
+            background: white;
+            border: 2px solid #94a3b8;
+            border-radius: 8px;
+            padding: 1rem;
+            position: relative;
+        }
+
+        .func-box h4 {
+            position: absolute;
+            top: -12px;
+            left: 10px;
+            background: white;
+            padding: 0 5px;
+            color: var(--accent-blue);
+        }
+
+        .var-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .val-pill {
+            background: #e1e7ef;
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        .static-var {
+            border-left: 4px solid var(--static-color);
+        }
+        
+        .static-badge {
+            font-size: 0.7rem;
+            background: var(--static-color);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 5px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .destroyed {
+            text-decoration: line-through;
+            color: var(--local-color);
+            opacity: 0.6;
+        }
+        
+        .math-note {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 5px;
+            display: block;
+        }
+
+        /* Step Badge */
+        .step-badge {
+            display: inline-block;
+            background: var(--text-main);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="feed-container">
+        
+        <!-- Header -->
+        <header class="card visible">
+            <h1>📚 GATE 2000: Functions & Static Variables</h1>
+            <p><strong>Goal:</strong> Perform a step-by-step "dry run" to determine the final value of the variable <code>j</code> after the code finishes executing.</p>
+        </header>
+
+        <!-- The Code -->
+        <section class="card">
+            <h2>1. The Problem Code</h2>
+            <p>Here is the exact C code snippet provided on the whiteboard. Copy this into your physical notes.</p>
+            <pre><code><span class="type">int</span> <span class="keyword">incr</span>(<span class="type">int</span> i)
+{
+    <span class="keyword">static</span> <span class="type">int</span> count = <span class="number">0</span>;
+    count = count + i;
+    <span class="keyword">return</span> (count);
+}
+
+<span class="keyword">main</span>()
+{
+    <span class="type">int</span> i, j;
+    <span class="keyword">for</span>(i = <span class="number">0</span>; i <= <span class="number">4</span>; i++)
+        j = incr(i);
+}</code></pre>
+        </section>
+
+        <!-- The Golden Rule -->
+        <section class="card">
+            <h2>2. The Instructor's Golden Rule</h2>
+            <div class="golden-rule">
+                <p>"Whenever you see code like this, <strong>don't just look at it and try to guess</strong>. You must follow the exact path the computer takes."</p>
+                <p><strong>Action:</strong> Draw memory blocks on a piece of paper for every function and variable. Track how the variables change step-by-step.</p>
+            </div>
+        </section>
+
+        <!-- Core Concept -->
+        <section class="card">
+            <h2>3. Crucial Concept: The <code>static</code> Keyword</h2>
+            <p>Before tracing, the instructor stops to explain the most important line: <code>static int count = 0;</code></p>
+            <ul>
+                <li><strong>Lifetime:</strong> A static variable's memory lasts for the <em>entire duration</em> of the program, not just when the function is running.</li>
+                <li><strong>Initialization:</strong> It is initialized <strong>ONLY ONCE</strong>. If you call the function a second time, the computer completely <em>ignores</em> the initialization line.</li>
+                <li><strong>Memory:</strong> It remembers its previous value between function calls. Normal local variables (like <code>i</code>) are destroyed and recreated.</li>
+            </ul>
+        </section>
+
+        <!-- DRY RUN START -->
+        <!-- Step 1 -->
+        <section class="card">
+            <span class="step-badge">Iteration 1: i = 0</span>
+            <h2>Executing the First Loop</h2>
+            <p>Execution begins in <code>main()</code>. <code>i</code> is set to 0. Is 0 <= 4? Yes. We call <code>incr(0)</code>.</p>
+            <p>Inside <code>incr()</code>, local <code>i</code> receives 0. The static variable <code>count</code> is created and initialized to 0. We do the math: <code>count = 0 + 0 = 0</code>. The function returns 0 back to <code>main()</code>, storing it in <code>j</code>.</p>
+            
+            <div class="whiteboard">
+                <div class="whiteboard-title">Whiteboard Memory Simulation</div>
+                <div class="memory-grid">
+                    <div class="func-box main-box">
+                        <h4>main()</h4>
+                        <div class="var-box"><span>i:</span> <span class="val-pill">0</span></div>
+                        <div class="var-box"><span>j:</span> <span class="val-pill">0</span></div>
+                    </div>
+                    <div class="func-box incr-box">
+                        <h4>incr()</h4>
+                        <div class="var-box destroyed"><span>i (local):</span> <span>0</span></div>
+                        <div class="var-box static-var">
+                            <span>count <span class="static-badge">static</span></span> 
+                            <div>
+                                <span class="val-pill">0</span>
+                                <span class="math-note">0 + 0 = 0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 2 -->
+        <section class="card">
+            <span class="step-badge">Iteration 2: i = 1</span>
+            <h2>The Power of Static</h2>
+            <p><code>i++</code> makes <code>i = 1</code> in main. We call <code>incr(1)</code>.</p>
+            <p>Inside <code>incr()</code>, local <code>i</code> is recreated and receives 1. <strong>CRITICAL:</strong> The line <code>static int count = 0;</code> is <span class="highlight">SKIPPED</span>. <code>count</code> remembers its value is 0.</p>
+            <p>Math: <code>count = 0 + 1 = 1</code>. Returns 1 to <code>j</code>.</p>
+            
+            <div class="whiteboard">
+                <div class="whiteboard-title">Whiteboard Memory Simulation</div>
+                <div class="memory-grid">
+                    <div class="func-box main-box">
+                        <h4>main()</h4>
+                        <div class="var-box"><span>i:</span> <span class="val-pill">1</span></div>
+                        <div class="var-box"><span>j:</span> <span class="val-pill">1</span></div>
+                    </div>
+                    <div class="func-box incr-box">
+                        <h4>incr()</h4>
+                        <div class="var-box destroyed"><span>i (local):</span> <span>1</span></div>
+                        <div class="var-box static-var">
+                            <span>count <span class="static-badge">static</span></span> 
+                            <div>
+                                <span class="val-pill">1</span>
+                                <span class="math-note">0 + 1 = 1</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 3 -->
+        <section class="card">
+            <span class="step-badge">Iteration 3: i = 2</span>
+            <h2>Accumulating Values</h2>
+            <p><code>i++</code> makes <code>i = 2</code> in main. We call <code>incr(2)</code>.</p>
+            <p>Inside <code>incr()</code>, local <code>i</code> receives 2. <code>count</code> remembers its previous value of 1.</p>
+            <p>Math: <code>count = 1 + 2 = 3</code>. Returns 3 to <code>j</code>.</p>
+            
+            <div class="whiteboard">
+                <div class="whiteboard-title">Whiteboard Memory Simulation</div>
+                <div class="memory-grid">
+                    <div class="func-box main-box">
+                        <h4>main()</h4>
+                        <div class="var-box"><span>i:</span> <span class="val-pill">2</span></div>
+                        <div class="var-box"><span>j:</span> <span class="val-pill">3</span></div>
+                    </div>
+                    <div class="func-box incr-box">
+                        <h4>incr()</h4>
+                        <div class="var-box destroyed"><span>i (local):</span> <span>2</span></div>
+                        <div class="var-box static-var">
+                            <span>count <span class="static-badge">static</span></span> 
+                            <div>
+                                <span class="val-pill">3</span>
+                                <span class="math-note">1 + 2 = 3</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 4 -->
+        <section class="card">
+            <span class="step-badge">Iteration 4: i = 3</span>
+            <h2>Continuing the Loop</h2>
+            <p><code>i++</code> makes <code>i = 3</code> in main. We call <code>incr(3)</code>.</p>
+            <p>Inside <code>incr()</code>, local <code>i</code> receives 3. <code>count</code> remembers its previous value of 3.</p>
+            <p>Math: <code>count = 3 + 3 = 6</code>. Returns 6 to <code>j</code>.</p>
+            
+            <div class="whiteboard">
+                <div class="whiteboard-title">Whiteboard Memory Simulation</div>
+                <div class="memory-grid">
+                    <div class="func-box main-box">
+                        <h4>main()</h4>
+                        <div class="var-box"><span>i:</span> <span class="val-pill">3</span></div>
+                        <div class="var-box"><span>j:</span> <span class="val-pill">6</span></div>
+                    </div>
+                    <div class="func-box incr-box">
+                        <h4>incr()</h4>
+                        <div class="var-box destroyed"><span>i (local):</span> <span>3</span></div>
+                        <div class="var-box static-var">
+                            <span>count <span class="static-badge">static</span></span> 
+                            <div>
+                                <span class="val-pill">6</span>
+                                <span class="math-note">3 + 3 = 6</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 5 -->
+        <section class="card">
+            <span class="step-badge">Iteration 5: i = 4</span>
+            <h2>The Final Call</h2>
+            <p><code>i++</code> makes <code>i = 4</code> in main. Is 4 <= 4? Yes! We call <code>incr(4)</code>.</p>
+            <p>Inside <code>incr()</code>, local <code>i</code> receives 4. <code>count</code> remembers its previous value of 6.</p>
+            <p>Math: <code>count = 6 + 4 = 10</code>. Returns 10 to <code>j</code>.</p>
+            
+            <div class="whiteboard">
+                <div class="whiteboard-title">Whiteboard Memory Simulation</div>
+                <div class="memory-grid">
+                    <div class="func-box main-box">
+                        <h4>main()</h4>
+                        <div class="var-box"><span>i:</span> <span class="val-pill">4</span></div>
+                        <div class="var-box"><span>j:</span> <span class="val-pill">10</span></div>
+                    </div>
+                    <div class="func-box incr-box">
+                        <h4>incr()</h4>
+                        <div class="var-box destroyed"><span>i (local):</span> <span>4</span></div>
+                        <div class="var-box static-var">
+                            <span>count <span class="static-badge">static</span></span> 
+                            <div>
+                                <span class="val-pill">10</span>
+                                <span class="math-note">6 + 4 = 10</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Termination -->
+        <section class="card">
+            <span class="step-badge">Loop Termination: i = 5</span>
+            <h2>Program Exit</h2>
+            <p><code>i++</code> makes <code>i = 5</code> in main. Is 5 <= 4? <strong>No (False).</strong></p>
+            <p>The program exits the <code>for</code> loop. The execution of the program ends. The instructor points to the memory box for <code>j</code> on the whiteboard. The final value resting in that box is <span class="highlight">10</span>.</p>
+            <p><strong>GATE 2000 Final Answer: 10</strong></p>
+        </section>
+
+        <!-- Practical Proof -->
+        <section class="card">
+            <h2>4. Practical Proof (VS Code)</h2>
+            <p>To prove the whiteboard math is correct, the instructor runs the exact code in Visual Studio Code. She adds a <code>printf</code> statement to output the result to the console.</p>
+            <pre><code><span class="keyword">printf</span>(<span class="number">"j = %d\n"</span>, j);</code></pre>
+            <p><strong>Terminal Output:</strong></p>
+            <pre style="background: #000; color: #0f0; border-left: 4px solid #333;"><code>PS C:\Users\Student\Programs> ./gate2000
+j = 10</code></pre>
+            <p>The manual dry-run matches the computer's execution perfectly!</p>
+        </section>
+
+    </div>
+
+    <!-- Script for smooth scroll fade-in effect -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.card');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.15
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target); // Stop observing once it's visible
+                    }
+                });
+            }, observerOptions);
+
+            cards.forEach(card => {
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>
